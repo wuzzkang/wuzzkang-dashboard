@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
-import { Sparkles, ArrowRight, CheckCircle, ExternalLink, Globe, Layout, Smartphone, Laptop, AlertCircle } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle, ExternalLink, Globe, Layout, Smartphone, Laptop, AlertCircle, ChevronRight, X, Search, ShoppingBag, Heart } from 'lucide-react';
 const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg';
 const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
 import { supabase } from '@/lib/supabase';
@@ -73,6 +73,9 @@ function GenerateContent() {
   const [prompt, setPrompt] = useState('');
   const [slug, setSlug] = useState('');
   const [templateType, setTemplateType] = useState('store');
+  const [products, setProducts] = useState([]);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   
   // Wedding form states
   const [groomName, setGroomName] = useState('');
@@ -219,6 +222,53 @@ function GenerateContent() {
       }, '*');
     }
   }, [pageData, iframeReady]);
+
+  // Fetch active products list from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!session) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data)) {
+            setProducts(result.data);
+            
+            // Set the first active template as default if templateType is not in the active products
+            const activeProducts = result.data.filter(p => p.is_active);
+            if (activeProducts.length > 0) {
+              const currentIsActive = activeProducts.some(p => p.id === templateType);
+              if (!currentIsActive) {
+                setTemplateType(activeProducts[0].id);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Gagal mengambil daftar produk/template:', err);
+      }
+    };
+    fetchProducts();
+  }, [session]);
+
+  // Fallback default mock products if API products is empty (e.g. table not created yet)
+  const getDisplayProducts = () => {
+    if (products && products.length > 0) {
+      return products;
+    }
+    return [
+      { id: 'store', name: 'Toko Online / Bisnis', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.' },
+      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.' }
+    ];
+  };
+
+  const displayProducts = getDisplayProducts();
+  const currentProduct = displayProducts.find(p => p.id === templateType);
+  const currentCost = currentProduct?.cost ?? 10000;
 
   if (loading || (!user && loading)) {
     return (
@@ -772,31 +822,31 @@ function GenerateContent() {
               {/* Step 1 Generate Draft */}
               {!pageData ? (
                 <form onSubmit={handleGenerate} className="space-y-4">
-                  {/* Pilih Tipe Template */}
+                  {/* Pilih Tipe Template (Visual Selector Trigger) */}
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Pilih Tipe Template
+                      Tipe Layanan / Template
                     </label>
-                    <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-880">
-                      <button
-                        type="button"
-                        onClick={() => setTemplateType('store')}
-                        className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                          templateType === 'store' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-205'
-                        }`}
-                      >
-                        Toko Online / Bisnis
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setTemplateType('wedding')}
-                        className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                          templateType === 'wedding' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-205'
-                        }`}
-                      >
-                        Undangan Pernikahan
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsTemplateModalOpen(true)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/10 rounded-xl text-left transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                          {templateType === 'wedding' ? '🌸' : '🛍️'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">
+                            {templateType === 'wedding' ? 'Undangan Pernikahan' : 'Toko Online / Bisnis'}
+                          </p>
+                          <p className="text-[10px] text-slate-500">
+                            Klik untuk ganti tipe produk/template
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-white transition-colors" />
+                    </button>
                   </div>
 
                   <div>
@@ -1226,14 +1276,14 @@ function GenerateContent() {
                     </p>
                   </div>
 
-                  <div className="bg-indigo-950/20 border border-indigo-900/30 rounded-xl p-4">
+                   <div className="bg-indigo-950/20 border border-indigo-900/30 rounded-xl p-4">
                     <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
                       <span>Biaya Publikasi:</span>
-                      <span className="text-white">Rp 10.000</span>
+                      <span className="text-white">Rp {currentCost.toLocaleString('id-ID')}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs font-semibold text-slate-400 mt-2">
                       <span>Saldo Anda Sekarang:</span>
-                      <span className={ (profile?.balance ?? 0) < 10000 ? 'text-red-400' : 'text-emerald-400' }>
+                      <span className={ (profile?.balance ?? 0) < currentCost ? 'text-red-400' : 'text-emerald-400' }>
                         Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
                       </span>
                     </div>
@@ -1252,7 +1302,7 @@ function GenerateContent() {
                     ) : (
                       <>
                         <Globe className="h-4 w-4" />
-                        <span>Publikasikan Sekarang (Rp 10.000)</span>
+                        <span>Publikasikan Sekarang (Rp {currentCost.toLocaleString('id-ID')})</span>
                       </>
                     )}
                   </button>
@@ -1352,6 +1402,151 @@ function GenerateContent() {
           
         </div>
       </main>
+      {/* Template Selection Modal */}
+      {isTemplateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+              <div>
+                <h3 className="text-lg font-bold text-white">Galeri Template & Layanan</h3>
+                <p className="text-xs text-slate-500 mt-1">Pilih tipe landing page yang ingin Anda rancang</p>
+              </div>
+              <button 
+                onClick={() => setIsTemplateModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Filters */}
+            <div className="px-6 py-4 bg-slate-900/20 border-b border-slate-850 flex gap-2 overflow-x-auto scrollbar-none">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  selectedCategory === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Semua Kategori
+              </button>
+              <button
+                onClick={() => setSelectedCategory('wedding')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  selectedCategory === 'wedding' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Undangan
+              </button>
+              <button
+                onClick={() => setSelectedCategory('store')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  selectedCategory === 'store' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                E-Commerce / Toko
+              </button>
+            </div>
+
+            {/* Modal Content - Product Cards Grid */}
+            <div className="p-6 overflow-y-auto space-y-4 flex-grow bg-slate-900/30">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {displayProducts
+                  .filter(p => {
+                    if (selectedCategory === 'all') return true;
+                    if (selectedCategory === 'wedding') return p.id === 'wedding';
+                    if (selectedCategory === 'store') return p.id === 'store';
+                    return true;
+                  })
+                  .map(product => {
+                    const isSelected = templateType === product.id;
+                    const isActive = product.is_active;
+
+                    return (
+                      <div
+                        key={product.id}
+                        onClick={() => {
+                          if (isActive) {
+                            setTemplateType(product.id);
+                            setIsTemplateModalOpen(false);
+                            // Clear page data when changing template types to refresh state
+                            setPageData(null);
+                          }
+                        }}
+                        className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${
+                          !isActive 
+                            ? 'bg-slate-900/40 border-slate-850 opacity-60 cursor-not-allowed select-none'
+                            : isSelected
+                              ? 'bg-indigo-950/20 border-indigo-500 shadow-lg shadow-indigo-500/5 cursor-pointer scale-[1.01]'
+                              : 'bg-slate-950 border-slate-800 hover:border-slate-700 hover:bg-slate-900/10 cursor-pointer hover:scale-[1.01]'
+                        }`}
+                      >
+                        {/* Glow effect on hover if active */}
+                        {isActive && (
+                          <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -z-10 transition-opacity duration-300 ${
+                            isSelected ? 'bg-indigo-500/10 opacity-100' : 'bg-indigo-500/5 opacity-0 group-hover:opacity-100'
+                          }`} />
+                        )}
+
+                        <div>
+                          <div className="flex justify-between items-start mb-4">
+                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl shadow-sm ${
+                              isSelected ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-300'
+                            }`}>
+                              {product.id === 'wedding' ? '🌸' : '🛍️'}
+                            </div>
+                            
+                            {/* Inactive / Maintenance Badge */}
+                            {!isActive ? (
+                              <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded">
+                                Pemeliharaan
+                              </span>
+                            ) : (
+                              isSelected && (
+                                <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded">
+                                  Aktif
+                                </span>
+                              )
+                            )}
+                          </div>
+
+                          <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
+                            {product.name}
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                            {product.description || (product.id === 'wedding' 
+                              ? 'Undangan pernikahan digital premium dengan fitur interaktif.'
+                              : 'Landing page e-commerce instan untuk katalog dagangan.')}
+                          </p>
+                        </div>
+
+                        {/* Price Info */}
+                        <div className="mt-6 pt-4 border-t border-slate-800/80 flex justify-between items-center">
+                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Biaya Publikasi</span>
+                          <span className="text-xs font-bold text-white">
+                            Rp {product.cost?.toLocaleString('id-ID') || '10.000'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-slate-800/80 bg-slate-950 flex justify-end">
+              <button
+                onClick={() => setIsTemplateModalOpen(false)}
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition-colors"
+              >
+                Tutup Galeri
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
