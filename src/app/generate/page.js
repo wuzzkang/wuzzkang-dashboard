@@ -1207,12 +1207,12 @@ function GenerateContent() {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      {templateType === 'wedding' ? 'Gaya Tema & Doa Pernikahan (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
+                      {templateType === 'wedding' ? 'Preferensi Kutipan / Doa Pembuka (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
                     </label>
                     <textarea
                       required={templateType !== 'wedding'}
                       rows={templateType === 'wedding' ? 3 : 5}
-                      placeholder={templateType === 'wedding' ? "Contoh: Tema sage green elegan, berikan doa islami dengan kutipan QS Ar-Rum... (kosongkan untuk tema & doa default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
+                      placeholder={templateType === 'wedding' ? "Contoh: Ayat Al-Quran tentang pernikahan, atau doa dengan nuansa islami penuh keikhlasan... (kosongkan untuk kutipan default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       disabled={isGenerating}
