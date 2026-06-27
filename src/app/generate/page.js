@@ -65,6 +65,8 @@ function GenerateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftId = searchParams.get('id');
+  const iframeRef = useRef(null);
+  const [iframeReady, setIframeReady] = useState(false);
 
   // Input states
   const [name, setName] = useState('');
@@ -206,6 +208,17 @@ function GenerateContent() {
       fetchDraft();
     }
   }, [session, draftId]);
+
+  // Synchronize state with live preview iframe
+  // Only send postMessage when both iframeReady AND pageData exist
+  useEffect(() => {
+    if (iframeRef.current && pageData && iframeReady) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'UPDATE_PREVIEW',
+        pageData: pageData
+      }, '*');
+    }
+  }, [pageData, iframeReady]);
 
   if (loading || (!user && loading)) {
     return (
@@ -1302,7 +1315,27 @@ function GenerateContent() {
                     previewDevice === 'mobile' ? 'w-[375px] h-[600px]' : 'w-full h-full'
                   }`}
                 >
-                  {renderPreview()}
+                  {templateType === 'wedding' ? (
+                    <iframe
+                      ref={iframeRef}
+                      src="/preview/index.html"
+                      className="w-full h-full border-0 bg-transparent"
+                      title="Live Preview"
+                      onLoad={() => {
+                        // Mark iframe as ready so postMessage sync can start
+                        setIframeReady(true);
+                        // Also immediately send pageData if it's already available
+                        if (iframeRef.current && pageData) {
+                          iframeRef.current.contentWindow.postMessage({
+                            type: 'UPDATE_PREVIEW',
+                            pageData: pageData
+                          }, '*');
+                        }
+                      }}
+                    />
+                  ) : (
+                    renderPreview()
+                  )}
                 </div>
               ) : (
                 <div className="text-center p-8 max-w-md">

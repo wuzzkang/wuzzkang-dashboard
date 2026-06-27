@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Preview Sandbox</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3b82f6', 
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen flex flex-col antialiased text-slate-800 bg-transparent">
+    <!-- Container for dynamic component rendering -->
+    <div id="app" class="flex-grow flex flex-col w-full"></div>
+
+    <script type="module">
+        window.addEventListener('message', async (event) => {
+            if (event.data && event.data.type === 'UPDATE_PREVIEW') {
+                const { pageData } = event.data;
+                const templateType = pageData.meta?.template_type || 'store';
+                const designKey = pageData.meta?.design_key || 'sage-green';
+                const appEl = document.getElementById('app');
+
+                // Clear previous body style overrides from templates
+                document.body.style.overflow = 'auto';
+
+                if (templateType === 'wedding') {
+                    try {
+                        // Dynamically import the exact JS template module
+                        const module = await import(`./templates/wedding/${designKey}.js`);
+                        
+                        // Execute the template renderer
+                        await module.render(pageData, 'Nama Tamu Undangan');
+                        
+                        // Automatically bypass welcome cover overlay inside the editor preview 
+                        // so the user doesn't have to click "Open Invitation" every time they type
+                        const coverEl = document.getElementById('invitation-cover');
+                        if (coverEl) {
+                            coverEl.style.display = 'none';
+                        }
+                        
+                        // CRITICAL FIX: The main-content starts as opacity-0 and only becomes visible
+                        // when the user clicks "Buka Undangan". Since we're bypassing that button,
+                        // we must manually remove opacity-0 so the page is actually visible.
+                        const mainContentEl = document.getElementById('main-content');
+                        if (mainContentEl) {
+                            mainContentEl.classList.remove('opacity-0');
+                            mainContentEl.style.opacity = '1';
+                        }
+                        
+                        // Unlock body scrolling (normally locked until cover dismissed)
+                        document.body.style.overflow = 'auto';
+                    } catch (err) {
+                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
+                    }
+                } else {
+                    // Default mockup preview for Store template
+                    appEl.innerHTML = `
+                        <div class="min-h-screen flex items-center justify-center p-8 bg-slate-900 text-white text-center">
+                            <div>
+                                <h2 class="text-2xl font-bold mb-2">${pageData.meta?.title || 'Draft Page'}</h2>
+                                <p class="text-sm text-slate-400">Template Store preview is handled natively. Live URL will compile static assets.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
