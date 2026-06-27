@@ -96,13 +96,13 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row">
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-grow p-8 overflow-y-auto">
+      <main className="flex-grow p-6 md:p-8 pt-24 md:pt-8 overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-white tracking-tight">Landing Pages</h1>
             <p className="text-slate-400 text-sm mt-1">Daftar semua landing page Anda yang telah digenerate</p>
@@ -110,7 +110,7 @@ export default function DashboardPage() {
           
           <Link
             href="/generate"
-            className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-2.5 px-4 rounded-xl shadow-lg shadow-indigo-600/15 transition-all flex items-center gap-2 active:scale-[0.98]"
+            className="w-full sm:w-auto justify-center bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-2.5 px-4 rounded-xl shadow-lg shadow-indigo-600/15 transition-all flex items-center gap-2 active:scale-[0.98]"
           >
             <Plus className="h-4 w-4" />
             <span>Buat Halaman Baru</span>

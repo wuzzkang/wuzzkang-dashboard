@@ -662,11 +662,11 @@ function GenerateContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row">
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-grow p-8 flex flex-col h-screen overflow-hidden">
+      <main className="flex-grow p-6 md:p-8 flex flex-col md:h-screen md:overflow-hidden min-h-screen overflow-y-auto pt-24 md:pt-8">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
           <h1 className="text-3xl font-extrabold text-white tracking-tight">AI Landing Page Generator</h1>
@@ -727,10 +727,10 @@ function GenerateContent() {
         )}
 
         {/* Content Panels split screen */}
-        <div className="flex-grow flex gap-6 overflow-hidden min-h-0">
+        <div className="flex-grow flex flex-col lg:flex-row gap-6 lg:overflow-hidden min-h-0 pb-8 lg:pb-0">
           
           {/* Left Input Panel */}
-          <div className="w-1/3 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between overflow-y-auto">
+          <div className="w-full lg:w-1/3 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between overflow-y-auto shrink-0">
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-bold text-white mb-1">Detail Landing Page</h3>
@@ -1241,7 +1241,7 @@ function GenerateContent() {
           </div>
 
           {/* Right Preview Panel */}
-          <div className="flex-grow w-2/3 bg-slate-900/30 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">
+          <div className="flex-grow w-full lg:w-2/3 min-h-[500px] lg:min-h-0 bg-slate-900/30 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">
             
             {/* Preview Toolbar */}
             <div className="bg-slate-900/80 px-6 py-3.5 border-b border-slate-800/80 flex justify-between items-center flex-shrink-0">
