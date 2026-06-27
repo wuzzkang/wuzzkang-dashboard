@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import { Sparkles, ArrowRight, CheckCircle, ExternalLink, Globe, Layout, Smartphone, Laptop, AlertCircle } from 'lucide-react';
+const DEFAULT_GROOM_AVATAR = 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=256&h=256';
+const DEFAULT_BRIDE_AVATAR = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256&h=256';
 import { supabase } from '@/lib/supabase';
 
 const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
@@ -97,8 +99,8 @@ function GenerateContent() {
 
   // Wedding modular additions
   const [designKey, setDesignKey] = useState('sage-green');
-  const [groomImage, setGroomImage] = useState('');
-  const [brideImage, setBrideImage] = useState('');
+  const [groomImage, setGroomImage] = useState(DEFAULT_GROOM_AVATAR);
+  const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
   const [storyList, setStoryList] = useState([]);
   
   // Adding story temp states
@@ -187,8 +189,8 @@ function GenerateContent() {
               setGiftHolder(content.gift?.account_holder || '');
               
               setDesignKey(pageConfig.meta?.design_key || 'sage-green');
-              setGroomImage(content.groom?.image_url || '');
-              setBrideImage(content.bride?.image_url || '');
+              setGroomImage(content.groom?.image_url || DEFAULT_GROOM_AVATAR);
+              setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
               setStoryList(content.story || []);
             } else {
               setTemplateType('store');
@@ -315,8 +317,11 @@ function GenerateContent() {
         throw new Error(result.error || 'Gagal men-generate gambar.');
       }
     } catch (err) {
-      console.error('[Dashboard] AI avatar error:', err);
-      setError('Gagal men-generate foto AI: ' + err.message);
+      console.error('[Dashboard] AI avatar error, falling back to default:', err);
+      if (isGroom) setGroomImage(DEFAULT_GROOM_AVATAR);
+      if (isBride) setBrideImage(DEFAULT_BRIDE_AVATAR);
+      
+      alert(`Gagal men-generate foto AI: ${err.message || 'Error'}\n\nSistem otomatis menggunakan avatar default untuk Anda.`);
     } finally {
       if (isGroom) setIsGeneratingGroomImage(false);
       if (isBride) setIsGeneratingBrideImage(false);
@@ -442,8 +447,8 @@ function GenerateContent() {
       const quote = pageData.content?.quote || '';
       const stories = pageData.content?.story || [];
 
-      const defaultGroomAvatar = 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=256&h=256';
-      const defaultBrideAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256&h=256';
+      const defaultGroomAvatar = DEFAULT_GROOM_AVATAR;
+      const defaultBrideAvatar = DEFAULT_BRIDE_AVATAR;
 
       return (
         <div 
