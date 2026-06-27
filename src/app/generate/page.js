@@ -127,7 +127,7 @@ function GenerateContent() {
   const [successUrl, setSuccessUrl] = useState('');
   
   // Preview mode (desktop vs mobile)
-  const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [previewDevice, setPreviewDevice] = useState('mobile');
 
   // Redirect if not logged in
   useEffect(() => {
@@ -1312,7 +1312,7 @@ function GenerateContent() {
               {pageData ? (
                 <div 
                   className={`border border-slate-800 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${
-                    previewDevice === 'mobile' ? 'w-[375px] h-[600px]' : 'w-full h-full'
+                    previewDevice === 'mobile' ? 'w-full max-w-[375px] h-[600px]' : 'w-full h-full'
                   }`}
                 >
                   {templateType === 'wedding' ? (
