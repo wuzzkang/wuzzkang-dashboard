@@ -739,36 +739,36 @@ function GenerateContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1510] flex flex-col">
+    <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
       <Sidebar />
 
       {/* Main Content Area - Mobile Centered Column */}
-      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-[#221d16] border-x border-[#3d3328] relative">
+      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
-          <h1 className="text-2xl font-black text-white tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Landing Page</h1>
-          <p className="text-[#c9b899] text-xs mt-1">Masukkan data Anda, biarkan AI merancang halaman instan</p>
+          <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Landing Page</h1>
+          <p className="text-theme-text-sec text-xs mt-1">Masukkan data Anda, biarkan AI merancang halaman instan</p>
         </div>
 
         {/* Success Modal Overlay */}
         {successUrl && (
-          <div className="fixed inset-0 bg-[#1a1510]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div className="bg-[#221d16] border border-[#3d3328] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
+          <div className="fixed inset-0 bg-theme-bg/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-theme-surface border border-theme-border rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
               <div className="h-16 w-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                 <CheckCircle className="h-8 w-8" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Sora', sans-serif" }}>Halaman Siap!</h2>
-              <p className="text-[#c9b899] text-xs mb-6 leading-relaxed">
+              <h2 className="text-2xl font-bold text-theme-text mb-2" style={{ fontFamily: "'Sora', sans-serif" }}>Halaman Siap!</h2>
+              <p className="text-theme-text-sec text-xs mb-6 leading-relaxed">
                 Landing page Anda berhasil dipublikasikan secara instan dan kini dapat diakses oleh publik secara online!
               </p>
               
-              <div className="bg-[#1a1510] border border-[#3d3328] rounded-xl p-3.5 mb-6 flex items-center justify-between text-xs overflow-hidden gap-3">
-                <span className="text-[#f5a623] font-medium truncate select-all">{successUrl}</span>
+              <div className="bg-theme-bg border border-theme-border rounded-xl p-3.5 mb-6 flex items-center justify-between text-xs overflow-hidden gap-3">
+                <span className="text-theme-accent font-medium truncate select-all">{successUrl}</span>
                 <a
                   href={successUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-shrink-0 text-[#c9b899] hover:text-white transition-colors"
+                  className="flex-shrink-0 text-theme-text-sec hover:text-theme-text transition-colors"
                 >
                   <ExternalLink className="h-4 w-4" />
                 </a>
@@ -779,7 +779,7 @@ function GenerateContent() {
                   href={successUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-[#f5a623] hover:bg-[#e8951a] text-[#1a1510] font-bold py-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                  className="w-full bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold py-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
                 >
                   <span>Buka Halaman</span>
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -794,7 +794,7 @@ function GenerateContent() {
                     setSlug('');
                     router.push('/');
                   }}
-                  className="w-full bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white font-semibold py-3 rounded-xl text-xs transition-all"
+                  className="w-full bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text-sec hover:text-theme-text font-semibold py-3 rounded-xl text-xs transition-all"
                 >
                   Kembali ke Dashboard
                 </button>
@@ -807,14 +807,14 @@ function GenerateContent() {
         <div className="flex-grow flex flex-col min-h-0 w-full">
           {/* Tab Switcher (Only shown if pageData exists) */}
           {pageData && (
-            <div className="flex bg-[#1a1510] p-1 rounded-xl border border-[#3d3328] mb-4 flex-shrink-0">
+            <div className="flex bg-theme-bg p-1 rounded-xl border border-theme-border mb-4 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveTab('edit')}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                   activeTab === 'edit'
-                    ? 'bg-[#f5a623] text-[#1a1510] shadow'
-                    : 'text-[#c9b899] hover:text-white'
+                    ? 'bg-theme-accent text-theme-accent-text shadow'
+                    : 'text-theme-text-sec hover:text-theme-text'
                 }`}
               >
                 Edit Konten
@@ -824,8 +824,8 @@ function GenerateContent() {
                 onClick={() => setActiveTab('preview')}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                   activeTab === 'preview'
-                    ? 'bg-[#f5a623] text-[#1a1510] shadow'
-                    : 'text-[#c9b899] hover:text-white'
+                    ? 'bg-theme-accent text-theme-accent-text shadow'
+                    : 'text-theme-text-sec hover:text-theme-text'
                 }`}
               >
                 Lihat Preview
@@ -836,44 +836,44 @@ function GenerateContent() {
           {/* Tab 1: Edit Form */}
           {(!pageData || activeTab === 'edit') && (
             <div className="w-full flex-grow flex flex-col">
-              <div className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-5 flex flex-col overflow-y-auto shrink-0 mb-6 max-h-[62vh] scrollbar-thin">
+              <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col overflow-y-auto shrink-0 mb-6 max-h-[62vh] scrollbar-thin">
                 <div className="space-y-5">
-                  <div className="pb-2 border-b border-[#3d3328]">
-                    <h3 className="text-sm font-bold text-white tracking-wide" style={{ fontFamily: "'Sora', sans-serif" }}>Detail Landing Page</h3>
-                    <p className="text-[10px] text-[#c9b899] mt-0.5">Lengkapi formulir untuk membuat pratinjau halaman Anda</p>
+                  <div className="pb-2 border-b border-theme-border">
+                    <h3 className="text-sm font-bold text-theme-text tracking-wide" style={{ fontFamily: "'Sora', sans-serif" }}>Detail Landing Page</h3>
+                    <p className="text-[10px] text-theme-text-sec mt-0.5">Lengkapi formulir untuk membuat pratinjau halaman Anda</p>
                   </div>
 
                   <form id="generate-form" onSubmit={handleGenerate} className="space-y-4">
                     {/* Tipe Template Selector */}
                     <div>
-                      <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                      <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                         Tipe Layanan / Template
                       </label>
                       <button
                         type="button"
                         onClick={() => setIsTemplateModalOpen(true)}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] hover:border-[#f5a623] rounded-xl text-left transition-all group"
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-theme-bg border border-theme-border hover:border-theme-accent rounded-xl text-left transition-all group"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="h-7 w-7 rounded-lg bg-[#f5a623]/10 flex items-center justify-center text-[#f5a623] group-hover:scale-105 transition-transform text-sm">
+                          <div className="h-7 w-7 rounded-lg bg-theme-accent/10 flex items-center justify-center text-theme-accent group-hover:scale-105 transition-transform text-sm">
                             {templateType === 'wedding' ? '🌸' : '🛍️'}
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-white">
+                            <p className="text-xs font-bold text-theme-text">
                               {templateType === 'wedding' ? 'Undangan Pernikahan' : 'Toko Online / Bisnis'}
                             </p>
-                            <p className="text-[9px] text-[#c9b899]">
+                            <p className="text-[9px] text-theme-text-sec">
                               Klik untuk mengganti tipe produk/template
                             </p>
                           </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-[#7a6a55] group-hover:text-white transition-colors" />
+                        <ChevronRight className="h-4 w-4 text-theme-text-muted group-hover:text-theme-text transition-colors" />
                       </button>
                     </div>
 
                     {/* Nama Halaman / Acara */}
                     <div>
-                      <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                      <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                         Nama Halaman / Acara
                       </label>
                       <input
@@ -883,16 +883,16 @@ function GenerateContent() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         disabled={isGenerating}
-                        className="block w-full px-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none transition-colors"
+                        className="block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
                       />
                     </div>
 
                     {/* Wedding Fields */}
                     {templateType === 'wedding' && (
-                      <div className="space-y-4 border-t border-[#3d3328] pt-4">
+                      <div className="space-y-4 border-t border-theme-border pt-4">
                         {/* Desain Template Picker */}
                         <div>
-                          <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                             Pilih Desain Tema
                           </label>
                           <div className="grid grid-cols-2 gap-2">
@@ -900,7 +900,7 @@ function GenerateContent() {
                               type="button"
                               onClick={() => setDesignKey('sage-green')}
                               className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                                designKey === 'sage-green' ? 'border-[#f5a623] bg-[#f5a623]/10 text-white' : 'border-[#3d3328] bg-[#1a1510]/50 text-[#c9b899]'
+                                designKey === 'sage-green' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                               }`}
                             >
                               <span className="text-base">🌿</span>
@@ -910,7 +910,7 @@ function GenerateContent() {
                               type="button"
                               onClick={() => setDesignKey('floral-pink')}
                               className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                                designKey === 'floral-pink' ? 'border-[#f5a623] bg-[#f5a623]/10 text-white' : 'border-[#3d3328] bg-[#1a1510]/50 text-[#c9b899]'
+                                designKey === 'floral-pink' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                               }`}
                             >
                               <span className="text-base">🌸</span>
@@ -920,7 +920,7 @@ function GenerateContent() {
                         </div>
 
                         {/* Mempelai Pria */}
-                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Detail Mempelai Pria</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Mempelai Pria</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
@@ -928,7 +928,7 @@ function GenerateContent() {
                             placeholder="Nama Lengkap Pria"
                             value={groomName}
                             onChange={(e) => setGroomName(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                           <input
                             type="text"
@@ -936,7 +936,7 @@ function GenerateContent() {
                             placeholder="Panggilan"
                             value={groomNickname}
                             onChange={(e) => setGroomNickname(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -946,7 +946,7 @@ function GenerateContent() {
                             placeholder="Nama Ayah Pria"
                             value={groomFather}
                             onChange={(e) => setGroomFather(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                           <input
                             type="text"
@@ -954,19 +954,19 @@ function GenerateContent() {
                             placeholder="Nama Ibu Pria"
                             value={groomMother}
                             onChange={(e) => setGroomMother(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                         </div>
 
                         {/* Foto Mempelai Pria */}
-                        <div className="text-[9px] font-bold text-[#c9b899] uppercase tracking-wider">Foto Pria</div>
-                        <div className="flex gap-2.5 items-center bg-[#1a1510] p-2.5 rounded-xl border border-[#3d3328]">
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-[#3d3328] bg-[#221d16] flex-shrink-0 flex items-center justify-center text-[9px] text-[#7a6a55]">
+                        <div className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Foto Pria</div>
+                        <div className="flex gap-2.5 items-center bg-theme-bg p-2.5 rounded-xl border border-theme-border">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[9px] text-theme-text-muted">
                             {groomImage ? <img src={groomImage} className="w-full h-full object-cover" /> : 'No image'}
                           </div>
                           <div className="flex-grow flex flex-col gap-1">
                             <div className="flex gap-1.5">
-                              <label className="flex-1 bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-colors">
+                              <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-colors">
                                 {isUploadingGroomImage ? 'Uploading...' : 'Upload'}
                                 <input
                                   type="file"
@@ -979,7 +979,7 @@ function GenerateContent() {
                                 type="button"
                                 onClick={() => handleGenerateAIImage('groom')}
                                 disabled={isGeneratingGroomImage}
-                                className="flex-1 bg-[#c0623a]/90 hover:bg-[#c0623a] text-white text-[9px] font-bold py-1 px-2 rounded transition-colors"
+                                className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors"
                               >
                                 {isGeneratingGroomImage ? 'Generating...' : 'AI Avatar'}
                               </button>
@@ -988,7 +988,7 @@ function GenerateContent() {
                         </div>
 
                         {/* Mempelai Wanita */}
-                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Detail Mempelai Wanita</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Mempelai Wanita</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
@@ -996,7 +996,7 @@ function GenerateContent() {
                             placeholder="Nama Lengkap Wanita"
                             value={brideName}
                             onChange={(e) => setBrideName(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                           <input
                             type="text"
@@ -1004,7 +1004,7 @@ function GenerateContent() {
                             placeholder="Panggilan"
                             value={brideNickname}
                             onChange={(e) => setBrideNickname(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -1014,7 +1014,7 @@ function GenerateContent() {
                             placeholder="Nama Ayah Wanita"
                             value={brideFather}
                             onChange={(e) => setBrideFather(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                           <input
                             type="text"
@@ -1022,19 +1022,19 @@ function GenerateContent() {
                             placeholder="Nama Ibu Wanita"
                             value={brideMother}
                             onChange={(e) => setBrideMother(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                         </div>
 
                         {/* Foto Mempelai Wanita */}
-                        <div className="text-[9px] font-bold text-[#c9b899] uppercase tracking-wider">Foto Wanita</div>
-                        <div className="flex gap-2.5 items-center bg-[#1a1510] p-2.5 rounded-xl border border-[#3d3328]">
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-[#3d3328] bg-[#221d16] flex-shrink-0 flex items-center justify-center text-[9px] text-[#7a6a55]">
+                        <div className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Foto Wanita</div>
+                        <div className="flex gap-2.5 items-center bg-theme-bg p-2.5 rounded-xl border border-theme-border">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[9px] text-theme-text-muted">
                             {brideImage ? <img src={brideImage} className="w-full h-full object-cover" /> : 'No image'}
                           </div>
                           <div className="flex-grow flex flex-col gap-1">
                             <div className="flex gap-1.5">
-                              <label className="flex-1 bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-colors">
+                              <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-colors">
                                 {isUploadingBrideImage ? 'Uploading...' : 'Upload'}
                                 <input
                                   type="file"
@@ -1047,7 +1047,7 @@ function GenerateContent() {
                                 type="button"
                                 onClick={() => handleGenerateAIImage('bride')}
                                 disabled={isGeneratingBrideImage}
-                                className="flex-1 bg-[#c0623a]/90 hover:bg-[#c0623a] text-white text-[9px] font-bold py-1 px-2 rounded transition-colors"
+                                className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors"
                               >
                                 {isGeneratingBrideImage ? 'Generating...' : 'AI Avatar'}
                               </button>
@@ -1056,12 +1056,12 @@ function GenerateContent() {
                         </div>
 
                         {/* Kisah Cinta (Story) Builder */}
-                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Kisah Cinta (Timeline)</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Kisah Cinta (Timeline)</div>
                         {storyList.length > 0 && (
-                          <div className="space-y-1 bg-[#1a1510] p-2 rounded-xl border border-[#3d3328] max-h-[120px] overflow-y-auto">
+                          <div className="space-y-1 bg-theme-bg p-2 rounded-xl border border-theme-border max-h-[120px] overflow-y-auto">
                             {storyList.map((story, sIdx) => (
-                              <div key={sIdx} className="flex items-center justify-between bg-[#2a2319]/80 px-2.5 py-1.5 rounded-lg border border-[#3d3328] text-[9px]">
-                                <span className="truncate text-[#f5e6c8] font-bold">{story.date} - {story.title}</span>
+                              <div key={sIdx} className="flex items-center justify-between bg-theme-card/80 px-2.5 py-1.5 rounded-lg border border-theme-border text-[9px]">
+                                <span className="truncate text-theme-text font-bold">{story.date} - {story.title}</span>
                                 <button
                                   type="button"
                                   onClick={() => setStoryList(storyList.filter((_, i) => i !== sIdx))}
@@ -1074,21 +1074,21 @@ function GenerateContent() {
                           </div>
                         )}
                         
-                        <div className="bg-[#1a1510]/50 p-2.5 rounded-xl border border-[#3d3328] space-y-2">
+                        <div className="bg-theme-bg/50 p-2.5 rounded-xl border border-theme-border space-y-2">
                           <div className="grid grid-cols-2 gap-1.5">
                             <input
                               type="text"
                               placeholder="Tahun / Tanggal"
                               value={newStoryDate}
                               onChange={(e) => setNewStoryDate(e.target.value)}
-                              className="block w-full px-2 py-1 bg-[#1a1510] border border-[#3d3328] rounded-lg text-[9px] text-white focus:outline-none"
+                              className="block w-full px-2 py-1 bg-theme-bg border border-theme-border rounded-lg text-[9px] text-theme-text placeholder-theme-text-muted focus:outline-none"
                             />
                             <input
                               type="text"
                               placeholder="Judul Kejadian"
                               value={newStoryTitle}
                               onChange={(e) => setNewStoryTitle(e.target.value)}
-                              className="block w-full px-2 py-1 bg-[#1a1510] border border-[#3d3328] rounded-lg text-[9px] text-white focus:outline-none"
+                              className="block w-full px-2 py-1 bg-theme-bg border border-theme-border rounded-lg text-[9px] text-theme-text placeholder-theme-text-muted focus:outline-none"
                             />
                           </div>
                           <textarea
@@ -1096,17 +1096,17 @@ function GenerateContent() {
                             value={newStoryDesc}
                             onChange={(e) => setNewStoryDesc(e.target.value)}
                             rows={2}
-                            className="block w-full px-2 py-1 bg-[#1a1510] border border-[#3d3328] rounded-lg text-[9px] text-white focus:outline-none resize-none"
+                            className="block w-full px-2 py-1 bg-theme-bg border border-theme-border rounded-lg text-[9px] text-theme-text placeholder-theme-text-muted focus:outline-none resize-none"
                           />
                           <div className="flex justify-between items-center gap-1.5">
-                            <label className="bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white text-[8px] font-bold py-1 px-2 rounded cursor-pointer">
+                            <label className="bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[8px] font-bold py-1 px-2 rounded cursor-pointer">
                               {isUploadingStoryImage ? 'Uploading...' : 'Pilih Foto'}
                               <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => handleUploadImage(e.target.files[0], 'story')}
-                              />
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleUploadImage(e.target.files[0], 'story')}
+                                />
                             </label>
                             {newStoryImage && <span className="text-[8px] text-emerald-400 truncate max-w-[80px]">Foto siap</span>}
                             <button
@@ -1127,7 +1127,7 @@ function GenerateContent() {
                                 setNewStoryDesc('');
                                 setNewStoryImage('');
                               }}
-                              className="bg-[#c0623a] text-white text-[8px] font-bold py-1 px-2.5 rounded hover:bg-[#a8502d] transition-colors"
+                              className="bg-theme-accent text-theme-accent-text text-[8px] font-bold py-1 px-2.5 rounded hover:bg-theme-accent-hover transition-colors"
                             >
                               Tambah
                             </button>
@@ -1135,14 +1135,14 @@ function GenerateContent() {
                         </div>
 
                         {/* Akad Nikah */}
-                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Acara Akad Nikah</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Akad Nikah</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="date"
                             required
                             value={akadDate}
                             onChange={(e) => setAkadDate(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
                           />
                           <input
                             type="text"
@@ -1150,7 +1150,7 @@ function GenerateContent() {
                             placeholder="Jam Akad (09:00 - Selesai)"
                             value={akadTime}
                             onChange={(e) => setAkadTime(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                         </div>
                         <input
@@ -1159,25 +1159,25 @@ function GenerateContent() {
                           placeholder="Lokasi Akad (Masjid Agung Jambi)"
                           value={akadLocation}
                           onChange={(e) => setAkadLocation(e.target.value)}
-                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="Link Google Maps Akad (Opsional)"
                           value={akadMaps}
                           onChange={(e) => setAkadMaps(e.target.value)}
-                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                         />
 
                         {/* Resepsi */}
-                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Acara Resepsi</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Resepsi</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="date"
                             required
                             value={resepsiDate}
                             onChange={(e) => setResepsiDate(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
                           />
                           <input
                             type="text"
@@ -1185,7 +1185,7 @@ function GenerateContent() {
                             placeholder="Jam Resepsi (11:00 - 13:00)"
                             value={resepsiTime}
                             onChange={(e) => setResepsiTime(e.target.value)}
-                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                         </div>
                         <input
@@ -1194,39 +1194,39 @@ function GenerateContent() {
                           placeholder="Lokasi Resepsi (Gedung Serbaguna)"
                           value={resepsiLocation}
                           onChange={(e) => setResepsiLocation(e.target.value)}
-                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="Link Google Maps Resepsi (Opsional)"
                           value={resepsiMaps}
                           onChange={(e) => setResepsiMaps(e.target.value)}
-                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                         />
 
                         {/* Kado Digital */}
-                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Kado Digital (Opsional)</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Kado Digital (Opsional)</div>
                         <div className="grid grid-cols-3 gap-2">
                           <input
                             type="text"
                             placeholder="Bank (BCA)"
                             value={giftBank}
                             onChange={(e) => setGiftBank(e.target.value)}
-                            className="block w-full px-2 py-1.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-[10px] text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-2 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                           <input
                             type="text"
                             placeholder="No Rekening"
                             value={giftAccount}
                             onChange={(e) => setGiftAccount(e.target.value)}
-                            className="block w-full px-2 py-1.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-[10px] text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-2 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                           <input
                             type="text"
                             placeholder="Atas Nama"
                             value={giftHolder}
                             onChange={(e) => setGiftHolder(e.target.value)}
-                            className="block w-full px-2 py-1.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-[10px] text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                            className="block w-full px-2 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1234,7 +1234,7 @@ function GenerateContent() {
 
                     {/* Prompt input */}
                     <div>
-                      <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                      <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                         {templateType === 'wedding' ? 'Preferensi Kutipan / Doa Pembuka (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
                       </label>
                       <textarea
@@ -1244,7 +1244,7 @@ function GenerateContent() {
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         disabled={isGenerating}
-                        className="block w-full px-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none resize-none leading-relaxed"
+                        className="block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
                       />
                     </div>
                   </form>
@@ -1257,11 +1257,11 @@ function GenerateContent() {
           {pageData && activeTab === 'preview' && (
             <div className="w-full flex-grow flex flex-col">
               {/* Draft Info & Re-edit trigger */}
-              <div className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-4 mb-4">
+              <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 mb-4">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="text-[9px] font-bold text-[#c9b899] uppercase tracking-wider">Proyek Terpilih</div>
-                    <div className="text-xs font-bold text-white mt-0.5">{name}</div>
+                    <div className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Proyek Terpilih</div>
+                    <div className="text-xs font-bold text-theme-text mt-0.5">{name}</div>
                   </div>
                   <button
                     type="button"
@@ -1269,7 +1269,7 @@ function GenerateContent() {
                       setPageData(null);
                       setActiveTab('edit');
                     }}
-                    className="text-[10px] text-[#f5a623] hover:text-[#e8951a] font-bold transition-colors"
+                    className="text-[10px] text-theme-accent hover:text-theme-accent-hover font-bold transition-colors"
                   >
                     ← Edit Baru
                   </button>
@@ -1277,13 +1277,13 @@ function GenerateContent() {
               </div>
 
               {/* URL Customization */}
-              <form id="publish-form" onSubmit={handlePublish} className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-4 mb-4 space-y-3.5">
+              <form id="publish-form" onSubmit={handlePublish} className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 mb-4 space-y-3.5">
                 <div>
-                  <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                  <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                     Tentukan Custom Slug URL
                   </label>
                   <div className="relative flex items-center">
-                    <span className="absolute left-3 text-[#7a6a55] text-xs select-none">/p/</span>
+                    <span className="absolute left-3 text-theme-text-muted text-xs select-none">/p/</span>
                     <input
                       type="text"
                       required
@@ -1291,19 +1291,19 @@ function GenerateContent() {
                       value={slug}
                       onChange={(e) => setSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
                       disabled={isPublishing}
-                      className="block w-full pl-8 pr-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none transition-colors"
+                      className="block w-full pl-8 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
-                <div className="bg-[#1a1510] border border-[#3d3328] rounded-xl p-3 flex justify-between items-center text-[10px] font-bold text-[#c9b899]">
+                <div className="bg-theme-bg border border-theme-border rounded-xl p-3 flex justify-between items-center text-[10px] font-bold text-theme-text-sec">
                   <span>Biaya: Rp {currentCost.toLocaleString('id-ID')}</span>
                   <span>Saldo Anda: <span className={(profile?.balance ?? 0) < currentCost ? 'text-red-400' : 'text-emerald-400'}>Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}</span></span>
                 </div>
               </form>
 
               {/* Viewport for preview */}
-              <div className="border border-[#3d3328] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
+              <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
                 {templateType === 'wedding' ? (
                   <iframe
                     ref={iframeRef}
@@ -1329,17 +1329,17 @@ function GenerateContent() {
         </div>
 
         {/* Fixed Sticky Action Bar at the Bottom */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#221d16]/95 backdrop-blur-md border-t border-[#3d3328] p-4 z-40 flex flex-col gap-2 shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 backdrop-blur-md border-t border-theme-border p-4 z-40 flex flex-col gap-2 shadow-2xl transition-theme">
           {(!pageData || activeTab === 'edit') ? (
             <button
               type="submit"
               form="generate-form"
               disabled={isGenerating || isFormInvalid()}
-              className="w-full bg-[#f5a623] hover:bg-[#e8951a] disabled:opacity-50 text-[#1a1510] font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+              className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               {isGenerating ? (
                 <>
-                  <div className="h-4 w-4 rounded-full border-2 border-[#1a1510]/20 border-t-[#1a1510] animate-spin"></div>
+                  <div className="h-4 w-4 rounded-full border-2 border-theme-accent-text/20 border-t-theme-accent-text animate-spin"></div>
                   <span>Sedang Merancang Halaman...</span>
                 </>
               ) : (
@@ -1373,29 +1373,29 @@ function GenerateContent() {
       </main>
       {/* Template Selection Modal */}
       {isTemplateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme-bg/85 backdrop-blur-md animate-fadeIn">
+          <div className="bg-theme-surface border border-theme-border rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+            <div className="p-6 border-b border-theme-border flex justify-between items-center bg-theme-surface/50">
               <div>
-                <h3 className="text-lg font-bold text-white">Galeri Template & Layanan</h3>
-                <p className="text-xs text-slate-500 mt-1">Pilih tipe landing page yang ingin Anda rancang</p>
+                <h3 className="text-lg font-bold text-theme-text">Galeri Template & Layanan</h3>
+                <p className="text-xs text-theme-text-muted mt-1">Pilih tipe landing page yang ingin Anda rancang</p>
               </div>
               <button 
                 onClick={() => setIsTemplateModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-2 text-theme-text-sec hover:text-theme-text bg-theme-bg/50 hover:bg-theme-bg rounded-xl transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Modal Filters */}
-            <div className="px-6 py-4 bg-slate-900/20 border-b border-slate-850 flex gap-2 overflow-x-auto scrollbar-none">
+            <div className="px-6 py-4 bg-theme-surface/20 border-b border-theme-border flex gap-2 overflow-x-auto scrollbar-none">
               <button
                 onClick={() => setSelectedCategory('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  selectedCategory === 'all' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
                 }`}
               >
                 Semua Kategori
@@ -1403,7 +1403,7 @@ function GenerateContent() {
               <button
                 onClick={() => setSelectedCategory('wedding')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === 'wedding' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  selectedCategory === 'wedding' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
                 }`}
               >
                 Undangan
@@ -1411,7 +1411,7 @@ function GenerateContent() {
               <button
                 onClick={() => setSelectedCategory('store')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === 'store' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  selectedCategory === 'store' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
                 }`}
               >
                 E-Commerce / Toko
@@ -1419,7 +1419,7 @@ function GenerateContent() {
             </div>
 
             {/* Modal Content - Product Cards Grid */}
-            <div className="p-6 overflow-y-auto space-y-4 flex-grow bg-slate-900/30">
+            <div className="p-6 overflow-y-auto space-y-4 flex-grow bg-theme-surface/30">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {displayProducts
                   .filter(p => {
@@ -1445,23 +1445,23 @@ function GenerateContent() {
                         }}
                         className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${
                           !isActive 
-                            ? 'bg-slate-900/40 border-slate-850 opacity-60 cursor-not-allowed select-none'
+                            ? 'bg-theme-surface/40 border-theme-border opacity-60 cursor-not-allowed select-none'
                             : isSelected
-                              ? 'bg-indigo-950/20 border-indigo-500 shadow-lg shadow-indigo-500/5 cursor-pointer scale-[1.01]'
-                              : 'bg-slate-950 border-slate-800 hover:border-slate-700 hover:bg-slate-900/10 cursor-pointer hover:scale-[1.01]'
+                              ? 'bg-theme-accent/10 border-theme-accent shadow-lg shadow-theme-accent/5 cursor-pointer scale-[1.01]'
+                              : 'bg-theme-bg border-theme-border hover:border-theme-accent hover:bg-theme-surface/10 cursor-pointer hover:scale-[1.01]'
                         }`}
                       >
                         {/* Glow effect on hover if active */}
                         {isActive && (
                           <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -z-10 transition-opacity duration-300 ${
-                            isSelected ? 'bg-indigo-500/10 opacity-100' : 'bg-indigo-500/5 opacity-0 group-hover:opacity-100'
+                            isSelected ? 'bg-theme-accent/10 opacity-100' : 'bg-theme-accent/5 opacity-0 group-hover:opacity-100'
                           }`} />
                         )}
 
                         <div>
                           <div className="flex justify-between items-start mb-4">
                             <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl shadow-sm ${
-                              isSelected ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-300'
+                              isSelected ? 'bg-theme-accent/20 text-theme-accent' : 'bg-theme-card text-theme-text-sec'
                             }`}>
                               {product.id === 'wedding' ? '🌸' : '🛍️'}
                             </div>
@@ -1473,17 +1473,17 @@ function GenerateContent() {
                               </span>
                             ) : (
                               isSelected && (
-                                <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded">
+                                <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-theme-accent/20 border border-theme-accent/30 text-theme-accent rounded">
                                   Aktif
                                 </span>
                               )
                             )}
                           </div>
 
-                          <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
+                          <h4 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors">
                             {product.name}
                           </h4>
-                          <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                          <p className="text-xs text-theme-text-muted mt-1.5 leading-relaxed">
                             {product.description || (product.id === 'wedding' 
                               ? 'Undangan pernikahan digital premium dengan fitur interaktif.'
                               : 'Landing page e-commerce instan untuk katalog dagangan.')}
@@ -1491,9 +1491,9 @@ function GenerateContent() {
                         </div>
 
                         {/* Price Info */}
-                        <div className="mt-6 pt-4 border-t border-slate-800/80 flex justify-between items-center">
-                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Biaya Publikasi</span>
-                          <span className="text-xs font-bold text-white">
+                        <div className="mt-6 pt-4 border-t border-theme-border flex justify-between items-center">
+                          <span className="text-[10px] text-theme-text-muted uppercase tracking-wider font-semibold">Biaya Publikasi</span>
+                          <span className="text-xs font-bold text-theme-text">
                             Rp {product.cost?.toLocaleString('id-ID') || '10.000'}
                           </span>
                         </div>
@@ -1504,10 +1504,10 @@ function GenerateContent() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-800/80 bg-slate-950 flex justify-end">
+            <div className="p-6 border-t border-theme-border bg-theme-bg flex justify-end">
               <button
                 onClick={() => setIsTemplateModalOpen(false)}
-                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition-colors"
+                className="px-5 py-2.5 bg-theme-card hover:bg-theme-surface text-theme-text rounded-xl text-xs font-semibold transition-colors"
               >
                 Tutup Galeri
               </button>
@@ -1523,8 +1523,8 @@ function GenerateContent() {
 export default function GeneratePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="h-12 w-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-theme-bg">
+        <div className="h-12 w-12 rounded-full border-4 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
       </div>
     }>
       <GenerateContent />

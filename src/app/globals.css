@@ -1,51 +1,113 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 
-/* ============================================
-   SILUET DASHBOARD – RETRO WARM THEME
-   Core Colors: Warm Cream / Amber / Brown / Rust
-   ============================================ */
+@theme {
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-surface: var(--theme-surface);
+  --color-theme-card: var(--theme-card);
+  --color-theme-border: var(--theme-border);
+  --color-theme-border-alt: var(--theme-border-alt);
+  
+  --color-theme-text: var(--theme-text);
+  --color-theme-text-sec: var(--theme-text-sec);
+  --color-theme-text-muted: var(--theme-text-muted);
+  
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-accent-hover: var(--theme-accent-hover);
+  --color-theme-accent-text: var(--theme-accent-text);
+}
+
+/* ========================================================
+   THEME STYLING VARIABLES (Clean, Retro Warm, Classic Dark)
+   ======================================================== */
 
 :root {
-  --retro-bg:       #1a1510;  /* Deep warm dark brown */
-  --retro-surface:  #221d16;  /* Surface panels */
-  --retro-card:     #2a2319;  /* Card background */
-  --retro-border:   #3d3328;  /* Borders */
-  --retro-border-2: #4a3e2e;  /* Slightly lighter border */
+  /* Default: Clean White Theme */
+  --theme-bg:             #fcfbf9;  /* Off-white background */
+  --theme-surface:        #ffffff;  /* Pure white panel background */
+  --theme-card:           #ffffff;  /* Card background */
+  --theme-border:         #e7e3dc;  /* Neutral warm border */
+  --theme-border-alt:     #f4f1eb;  /* Very soft warm divider */
+  
+  --theme-text:           #1c1917;  /* Deep warm charcoal text */
+  --theme-text-sec:       #57534e;  /* Stone-600 secondary text */
+  --theme-text-muted:     #a8a29e;  /* Stone-400 muted text */
+  
+  --theme-accent:         #c0623a;  /* Accent warm rust */
+  --theme-accent-hover:   #a04a25;  /* Darker rust */
+  --theme-accent-text:    #ffffff;  /* White text on accent */
+  
+  --grain-opacity:        0.04;
+}
 
-  --retro-amber:    #f5a623;  /* Primary amber */
-  --retro-amber-2:  #e8951a;  /* Darker amber */
-  --retro-cream:    #f5e6c8;  /* Warm cream text */
-  --retro-cream-2:  #c9b899;  /* Muted cream */
-  --retro-rust:     #c0623a;  /* Accent rust/orange */
-  --retro-sage:     #7c9a78;  /* Muted sage green accent */
-  --retro-muted:    #7a6a55;  /* Muted text */
+[data-theme="retro"] {
+  /* Retro Warm Theme */
+  --theme-bg:             #1a1510;  /* Deep warm dark brown */
+  --theme-surface:        #221d16;  /* Surface panels */
+  --theme-card:           #2a2319;  /* Card background */
+  --theme-border:         #3d3328;  /* Borders */
+  --theme-border-alt:     #4a3e2e;  /* Slightly lighter border */
+  
+  --theme-text:           #f5e6c8;  /* Warm cream text */
+  --theme-text-sec:       #c9b899;  /* Muted cream */
+  --theme-text-muted:     #7a6a55;  /* Muted text */
+  
+  --theme-accent:         #f5a623;  /* Primary amber */
+  --theme-accent-hover:   #e8951a;  /* Darker amber */
+  --theme-accent-text:    #1a1510;  /* Dark text on accent */
+  
+  --grain-opacity:        0.18;
+}
+
+[data-theme="classic-dark"] {
+  /* Classic Dark Theme */
+  --theme-bg:             #090d16;  /* Deep space navy background */
+  --theme-surface:        #0f172a;  /* Slate-900 panels */
+  --theme-card:           #1e293b;  /* Slate-800 cards */
+  --theme-border:         #1e293b;  /* Dark slate borders */
+  --theme-border-alt:     #334155;  /* Secondary divider slate-700 */
+  
+  --theme-text:           #f8fafc;  /* Clean white text */
+  --theme-text-sec:       #cbd5e1;  /* Light slate-300 secondary text */
+  --theme-text-muted:     #64748b;  /* Slate-500 muted text */
+  
+  --theme-accent:         #3b82f6;  /* Slate blue/indigo accent */
+  --theme-accent-hover:   #2563eb;  /* Darker blue */
+  --theme-accent-text:    #ffffff;  /* White text on accent */
+  
+  --grain-opacity:        0.06;
 }
 
 body {
-  background: var(--retro-bg);
-  color: var(--retro-cream);
+  background: var(--theme-bg);
+  color: var(--theme-text);
   font-family: 'Space Grotesk', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Scrollbar */
+/* Custom transitions for clean UI theme shifts */
+.transition-theme {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease;
+}
+
+/* Scrollbar styling linked to theme */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--retro-bg);
+  background: var(--theme-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--retro-border-2);
+  background: var(--theme-border-alt);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--retro-amber);
+  background: var(--theme-accent);
 }
 
-/* Retro grain texture overlay */
+/* Dynamic grain overlay opacity */
 body::before {
   content: '';
   position: fixed;
@@ -53,5 +115,6 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
-  opacity: 0.4;
+  opacity: var(--grain-opacity);
+  transition: opacity 0.3s ease;
 }
