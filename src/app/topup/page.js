@@ -122,51 +122,51 @@ export default function TopUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#1a1510] flex flex-col">
       <Sidebar />
 
-      {/* Main Content */}
-      <main className="flex-grow p-6 md:p-8 pt-24 md:pt-8 overflow-y-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Top Up Saldo</h1>
-          <p className="text-slate-400 text-sm mt-1">Tambah saldo Siluet untuk mendeploy website landing page Anda</p>
+      {/* Main Content - Mobile-First */}
+      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-[#221d16] border-x border-[#3d3328] relative">
+        <div className="mb-6">
+          <h1 className="text-2xl font-black text-white tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Top Up Saldo</h1>
+          <p className="text-[#c9b899] text-xs mt-1">Tambah saldo Siluet untuk mendeploy website landing page Anda</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="space-y-6">
           {/* Form Top Up */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-4">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl p-4 flex gap-2.5 items-start">
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl p-3.5 flex gap-2.5 items-start">
+                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             {successMessage && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm rounded-xl p-4 flex gap-2.5 items-start">
-                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl p-3.5 flex gap-2.5 items-start">
+                <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <span>{successMessage}</span>
               </div>
             )}
 
             {!activeTransaction ? (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                <form onSubmit={handleCreatePayment} className="space-y-6">
+              <div className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-5">
+                <form onSubmit={handleCreatePayment} className="space-y-5">
                   {/* Amount Selection */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                    <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2.5">
                       Pilih Nominal Saldo
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                    <div className="grid grid-cols-2 gap-2 mb-3">
                       {presetAmounts.map((amt) => (
                         <button
                           key={amt}
                           type="button"
                           onClick={() => setAmount(amt)}
-                          className={`py-3 px-4 rounded-xl text-sm font-semibold border transition-all ${
+                          className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
                             amount === amt
-                              ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/15'
-                              : 'bg-slate-950 border-slate-850 text-slate-300 hover:border-slate-700'
+                              ? 'bg-[#f5a623] border-[#e8951a] text-[#1a1510] shadow-md'
+                              : 'bg-[#1a1510] border-[#3d3328] text-[#c9b899] hover:border-[#7a6a55]'
                           }`}
                         >
                           Rp {amt.toLocaleString('id-ID')}
@@ -175,7 +175,7 @@ export default function TopUpPage() {
                     </div>
 
                     <div className="relative flex items-center">
-                      <span className="absolute left-4 text-slate-500 text-sm font-medium">Rp</span>
+                      <span className="absolute left-3.5 text-[#7a6a55] text-xs font-semibold">Rp</span>
                       <input
                         type="number"
                         required
@@ -184,30 +184,34 @@ export default function TopUpPage() {
                         value={amount || ''}
                         onChange={(e) => setAmount(Number(e.target.value))}
                         disabled={isSubmitting}
-                        className="block w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-850 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                        className="block w-full pl-9 pr-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-white placeholder-[#7a6a55] focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
 
                   {/* Channel Selection */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                    <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2.5">
                       Metode Pembayaran (Virtual Account)
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
                       {paymentChannels.map((ch) => (
                         <button
                           key={ch.code}
                           type="button"
                           onClick={() => setChannel(ch.code)}
-                          className={`py-3 px-4 rounded-xl text-sm font-semibold border flex items-center justify-between transition-all ${
+                          className={`w-full py-2.5 px-3.5 rounded-xl text-xs font-bold border flex items-center justify-between transition-all ${
                             channel === ch.code
-                              ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/15'
-                              : 'bg-slate-950 border-slate-850 text-slate-300 hover:border-slate-700'
+                              ? 'bg-[#f5a623] border-[#e8951a] text-[#1a1510] shadow-md'
+                              : 'bg-[#1a1510] border-[#3d3328] text-[#c9b899] hover:border-[#7a6a55]'
                           }`}
                         >
                           <span>{ch.name}</span>
-                          <span className="text-[10px] bg-slate-900 border border-slate-850 text-indigo-400 px-2 py-0.5 rounded font-mono">
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono ${
+                            channel === ch.code
+                              ? 'bg-[#1a1510]/15 border border-[#1a1510]/10 text-[#1a1510]'
+                              : 'bg-[#1a1510] border border-[#3d3328] text-[#f5a623]'
+                          }`}>
                             {ch.code}
                           </span>
                         </button>
@@ -218,7 +222,7 @@ export default function TopUpPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting || !amount}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold text-sm py-3 px-4 rounded-xl shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
+                    className="w-full bg-[#f5a623] hover:bg-[#e8951a] text-[#1a1510] font-black text-xs py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
                   >
                     {isSubmitting ? (
                       <>
@@ -236,46 +240,46 @@ export default function TopUpPage() {
               </div>
             ) : (
               /* Menampilkan VA Number */
-              <div className="bg-slate-900/50 border border-slate-850 rounded-2xl p-6 space-y-6">
+              <div className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-5 space-y-5">
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-1">Menunggu Pembayaran</h3>
-                  <p className="text-xs text-slate-400">Silakan lakukan transfer ke nomor Virtual Account di bawah</p>
+                  <h3 className="text-sm font-bold text-white mb-0.5" style={{ fontFamily: "'Sora', sans-serif" }}>Menunggu Pembayaran</h3>
+                  <p className="text-[10px] text-[#c9b899]">Silakan lakukan transfer ke nomor Virtual Account di bawah</p>
                 </div>
 
-                <div className="bg-slate-950 border border-slate-850 rounded-xl p-5 space-y-4">
-                  <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
+                <div className="bg-[#1a1510] border border-[#3d3328] rounded-xl p-4 space-y-3">
+                  <div className="flex justify-between items-center text-[10px] font-semibold text-[#c9b899]">
                     <span>Order ID:</span>
                     <span className="font-mono text-white">{activeTransaction.order_id}</span>
                   </div>
                   
-                  <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
+                  <div className="flex justify-between items-center text-[10px] font-semibold text-[#c9b899]">
                     <span>Nominal Pembayaran:</span>
-                    <span className="text-white text-base font-bold">
+                    <span className="text-white text-sm font-bold">
                       Rp {activeTransaction.amount.toLocaleString('id-ID')}
                     </span>
                   </div>
 
-                  <div className="border-t border-slate-850/80 pt-4 flex flex-col gap-1">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Nomor Virtual Account ({channel})</span>
-                    <span className="text-2xl font-mono font-extrabold text-indigo-400 tracking-wide select-all">
+                  <div className="border-t border-[#3d3328] pt-3.5 flex flex-col gap-1">
+                    <span className="text-[9px] text-[#7a6a55] uppercase tracking-wider font-bold">Nomor Virtual Account ({channel})</span>
+                    <span className="text-xl font-mono font-extrabold text-[#f5a623] tracking-wide select-all">
                       {(activeTransaction.va_number || '').trim() || '88301234567890'}
                     </span>
                   </div>
                 </div>
 
                 {/* Local Dev Simulator Helper */}
-                <div className="bg-amber-950/10 border border-amber-900/20 rounded-xl p-5 space-y-3">
-                  <div className="flex gap-2 items-center text-xs font-bold text-amber-400 uppercase tracking-wider">
-                    <Smartphone className="h-4 w-4" />
+                <div className="bg-[#f5a623]/5 border border-[#f5a623]/10 rounded-xl p-4 space-y-2">
+                  <div className="flex gap-2 items-center text-[10px] font-bold text-[#f5a623] uppercase tracking-wider">
+                    <Smartphone className="h-3.5 w-3.5" />
                     <span>Simulator Pembayaran (Lokal Dev)</span>
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-[10px] text-[#c9b899] leading-relaxed">
                     Karena Anda berada di lingkungan pengembangan lokal, Anda dapat langsung menyimulasikan konfirmasi pembayaran sukses tanpa perlu mentransfer uang asli.
                   </p>
                   <button
                     onClick={handleSimulatePayment}
                     disabled={isSimulating}
-                    className="w-full mt-1 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="w-full mt-1 bg-[#c0623a] hover:bg-[#a8502d] text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     {isSimulating ? (
                       <>
@@ -290,7 +294,7 @@ export default function TopUpPage() {
 
                 <button
                   onClick={() => setActiveTransaction(null)}
-                  className="w-full border border-slate-800 text-slate-400 hover:text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition-all"
+                  className="w-full border border-[#3d3328] text-[#c9b899] hover:text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition-all"
                 >
                   Batal / Kembali
                 </button>
@@ -299,28 +303,26 @@ export default function TopUpPage() {
           </div>
 
           {/* Pricing Info Card */}
-          <div className="space-y-6">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-              <h3 className="text-base font-bold text-white mb-4">Informasi Biaya</h3>
-              <ul className="space-y-3.5 text-xs text-slate-400">
-                <li className="flex justify-between items-center py-2 border-b border-slate-850/60">
-                  <span>Generate Landing Page AI</span>
-                  <span className="font-semibold text-emerald-400">Gratis (Draft)</span>
-                </li>
-                <li className="flex justify-between items-center py-2 border-b border-slate-850/60">
-                  <span>Publikasi Website</span>
-                  <span className="font-semibold text-white">Rp 10.000 / Halaman</span>
-                </li>
-                <li className="flex justify-between items-center py-2 border-b border-slate-850/60">
-                  <span>Hosting Website</span>
-                  <span className="font-semibold text-emerald-400">Selamanya Gratis</span>
-                </li>
-                <li className="flex justify-between items-center py-2">
-                  <span>SSL & Custom Domain</span>
-                  <span className="font-semibold text-white">Segera Hadir</span>
-                </li>
-              </ul>
-            </div>
+          <div className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-5">
+            <h3 className="text-xs font-bold text-white mb-3" style={{ fontFamily: "'Sora', sans-serif" }}>Informasi Biaya</h3>
+            <ul className="space-y-3 text-xs text-[#c9b899]">
+              <li className="flex justify-between items-center py-1.5 border-b border-[#3d3328]">
+                <span>Generate Landing Page AI</span>
+                <span className="font-semibold text-emerald-400">Gratis (Draft)</span>
+              </li>
+              <li className="flex justify-between items-center py-1.5 border-b border-[#3d3328]">
+                <span>Publikasi Website</span>
+                <span className="font-semibold text-white">Rp 10.000 / Halaman</span>
+              </li>
+              <li className="flex justify-between items-center py-1.5 border-b border-[#3d3328]">
+                <span>Hosting Website</span>
+                <span className="font-semibold text-emerald-400">Selamanya Gratis</span>
+              </li>
+              <li className="flex justify-between items-center py-1.5">
+                <span>SSL & Custom Domain</span>
+                <span className="font-semibold text-white">Segera Hadir</span>
+              </li>
+            </ul>
           </div>
         </div>
       </main>

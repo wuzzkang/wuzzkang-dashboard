@@ -96,80 +96,72 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#1a1510] flex flex-col">
       <Sidebar />
 
-      {/* Main Content */}
-      <main className="flex-grow p-6 md:p-8 pt-24 md:pt-8 overflow-y-auto">
+      {/* Main Content - Mobile-First */}
+      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-[#221d16] border-x border-[#3d3328] relative">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Landing Pages</h1>
-            <p className="text-slate-400 text-sm mt-1">Daftar semua landing page Anda yang telah digenerate</p>
+            <h1 className="text-2xl font-black text-white tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Landing Pages</h1>
+            <p className="text-[#c9b899] text-xs mt-1">Daftar semua landing page Anda yang telah digenerate</p>
           </div>
-          
-          <Link
-            href="/generate"
-            className="w-full sm:w-auto justify-center bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-2.5 px-4 rounded-xl shadow-lg shadow-indigo-600/15 transition-all flex items-center gap-2 active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Buat Halaman Baru</span>
-          </Link>
         </div>
 
         {/* Content body */}
         {fetching ? (
           <div className="h-64 flex items-center justify-center">
-            <div className="h-8 w-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
+            <div className="h-8 w-8 rounded-full border-2 border-[#f5a623]/20 border-t-[#f5a623] animate-spin"></div>
           </div>
         ) : error ? (
-          <div className="bg-red-500/10 border border-red-500/25 text-red-400 rounded-2xl p-6 text-center max-w-xl mx-auto">
+          <div className="bg-red-500/10 border border-red-500/25 text-red-400 rounded-2xl p-5 text-center text-xs">
             <p>{error}</p>
           </div>
         ) : projects.length === 0 ? (
-          <div className="border border-dashed border-slate-800 rounded-3xl p-16 text-center max-w-xl mx-auto mt-12 bg-slate-900/10 backdrop-blur-sm">
-            <Globe className="h-16 w-16 text-slate-700 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-slate-200">Belum Ada Halaman</h3>
-            <p className="text-slate-400 text-sm mt-1 max-w-sm mx-auto mb-6">
+          <div className="border border-dashed border-[#3d3328] rounded-3xl p-10 text-center max-w-sm mx-auto mt-8 bg-[#2a2319]/20 backdrop-blur-sm">
+            <Globe className="h-12 w-12 text-[#7a6a55] mx-auto mb-4" />
+            <h3 className="text-base font-bold text-white" style={{ fontFamily: "'Sora', sans-serif" }}>Belum Ada Halaman</h3>
+            <p className="text-[#c9b899] text-xs mt-1 leading-relaxed mb-6">
               Anda belum membuat landing page apapun. Masukkan prompt pertama Anda untuk langsung membuat landing page otomatis!
             </p>
             <Link
               href="/generate"
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold py-3 px-6 rounded-xl shadow-lg transition-all"
+              className="inline-flex items-center gap-2 bg-[#f5a623] hover:bg-[#e8951a] text-[#1a1510] text-xs font-bold py-3 px-5 rounded-xl shadow-lg transition-all"
             >
               <Plus className="h-4 w-4" />
               <span>Buat Sekarang</span>
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all group"
+                className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-5 flex flex-col justify-between hover:border-[#f5a623] transition-all group"
               >
                 <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors">
+                  <div className="flex justify-between items-start mb-2.5">
+                    <h3 className="text-sm font-bold text-white group-hover:text-[#f5a623] transition-colors" style={{ fontFamily: "'Sora', sans-serif" }}>
                       {project.name}
                     </h3>
                     {getStatusBadge(project.status)}
                   </div>
                   
-                  <div className="space-y-3.5 text-sm text-slate-400 mt-4">
+                  <div className="space-y-2 text-xs text-[#c9b899] mt-3">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                      <Calendar className="h-3.5 w-3.5 text-[#7a6a55] flex-shrink-0" />
                       <span>{new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     </div>
 
                     {project.status === 'deployed' && project.live_url && (
                       <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-slate-500 flex-shrink-0" />
+                        <Globe className="h-3.5 w-3.5 text-[#7a6a55] flex-shrink-0" />
                         <a
                           href={project.live_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-400 hover:text-indigo-300 font-medium truncate flex items-center gap-1 hover:underline"
+                          className="text-[#f5a623] hover:text-[#e8951a] font-bold truncate flex items-center gap-1 hover:underline"
                         >
                           <span className="truncate">{project.live_url.replace(/^https?:\/\//, '')}</span>
                           <ExternalLink className="h-3 w-3 flex-shrink-0" />
@@ -179,13 +171,13 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-end gap-3">
+                <div className="mt-5 pt-4 border-t border-[#3d3328] flex items-center justify-end gap-2.5">
                   {project.status === 'deployed' ? (
                     <a
                       href={project.live_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full text-center bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                      className="w-full text-center bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
                     >
                       <span>Lihat Website</span>
                       <ExternalLink className="h-3.5 w-3.5" />
@@ -193,14 +185,14 @@ export default function DashboardPage() {
                   ) : project.status === 'draft' ? (
                     <Link
                       href={`/generate?id=${project.id}`}
-                      className="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
+                      className="w-full text-center bg-[#f5a623] hover:bg-[#e8951a] text-[#1a1510] font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
                     >
                       <span>Publikasikan Halaman</span>
                     </Link>
                   ) : (
                     <Link
                       href="/generate"
-                      className="w-full text-center bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold text-xs py-2.5 px-4 rounded-xl transition-all"
+                      className="w-full text-center bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
                     >
                       Coba Buat Lagi
                     </Link>
@@ -210,6 +202,16 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+
+        {/* Sticky Mobile Fab Button for Creating New Landing Page */}
+        <div className="fixed bottom-6 right-6 z-40 max-w-md mx-auto pointer-events-none w-full pr-12 flex justify-end">
+          <Link
+            href="/generate"
+            className="pointer-events-auto h-12 w-12 rounded-full bg-[#f5a623] hover:bg-[#e8951a] text-[#1a1510] shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+          >
+            <Plus className="h-6 w-6 font-bold" />
+          </Link>
+        </div>
       </main>
     </div>
   );

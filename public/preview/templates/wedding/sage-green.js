@@ -166,7 +166,7 @@ export async function render(pageConfig, guestName) {
                     <p class="text-sm text-slate-500 max-w-md mx-auto mb-10">Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan hadiah kasih, dapat mengirimkannya secara cashless melalui rekening di bawah ini:</p>
                     
                     <div class="bg-[#F8FAF9] rounded-3xl p-8 shadow-sm border border-[#EAF0EC] max-w-sm mx-auto relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 text-wedding-primary/5 text-8xl pointer-events-none font-bold">BANK</div>
+                        <div class="absolute right-6 top-4 text-wedding-primary/5 text-6xl pointer-events-none font-black select-none tracking-widest whitespace-nowrap">BANK</div>
                         <div class="font-bold text-sm text-slate-400 tracking-wider uppercase mb-1">${gift.bank_name}</div>
                         <div class="text-2xl font-mono font-bold text-wedding-primary tracking-wide my-3 select-all cursor-pointer" id="account-number-el">${gift.account_number}</div>
                         <div class="text-sm text-slate-700 font-semibold mb-6">a/n ${gift.account_holder || ''}</div>

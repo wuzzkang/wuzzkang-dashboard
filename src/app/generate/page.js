@@ -131,6 +131,7 @@ function GenerateContent() {
   
   // Preview mode (desktop vs mobile)
   const [previewDevice, setPreviewDevice] = useState('mobile');
+  const [activeTab, setActiveTab] = useState('edit');
 
   // Redirect if not logged in
   useEffect(() => {
@@ -438,6 +439,7 @@ function GenerateContent() {
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '');
         setSlug(suggestedSlug);
+        setActiveTab('preview');
       } else {
         setError(result.error ? Object.values(result.error).flat().join(', ') : 'Gagal menghasilkan landing page.');
       }
@@ -737,50 +739,50 @@ function GenerateContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#1a1510] flex flex-col">
       <Sidebar />
 
-      {/* Main Content Area */}
-      <main className="flex-grow p-6 md:p-8 flex flex-col md:h-screen md:overflow-hidden min-h-screen overflow-y-auto pt-24 md:pt-8">
+      {/* Main Content Area - Mobile Centered Column */}
+      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-[#221d16] border-x border-[#3d3328] relative">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">AI Landing Page Generator</h1>
-          <p className="text-slate-400 text-sm mt-1">Masukkan kata-kata Anda, biarkan AI merancang landing page dinamis</p>
+          <h1 className="text-2xl font-black text-white tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Landing Page</h1>
+          <p className="text-[#c9b899] text-xs mt-1">Masukkan data Anda, biarkan AI merancang halaman instan</p>
         </div>
 
         {/* Success Modal Overlay */}
         {successUrl && (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl relative">
+          <div className="fixed inset-0 bg-[#1a1510]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-[#221d16] border border-[#3d3328] rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
               <div className="h-16 w-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                 <CheckCircle className="h-8 w-8" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Halaman Siap!</h2>
-              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+              <h2 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Sora', sans-serif" }}>Halaman Siap!</h2>
+              <p className="text-[#c9b899] text-xs mb-6 leading-relaxed">
                 Landing page Anda berhasil dipublikasikan secara instan dan kini dapat diakses oleh publik secara online!
               </p>
               
-              <div className="bg-slate-950 border border-slate-800 rounded-xl p-3.5 mb-6 flex items-center justify-between text-sm overflow-hidden gap-3">
-                <span className="text-indigo-400 font-medium truncate select-all">{successUrl}</span>
+              <div className="bg-[#1a1510] border border-[#3d3328] rounded-xl p-3.5 mb-6 flex items-center justify-between text-xs overflow-hidden gap-3">
+                <span className="text-[#f5a623] font-medium truncate select-all">{successUrl}</span>
                 <a
                   href={successUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-shrink-0 text-slate-400 hover:text-white transition-colors"
+                  className="flex-shrink-0 text-[#c9b899] hover:text-white transition-colors"
                 >
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-2">
                 <a
                   href={successUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-1"
+                  className="w-full bg-[#f5a623] hover:bg-[#e8951a] text-[#1a1510] font-bold py-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
                 >
                   <span>Buka Halaman</span>
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </a>
                 <button
                   onClick={() => {
@@ -792,7 +794,7 @@ function GenerateContent() {
                     setSlug('');
                     router.push('/');
                   }}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-sm transition-all"
+                  className="w-full bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white font-semibold py-3 rounded-xl text-xs transition-all"
                 >
                   Kembali ke Dashboard
                 </button>
@@ -801,605 +803,572 @@ function GenerateContent() {
           </div>
         )}
 
-        {/* Content Panels split screen */}
-        <div className="flex-grow flex flex-col lg:flex-row gap-6 lg:overflow-hidden min-h-0 pb-8 lg:pb-0">
-          
-          {/* Left Input Panel */}
-          <div className="w-full lg:w-1/3 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between overflow-y-auto shrink-0">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-bold text-white mb-1">Detail Landing Page</h3>
-                <p className="text-xs text-slate-500">Konfigurasi dasar untuk landing page baru Anda</p>
-              </div>
+        {/* Content Panels Mobile-First Layout */}
+        <div className="flex-grow flex flex-col min-h-0 w-full">
+          {/* Tab Switcher (Only shown if pageData exists) */}
+          {pageData && (
+            <div className="flex bg-[#1a1510] p-1 rounded-xl border border-[#3d3328] mb-4 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveTab('edit')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'edit'
+                    ? 'bg-[#f5a623] text-[#1a1510] shadow'
+                    : 'text-[#c9b899] hover:text-white'
+                }`}
+              >
+                Edit Konten
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('preview')}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === 'preview'
+                    ? 'bg-[#f5a623] text-[#1a1510] shadow'
+                    : 'text-[#c9b899] hover:text-white'
+                }`}
+              >
+                Lihat Preview
+              </button>
+            </div>
+          )}
 
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl p-3.5 flex gap-2.5 items-start">
-                  <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {/* Step 1 Generate Draft */}
-              {!pageData ? (
-                <form onSubmit={handleGenerate} className="space-y-4">
-                  {/* Pilih Tipe Template (Visual Selector Trigger) */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Tipe Layanan / Template
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsTemplateModalOpen(true)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/10 rounded-xl text-left transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
-                          {templateType === 'wedding' ? '🌸' : '🛍️'}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-white">
-                            {templateType === 'wedding' ? 'Undangan Pernikahan' : 'Toko Online / Bisnis'}
-                          </p>
-                          <p className="text-[10px] text-slate-500">
-                            Klik untuk ganti tipe produk/template
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-white transition-colors" />
-                    </button>
+          {/* Tab 1: Edit Form */}
+          {(!pageData || activeTab === 'edit') && (
+            <div className="w-full flex-grow flex flex-col">
+              <div className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-5 flex flex-col overflow-y-auto shrink-0 mb-6 max-h-[62vh] scrollbar-thin">
+                <div className="space-y-5">
+                  <div className="pb-2 border-b border-[#3d3328]">
+                    <h3 className="text-sm font-bold text-white tracking-wide" style={{ fontFamily: "'Sora', sans-serif" }}>Detail Landing Page</h3>
+                    <p className="text-[10px] text-[#c9b899] mt-0.5">Lengkapi formulir untuk membuat pratinjau halaman Anda</p>
                   </div>
 
+                  <form id="generate-form" onSubmit={handleGenerate} className="space-y-4">
+                    {/* Tipe Template Selector */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                        Tipe Layanan / Template
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsTemplateModalOpen(true)}
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] hover:border-[#f5a623] rounded-xl text-left transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-7 w-7 rounded-lg bg-[#f5a623]/10 flex items-center justify-center text-[#f5a623] group-hover:scale-105 transition-transform text-sm">
+                            {templateType === 'wedding' ? '🌸' : '🛍️'}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-white">
+                              {templateType === 'wedding' ? 'Undangan Pernikahan' : 'Toko Online / Bisnis'}
+                            </p>
+                            <p className="text-[9px] text-[#c9b899]">
+                              Klik untuk mengganti tipe produk/template
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-[#7a6a55] group-hover:text-white transition-colors" />
+                      </button>
+                    </div>
+
+                    {/* Nama Halaman / Acara */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                        Nama Halaman / Acara
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder={templateType === 'wedding' ? "Contoh: Pernikahan Budi & Riri" : "Contoh: Kopi Seru Nusantara"}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        disabled={isGenerating}
+                        className="block w-full px-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    {/* Wedding Fields */}
+                    {templateType === 'wedding' && (
+                      <div className="space-y-4 border-t border-[#3d3328] pt-4">
+                        {/* Desain Template Picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                            Pilih Desain Tema
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDesignKey('sage-green')}
+                              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
+                                designKey === 'sage-green' ? 'border-[#f5a623] bg-[#f5a623]/10 text-white' : 'border-[#3d3328] bg-[#1a1510]/50 text-[#c9b899]'
+                              }`}
+                            >
+                              <span className="text-base">🌿</span>
+                              <span className="text-[9px] font-bold">Sage Green</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDesignKey('floral-pink')}
+                              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
+                                designKey === 'floral-pink' ? 'border-[#f5a623] bg-[#f5a623]/10 text-white' : 'border-[#3d3328] bg-[#1a1510]/50 text-[#c9b899]'
+                              }`}
+                            >
+                              <span className="text-base">🌸</span>
+                              <span className="text-[9px] font-bold">Floral Pink</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Mempelai Pria */}
+                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Detail Mempelai Pria</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Lengkap Pria"
+                            value={groomName}
+                            onChange={(e) => setGroomName(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Panggilan"
+                            value={groomNickname}
+                            onChange={(e) => setGroomNickname(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Ayah Pria"
+                            value={groomFather}
+                            onChange={(e) => setGroomFather(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Ibu Pria"
+                            value={groomMother}
+                            onChange={(e) => setGroomMother(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Foto Mempelai Pria */}
+                        <div className="text-[9px] font-bold text-[#c9b899] uppercase tracking-wider">Foto Pria</div>
+                        <div className="flex gap-2.5 items-center bg-[#1a1510] p-2.5 rounded-xl border border-[#3d3328]">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-[#3d3328] bg-[#221d16] flex-shrink-0 flex items-center justify-center text-[9px] text-[#7a6a55]">
+                            {groomImage ? <img src={groomImage} className="w-full h-full object-cover" /> : 'No image'}
+                          </div>
+                          <div className="flex-grow flex flex-col gap-1">
+                            <div className="flex gap-1.5">
+                              <label className="flex-1 bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-colors">
+                                {isUploadingGroomImage ? 'Uploading...' : 'Upload'}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleUploadImage(e.target.files[0], 'groom')}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleGenerateAIImage('groom')}
+                                disabled={isGeneratingGroomImage}
+                                className="flex-1 bg-[#c0623a]/90 hover:bg-[#c0623a] text-white text-[9px] font-bold py-1 px-2 rounded transition-colors"
+                              >
+                                {isGeneratingGroomImage ? 'Generating...' : 'AI Avatar'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mempelai Wanita */}
+                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Detail Mempelai Wanita</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Lengkap Wanita"
+                            value={brideName}
+                            onChange={(e) => setBrideName(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Panggilan"
+                            value={brideNickname}
+                            onChange={(e) => setBrideNickname(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Ayah Wanita"
+                            value={brideFather}
+                            onChange={(e) => setBrideFather(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Ibu Wanita"
+                            value={brideMother}
+                            onChange={(e) => setBrideMother(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Foto Mempelai Wanita */}
+                        <div className="text-[9px] font-bold text-[#c9b899] uppercase tracking-wider">Foto Wanita</div>
+                        <div className="flex gap-2.5 items-center bg-[#1a1510] p-2.5 rounded-xl border border-[#3d3328]">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-[#3d3328] bg-[#221d16] flex-shrink-0 flex items-center justify-center text-[9px] text-[#7a6a55]">
+                            {brideImage ? <img src={brideImage} className="w-full h-full object-cover" /> : 'No image'}
+                          </div>
+                          <div className="flex-grow flex flex-col gap-1">
+                            <div className="flex gap-1.5">
+                              <label className="flex-1 bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-colors">
+                                {isUploadingBrideImage ? 'Uploading...' : 'Upload'}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleUploadImage(e.target.files[0], 'bride')}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleGenerateAIImage('bride')}
+                                disabled={isGeneratingBrideImage}
+                                className="flex-1 bg-[#c0623a]/90 hover:bg-[#c0623a] text-white text-[9px] font-bold py-1 px-2 rounded transition-colors"
+                              >
+                                {isGeneratingBrideImage ? 'Generating...' : 'AI Avatar'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Kisah Cinta (Story) Builder */}
+                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Kisah Cinta (Timeline)</div>
+                        {storyList.length > 0 && (
+                          <div className="space-y-1 bg-[#1a1510] p-2 rounded-xl border border-[#3d3328] max-h-[120px] overflow-y-auto">
+                            {storyList.map((story, sIdx) => (
+                              <div key={sIdx} className="flex items-center justify-between bg-[#2a2319]/80 px-2.5 py-1.5 rounded-lg border border-[#3d3328] text-[9px]">
+                                <span className="truncate text-[#f5e6c8] font-bold">{story.date} - {story.title}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setStoryList(storyList.filter((_, i) => i !== sIdx))}
+                                  className="text-red-400 hover:text-red-300 font-bold ml-2 text-[9px]"
+                                >
+                                  Hapus
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <div className="bg-[#1a1510]/50 p-2.5 rounded-xl border border-[#3d3328] space-y-2">
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <input
+                              type="text"
+                              placeholder="Tahun / Tanggal"
+                              value={newStoryDate}
+                              onChange={(e) => setNewStoryDate(e.target.value)}
+                              className="block w-full px-2 py-1 bg-[#1a1510] border border-[#3d3328] rounded-lg text-[9px] text-white focus:outline-none"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Judul Kejadian"
+                              value={newStoryTitle}
+                              onChange={(e) => setNewStoryTitle(e.target.value)}
+                              className="block w-full px-2 py-1 bg-[#1a1510] border border-[#3d3328] rounded-lg text-[9px] text-white focus:outline-none"
+                            />
+                          </div>
+                          <textarea
+                            placeholder="Ceritakan singkat..."
+                            value={newStoryDesc}
+                            onChange={(e) => setNewStoryDesc(e.target.value)}
+                            rows={2}
+                            className="block w-full px-2 py-1 bg-[#1a1510] border border-[#3d3328] rounded-lg text-[9px] text-white focus:outline-none resize-none"
+                          />
+                          <div className="flex justify-between items-center gap-1.5">
+                            <label className="bg-[#2a2319] hover:bg-[#3d3328] border border-[#3d3328] text-[#c9b899] hover:text-white text-[8px] font-bold py-1 px-2 rounded cursor-pointer">
+                              {isUploadingStoryImage ? 'Uploading...' : 'Pilih Foto'}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleUploadImage(e.target.files[0], 'story')}
+                              />
+                            </label>
+                            {newStoryImage && <span className="text-[8px] text-emerald-400 truncate max-w-[80px]">Foto siap</span>}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!newStoryTitle || !newStoryDate || !newStoryDesc) {
+                                  alert('Harap isi judul, tanggal, dan cerita singkat.');
+                                  return;
+                                }
+                                setStoryList([...storyList, {
+                                  title: newStoryTitle,
+                                  date: newStoryDate,
+                                  desc: newStoryDesc,
+                                  image_url: newStoryImage || null
+                                }]);
+                                setNewStoryTitle('');
+                                setNewStoryDate('');
+                                setNewStoryDesc('');
+                                setNewStoryImage('');
+                              }}
+                              className="bg-[#c0623a] text-white text-[8px] font-bold py-1 px-2.5 rounded hover:bg-[#a8502d] transition-colors"
+                            >
+                              Tambah
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Akad Nikah */}
+                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Acara Akad Nikah</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="date"
+                            required
+                            value={akadDate}
+                            onChange={(e) => setAkadDate(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Jam Akad (09:00 - Selesai)"
+                            value={akadTime}
+                            onChange={(e) => setAkadTime(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Lokasi Akad (Masjid Agung Jambi)"
+                          value={akadLocation}
+                          onChange={(e) => setAkadLocation(e.target.value)}
+                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Link Google Maps Akad (Opsional)"
+                          value={akadMaps}
+                          onChange={(e) => setAkadMaps(e.target.value)}
+                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                        />
+
+                        {/* Resepsi */}
+                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Acara Resepsi</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="date"
+                            required
+                            value={resepsiDate}
+                            onChange={(e) => setResepsiDate(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Jam Resepsi (11:00 - 13:00)"
+                            value={resepsiTime}
+                            onChange={(e) => setResepsiTime(e.target.value)}
+                            className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Lokasi Resepsi (Gedung Serbaguna)"
+                          value={resepsiLocation}
+                          onChange={(e) => setResepsiLocation(e.target.value)}
+                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Link Google Maps Resepsi (Opsional)"
+                          value={resepsiMaps}
+                          onChange={(e) => setResepsiMaps(e.target.value)}
+                          className="block w-full px-3 py-2 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                        />
+
+                        {/* Kado Digital */}
+                        <div className="text-[9px] font-bold text-[#f5a623] uppercase tracking-wider pt-1">Kado Digital (Opsional)</div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <input
+                            type="text"
+                            placeholder="Bank (BCA)"
+                            value={giftBank}
+                            onChange={(e) => setGiftBank(e.target.value)}
+                            className="block w-full px-2 py-1.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-[10px] text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="No Rekening"
+                            value={giftAccount}
+                            onChange={(e) => setGiftAccount(e.target.value)}
+                            className="block w-full px-2 py-1.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-[10px] text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Atas Nama"
+                            value={giftHolder}
+                            onChange={(e) => setGiftHolder(e.target.value)}
+                            className="block w-full px-2 py-1.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-[10px] text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Prompt input */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                        {templateType === 'wedding' ? 'Preferensi Kutipan / Doa Pembuka (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
+                      </label>
+                      <textarea
+                        required={templateType !== 'wedding'}
+                        rows={templateType === 'wedding' ? 3 : 5}
+                        placeholder={templateType === 'wedding' ? "Contoh: Ayat Al-Quran tentang pernikahan, atau doa dengan nuansa islami penuh keikhlasan... (kosongkan untuk kutipan default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        disabled={isGenerating}
+                        className="block w-full px-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none resize-none leading-relaxed"
+                      />
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Preview & Publish */}
+          {pageData && activeTab === 'preview' && (
+            <div className="w-full flex-grow flex flex-col">
+              {/* Draft Info & Re-edit trigger */}
+              <div className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-4 mb-4">
+                <div className="flex justify-between items-start">
                   <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Nama Halaman / Acara
-                    </label>
+                    <div className="text-[9px] font-bold text-[#c9b899] uppercase tracking-wider">Proyek Terpilih</div>
+                    <div className="text-xs font-bold text-white mt-0.5">{name}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPageData(null);
+                      setActiveTab('edit');
+                    }}
+                    className="text-[10px] text-[#f5a623] hover:text-[#e8951a] font-bold transition-colors"
+                  >
+                    ← Edit Baru
+                  </button>
+                </div>
+              </div>
+
+              {/* URL Customization */}
+              <form id="publish-form" onSubmit={handlePublish} className="bg-[#2a2319]/40 border border-[#3d3328] rounded-2xl p-4 mb-4 space-y-3.5">
+                <div>
+                  <label className="block text-[10px] font-bold text-[#c9b899] uppercase tracking-wider mb-2">
+                    Tentukan Custom Slug URL
+                  </label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-[#7a6a55] text-xs select-none">/p/</span>
                     <input
                       type="text"
                       required
-                      placeholder={templateType === 'wedding' ? "Contoh: Pernikahan Budi & Riri" : "Contoh: Kopi Seru Nusantara"}
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      disabled={isGenerating}
-                      className="block w-full px-3.5 py-2 bg-slate-950 border border-slate-850 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                      placeholder="nama-toko-anda"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                      disabled={isPublishing}
+                      className="block w-full pl-8 pr-3.5 py-2.5 bg-[#1a1510] border border-[#3d3328] focus:border-[#f5a623] rounded-xl text-xs text-[#f5e6c8] placeholder-[#7a6a55] focus:outline-none transition-colors"
                     />
                   </div>
-
-                  {/* Wedding Details Input Form */}
-                  {templateType === 'wedding' && (
-                    <div className="space-y-4 border-t border-slate-800 pt-4 max-h-[300px] overflow-y-auto pr-1">
-                      {/* Desain Template Picker */}
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Pilih Desain Template</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDesignKey('sage-green')}
-                          className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 ${
-                            designKey === 'sage-green' ? 'border-indigo-500 bg-indigo-950/20 text-white' : 'border-slate-800 bg-slate-950/50 text-slate-400'
-                          }`}
-                        >
-                          <span className="text-lg">🌿</span>
-                          <span className="text-[10px] font-semibold">Sage Green</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDesignKey('floral-pink')}
-                          className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 ${
-                            designKey === 'floral-pink' ? 'border-indigo-500 bg-indigo-950/20 text-white' : 'border-slate-800 bg-slate-950/50 text-slate-400'
-                          }`}
-                        >
-                          <span className="text-lg">🌸</span>
-                          <span className="text-[10px] font-semibold">Floral Pink</span>
-                        </button>
-                      </div>
-
-                      {/* Mempelai Pria */}
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider pt-2">Detail Mempelai Pria</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          required
-                          placeholder="Nama Lengkap Pria"
-                          value={groomName}
-                          onChange={(e) => setGroomName(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          required
-                          placeholder="Panggilan"
-                          value={groomNickname}
-                          onChange={(e) => setGroomNickname(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          required
-                          placeholder="Nama Ayah Pria"
-                          value={groomFather}
-                          onChange={(e) => setGroomFather(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          required
-                          placeholder="Nama Ibu Pria"
-                          value={groomMother}
-                          onChange={(e) => setGroomMother(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-
-                      {/* Foto Mempelai Pria */}
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pt-1.5">Foto Pria</div>
-                      <div className="flex gap-2.5 items-center bg-slate-950 p-2.5 rounded-xl border border-slate-855">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-800 bg-slate-900 flex-shrink-0 flex items-center justify-center text-[10px] text-slate-500">
-                          {groomImage ? <img src={groomImage} className="w-full h-full object-cover" /> : 'No image'}
-                        </div>
-                        <div className="flex-grow flex flex-col gap-1">
-                          <div className="flex gap-1.5">
-                            <label className="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-[9px] font-semibold py-1 px-2 rounded text-center cursor-pointer transition-colors">
-                              {isUploadingGroomImage ? 'Uploading...' : 'Upload'}
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => handleUploadImage(e.target.files[0], 'groom')}
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => handleGenerateAIImage('groom')}
-                              disabled={isGeneratingGroomImage}
-                              className="flex-1 bg-indigo-600/90 hover:bg-indigo-600 text-white text-[9px] font-semibold py-1 px-2 rounded transition-colors"
-                            >
-                              {isGeneratingGroomImage ? 'Generating...' : 'AI Avatar'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Mempelai Wanita */}
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider pt-2">Detail Mempelai Wanita</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          required
-                          placeholder="Nama Lengkap Wanita"
-                          value={brideName}
-                          onChange={(e) => setBrideName(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          required
-                          placeholder="Panggilan"
-                          value={brideNickname}
-                          onChange={(e) => setBrideNickname(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          required
-                          placeholder="Nama Ayah Wanita"
-                          value={brideFather}
-                          onChange={(e) => setBrideFather(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          required
-                          placeholder="Nama Ibu Wanita"
-                          value={brideMother}
-                          onChange={(e) => setBrideMother(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-
-                      {/* Foto Mempelai Wanita */}
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pt-1.5">Foto Wanita</div>
-                      <div className="flex gap-2.5 items-center bg-slate-950 p-2.5 rounded-xl border border-slate-855">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-800 bg-slate-900 flex-shrink-0 flex items-center justify-center text-[10px] text-slate-500">
-                          {brideImage ? <img src={brideImage} className="w-full h-full object-cover" /> : 'No image'}
-                        </div>
-                        <div className="flex-grow flex flex-col gap-1">
-                          <div className="flex gap-1.5">
-                            <label className="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-[9px] font-semibold py-1 px-2 rounded text-center cursor-pointer transition-colors">
-                              {isUploadingBrideImage ? 'Uploading...' : 'Upload'}
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => handleUploadImage(e.target.files[0], 'bride')}
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => handleGenerateAIImage('bride')}
-                              disabled={isGeneratingBrideImage}
-                              className="flex-1 bg-indigo-600/90 hover:bg-indigo-600 text-white text-[9px] font-semibold py-1 px-2 rounded transition-colors"
-                            >
-                              {isGeneratingBrideImage ? 'Generating...' : 'AI Avatar'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Kisah Cinta (Story) Builder */}
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider pt-2">Kisah Cinta (Timeline)</div>
-                      {storyList.length > 0 && (
-                        <div className="space-y-1 bg-slate-950 p-2 rounded-xl border border-slate-855 max-h-[120px] overflow-y-auto">
-                          {storyList.map((story, sIdx) => (
-                            <div key={sIdx} className="flex items-center justify-between bg-slate-900/60 px-2 py-1 rounded border border-slate-800 text-[10px]">
-                              <span className="truncate text-slate-300 font-semibold">{story.date} - {story.title}</span>
-                              <button
-                                type="button"
-                                onClick={() => setStoryList(storyList.filter((_, i) => i !== sIdx))}
-                                className="text-red-400 hover:text-red-300 font-bold ml-2 text-[9px]"
-                              >
-                                Hapus
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      <div className="bg-slate-950/40 p-2.5 rounded-xl border border-slate-855 space-y-1.5">
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <input
-                            type="text"
-                            placeholder="Tahun / Tanggal"
-                            value={newStoryDate}
-                            onChange={(e) => setNewStoryDate(e.target.value)}
-                            className="block w-full px-2 py-1 bg-slate-950 border border-slate-855 rounded-lg text-[10px] text-white focus:outline-none"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Judul Kejadian"
-                            value={newStoryTitle}
-                            onChange={(e) => setNewStoryTitle(e.target.value)}
-                            className="block w-full px-2 py-1 bg-slate-950 border border-slate-855 rounded-lg text-[10px] text-white focus:outline-none"
-                          />
-                        </div>
-                        <textarea
-                          placeholder="Ceritakan singkat..."
-                          value={newStoryDesc}
-                          onChange={(e) => setNewStoryDesc(e.target.value)}
-                          rows={2}
-                          className="block w-full px-2 py-1 bg-slate-950 border border-slate-855 rounded-lg text-[10px] text-white focus:outline-none resize-none"
-                        />
-                        <div className="flex justify-between items-center gap-1.5">
-                          <label className="bg-slate-800 hover:bg-slate-700 text-white text-[8px] font-semibold py-1 px-2 rounded cursor-pointer">
-                            {isUploadingStoryImage ? 'Uploading...' : 'Pilih Foto'}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => handleUploadImage(e.target.files[0], 'story')}
-                            />
-                          </label>
-                          {newStoryImage && <span className="text-[8px] text-emerald-400 truncate max-w-[80px]">Foto siap</span>}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!newStoryTitle || !newStoryDate || !newStoryDesc) {
-                                alert('Harap isi judul, tanggal, dan cerita singkat.');
-                                return;
-                              }
-                              setStoryList([...storyList, {
-                                title: newStoryTitle,
-                                date: newStoryDate,
-                                desc: newStoryDesc,
-                                image_url: newStoryImage || null
-                              }]);
-                              setNewStoryTitle('');
-                              setNewStoryDate('');
-                              setNewStoryDesc('');
-                              setNewStoryImage('');
-                            }}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white text-[8px] font-bold py-1 px-2.5 rounded"
-                          >
-                            Tambah
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Acara Akad Nikah */}
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider pt-2">Acara Akad Nikah</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="date"
-                          required
-                          value={akadDate}
-                          onChange={(e) => setAkadDate(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          required
-                          placeholder="Jam Akad (09:00 - Selesai)"
-                          value={akadTime}
-                          onChange={(e) => setAkadTime(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Lokasi Akad (Masjid Agung Jambi, Jambi)"
-                        value={akadLocation}
-                        onChange={(e) => setAkadLocation(e.target.value)}
-                        className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Link Google Maps Akad (Opsional)"
-                        value={akadMaps}
-                        onChange={(e) => setAkadMaps(e.target.value)}
-                        className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                      />
-
-                      {/* Acara Resepsi */}
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider pt-2">Acara Resepsi</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="date"
-                          required
-                          value={resepsiDate}
-                          onChange={(e) => setResepsiDate(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          required
-                          placeholder="Jam Resepsi (11:00 - 13:00)"
-                          value={resepsiTime}
-                          onChange={(e) => setResepsiTime(e.target.value)}
-                          className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Lokasi Resepsi (Gedung Serbaguna, Jambi)"
-                        value={resepsiLocation}
-                        onChange={(e) => setResepsiLocation(e.target.value)}
-                        className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Link Google Maps Resepsi (Opsional)"
-                        value={resepsiMaps}
-                        onChange={(e) => setResepsiMaps(e.target.value)}
-                        className="block w-full px-3 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                      />
-
-                      {/* Kado Digital */}
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider pt-2">Kado Digital (Opsional)</div>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        <input
-                          type="text"
-                          placeholder="Bank (BCA)"
-                          value={giftBank}
-                          onChange={(e) => setGiftBank(e.target.value)}
-                          className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-[10px] text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          placeholder="No Rekening"
-                          value={giftAccount}
-                          onChange={(e) => setGiftAccount(e.target.value)}
-                          className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-[10px] text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Atas Nama"
-                          value={giftHolder}
-                          onChange={(e) => setGiftHolder(e.target.value)}
-                          className="block w-full px-2 py-1.5 bg-slate-950 border border-slate-855 rounded-xl text-[10px] text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      {templateType === 'wedding' ? 'Preferensi Kutipan / Doa Pembuka (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
-                    </label>
-                    <textarea
-                      required={templateType !== 'wedding'}
-                      rows={templateType === 'wedding' ? 3 : 5}
-                      placeholder={templateType === 'wedding' ? "Contoh: Ayat Al-Quran tentang pernikahan, atau doa dengan nuansa islami penuh keikhlasan... (kosongkan untuk kutipan default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      disabled={isGenerating}
-                      className="block w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none leading-relaxed"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isGenerating || isFormInvalid()}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold text-sm py-3 px-4 rounded-xl shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
-                        <span>Sedang Merancang Halaman...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        <span>Generate Preview (Gratis)</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              ) : (
-                /* Step 2 Publish with Slug */
-                <form onSubmit={handlePublish} className="space-y-5">
-                  <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-4">
-                    <div className="text-xs font-semibold text-slate-500 uppercase">Proyek Terpilih</div>
-                    <div className="text-base font-bold text-white mt-1">{name}</div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPageData(null);
-                      }}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-medium mt-2 transition-colors"
-                    >
-                      ← Edit Prompt Ulang
-                    </button>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Tentukan Custom Slug URL
-                    </label>
-                    <div className="relative flex items-center">
-                      <span className="absolute left-3.5 text-slate-500 text-sm select-none">/p/</span>
-                      <input
-                        type="text"
-                        required
-                        placeholder="nama-toko-anda"
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
-                        disabled={isPublishing}
-                        className="block w-full pl-8 pr-3.5 py-2 bg-slate-950 border border-slate-855 rounded-xl text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-500 mt-1.5 leading-relaxed">
-                      URL Anda nantinya akan menjadi: <code className="text-indigo-400/80 font-mono">http://localhost:5000/?slug={slug || '...'}</code>
-                    </p>
-                  </div>
-
-                   <div className="bg-indigo-950/20 border border-indigo-900/30 rounded-xl p-4">
-                    <div className="flex justify-between items-center text-xs font-semibold text-slate-400">
-                      <span>Biaya Publikasi:</span>
-                      <span className="text-white">Rp {currentCost.toLocaleString('id-ID')}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-xs font-semibold text-slate-400 mt-2">
-                      <span>Saldo Anda Sekarang:</span>
-                      <span className={ (profile?.balance ?? 0) < currentCost ? 'text-red-400' : 'text-emerald-400' }>
-                        Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isPublishing || !slug}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold text-sm py-3 px-4 rounded-xl shadow-lg hover:shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
-                  >
-                    {isPublishing ? (
-                      <>
-                        <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
-                        <span>Sedang Memproses...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Globe className="h-4 w-4" />
-                        <span>Publikasikan Sekarang (Rp {currentCost.toLocaleString('id-ID')})</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
-            </div>
-
-            <div className="text-center text-[10px] text-slate-500 pt-6">
-              Siluet SaaS Engine • Landing Page Instan
-            </div>
-          </div>
-
-          {/* Right Preview Panel */}
-          <div className="flex-grow w-full lg:w-2/3 min-h-[500px] lg:min-h-0 bg-slate-900/30 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">
-            
-            {/* Preview Toolbar */}
-            <div className="bg-slate-900/80 px-4 md:px-6 py-3.5 border-b border-slate-800/80 flex justify-between items-center flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5 flex-shrink-0">
-                  <div className="h-3.5 w-3.5 rounded-full bg-red-500/80"></div>
-                  <div className="h-3.5 w-3.5 rounded-full bg-amber-500/80"></div>
-                  <div className="h-3.5 w-3.5 rounded-full bg-emerald-500/80"></div>
                 </div>
-                <span className="text-xs text-slate-400 font-medium ml-2 md:ml-3 bg-slate-950 px-2 md:px-3 py-1 rounded-md border border-slate-850 truncate max-w-[120px] md:max-w-none">
-                  {pageData ? `Preview: ${pageData.meta?.title || 'Draft Page'}` : 'Mode Preview'}
-                </span>
-                <span className="text-[9px] text-indigo-400 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 animate-pulse hidden sm:inline-block">
-                  ✨ Desain Web Aktif saat di-publish
-                </span>
+
+                <div className="bg-[#1a1510] border border-[#3d3328] rounded-xl p-3 flex justify-between items-center text-[10px] font-bold text-[#c9b899]">
+                  <span>Biaya: Rp {currentCost.toLocaleString('id-ID')}</span>
+                  <span>Saldo Anda: <span className={(profile?.balance ?? 0) < currentCost ? 'text-red-400' : 'text-emerald-400'}>Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}</span></span>
+                </div>
+              </form>
+
+              {/* Viewport for preview */}
+              <div className="border border-[#3d3328] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
+                {templateType === 'wedding' ? (
+                  <iframe
+                    ref={iframeRef}
+                    src="/preview/index.html"
+                    className="w-full h-full border-0 bg-transparent"
+                    title="Live Preview"
+                    onLoad={() => {
+                      setIframeReady(true);
+                      if (iframeRef.current && pageData) {
+                        iframeRef.current.contentWindow.postMessage({
+                          type: 'UPDATE_PREVIEW',
+                          pageData: pageData
+                        }, '*');
+                      }
+                    }}
+                  />
+                ) : (
+                  renderPreview()
+                )}
               </div>
-
-              {/* Device Toggle */}
-              {pageData && (
-                <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-850">
-                  <button
-                    onClick={() => setPreviewDevice('desktop')}
-                    className={`p-1.5 rounded-md transition-all ${
-                      previewDevice === 'desktop' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <Laptop className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setPreviewDevice('mobile')}
-                    className={`p-1.5 rounded-md transition-all ${
-                      previewDevice === 'mobile' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <Smartphone className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
             </div>
+          )}
+        </div>
 
-            {/* Preview Viewport */}
-            <div className="flex-grow flex items-center justify-center p-6 bg-slate-950/40 overflow-hidden">
-              {pageData ? (
-                <div 
-                  className={`border border-slate-800 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${
-                    previewDevice === 'mobile' ? 'w-full max-w-[375px] h-[600px]' : 'w-full h-full'
-                  }`}
-                >
-                  {templateType === 'wedding' ? (
-                    <iframe
-                      ref={iframeRef}
-                      src="/preview/index.html"
-                      className="w-full h-full border-0 bg-transparent"
-                      title="Live Preview"
-                      onLoad={() => {
-                        // Mark iframe as ready so postMessage sync can start
-                        setIframeReady(true);
-                        // Also immediately send pageData if it's already available
-                        if (iframeRef.current && pageData) {
-                          iframeRef.current.contentWindow.postMessage({
-                            type: 'UPDATE_PREVIEW',
-                            pageData: pageData
-                          }, '*');
-                        }
-                      }}
-                    />
-                  ) : (
-                    renderPreview()
-                  )}
-                </div>
+        {/* Fixed Sticky Action Bar at the Bottom */}
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#221d16]/95 backdrop-blur-md border-t border-[#3d3328] p-4 z-40 flex flex-col gap-2 shadow-2xl">
+          {(!pageData || activeTab === 'edit') ? (
+            <button
+              type="submit"
+              form="generate-form"
+              disabled={isGenerating || isFormInvalid()}
+              className="w-full bg-[#f5a623] hover:bg-[#e8951a] disabled:opacity-50 text-[#1a1510] font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-[#1a1510]/20 border-t-[#1a1510] animate-spin"></div>
+                  <span>Sedang Merancang Halaman...</span>
+                </>
               ) : (
-                <div className="text-center p-8 max-w-md">
-                  <Layout className="h-16 w-16 text-slate-700 mx-auto mb-4 animate-pulse" />
-                  <h4 className="text-base font-bold text-slate-300">Belum Ada Preview</h4>
-                  <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                    Tulis nama halaman dan prompt di panel kiri, kemudian klik "Generate Preview". Desain web buatan AI akan muncul secara visual di sini.
-                  </p>
-                </div>
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  <span>Generate Preview (Gratis)</span>
+                </>
               )}
-            </div>
-            
-          </div>
-          
+            </button>
+          ) : (
+            <button
+              type="submit"
+              form="publish-form"
+              disabled={isPublishing || !slug || (profile?.balance ?? 0) < currentCost}
+              className="w-full bg-[#c0623a] hover:bg-[#a8502d] disabled:opacity-50 text-white font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+            >
+              {isPublishing ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
+                  <span>Sedang Memproses...</span>
+                </>
+              ) : (
+                <>
+                  <Globe className="h-4 w-4" />
+                  <span>Publikasikan Sekarang (Rp {currentCost.toLocaleString('id-ID')})</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </main>
       {/* Template Selection Modal */}

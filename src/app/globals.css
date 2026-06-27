@@ -1,26 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 
+/* ============================================
+   SILUET DASHBOARD – RETRO WARM THEME
+   Core Colors: Warm Cream / Amber / Brown / Rust
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --retro-bg:       #1a1510;  /* Deep warm dark brown */
+  --retro-surface:  #221d16;  /* Surface panels */
+  --retro-card:     #2a2319;  /* Card background */
+  --retro-border:   #3d3328;  /* Borders */
+  --retro-border-2: #4a3e2e;  /* Slightly lighter border */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --retro-amber:    #f5a623;  /* Primary amber */
+  --retro-amber-2:  #e8951a;  /* Darker amber */
+  --retro-cream:    #f5e6c8;  /* Warm cream text */
+  --retro-cream-2:  #c9b899;  /* Muted cream */
+  --retro-rust:     #c0623a;  /* Accent rust/orange */
+  --retro-sage:     #7c9a78;  /* Muted sage green accent */
+  --retro-muted:    #7a6a55;  /* Muted text */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--retro-bg);
+  color: var(--retro-cream);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--retro-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--retro-border-2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--retro-amber);
+}
+
+/* Retro grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
 }
