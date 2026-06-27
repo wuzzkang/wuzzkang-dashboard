@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "WuzzKang Dashboard",
+  title: "Siluet Dashboard",
   description: "Generate beautiful dynamic landing pages instantly with AI",
 };
 

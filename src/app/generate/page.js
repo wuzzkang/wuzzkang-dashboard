@@ -615,7 +615,7 @@ function GenerateContent() {
             </div>
           )}
           
-          <div className="mt-6 text-[9px] opacity-50">WuzzKang Wedding Template • {colors.name}</div>
+          <div className="mt-6 text-[9px] opacity-50">Siluet Wedding Template • {colors.name}</div>
         </div>
       );
     }
@@ -1311,7 +1311,7 @@ function GenerateContent() {
             </div>
 
             <div className="text-center text-[10px] text-slate-500 pt-6">
-              WuzzKang SaaS Engine • Landing Page Instan
+              Siluet SaaS Engine • Landing Page Instan
             </div>
           </div>
 

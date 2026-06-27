@@ -129,7 +129,7 @@ export default function TopUpPage() {
       <main className="flex-grow p-6 md:p-8 pt-24 md:pt-8 overflow-y-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Top Up Saldo</h1>
-          <p className="text-slate-400 text-sm mt-1">Tambah saldo WuzzKang untuk mendeploy website landing page Anda</p>
+          <p className="text-slate-400 text-sm mt-1">Tambah saldo Siluet untuk mendeploy website landing page Anda</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

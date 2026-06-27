@@ -408,7 +408,7 @@ export async function render(pageConfig, guestName) {
                     
                     <div class="h-[1px] bg-white/10 my-8"></div>
                     
-                    <p class="text-[10px] text-slate-500">© ${new Date().getFullYear()} ${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'} Wedding. Created with WuzzKang.</p>
+                    <p class="text-[10px] text-slate-500">© ${new Date().getFullYear()} ${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'} Wedding. Created with Siluet.</p>
                 </div>
             </footer>
         </main>

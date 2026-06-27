@@ -32,7 +32,7 @@ export default function Sidebar() {
           <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center shadow-md">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-white">WuzzKang</span>
+          <span className="text-lg font-bold tracking-tight text-white">Siluet</span>
         </Link>
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -59,7 +59,7 @@ export default function Sidebar() {
               <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center shadow-md shadow-indigo-500/10">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">WuzzKang</span>
+              <span className="text-xl font-bold tracking-tight text-white">Siluet</span>
             </Link>
             <button
               className="md:hidden p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg"
