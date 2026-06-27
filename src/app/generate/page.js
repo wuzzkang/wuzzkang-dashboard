@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import { Sparkles, ArrowRight, CheckCircle, ExternalLink, Globe, Layout, Smartphone, Laptop, AlertCircle } from 'lucide-react';
-const DEFAULT_GROOM_AVATAR = 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=256&h=256';
-const DEFAULT_BRIDE_AVATAR = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256&h=256';
+const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg';
+const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
 import { supabase } from '@/lib/supabase';
 
 const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
@@ -452,13 +452,20 @@ function GenerateContent() {
 
       return (
         <div 
-          className="w-full h-full flex flex-col overflow-y-auto text-center px-4 py-8 select-none"
-          style={{ backgroundColor: colors.bg, color: colors.text, fontFamily: 'serif' }}
+          className="w-full h-full flex flex-col overflow-y-auto text-center px-6 py-8 select-none"
+          style={{ backgroundColor: colors.bg, color: colors.text, fontFamily: "'Poppins', sans-serif" }}
         >
+          <style dangerouslySetInnerHTML={{__html: `
+            @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap');
+            .preview-cursive { font-family: 'Great Vibes', cursive; }
+            .preview-serif { font-family: 'Playfair Display', serif; }
+            .preview-sans { font-family: 'Poppins', sans-serif; }
+          `}} />
+
           {/* Wedding Cover */}
           <div className="my-6 py-6 border-b border-dashed border-slate-200">
             <span className="text-[9px] tracking-widest uppercase font-semibold opacity-70" style={{ color: colors.primary }}>Walimatul 'Ursy</span>
-            <h3 className="text-3xl italic my-3" style={{ color: colors.primary }}>{groom.nickname || 'Pria'} & {bride.nickname || 'Wanita'}</h3>
+            <h3 className="text-5xl preview-cursive my-4" style={{ color: colors.primary }}>{groom.nickname || 'Pria'} & {bride.nickname || 'Wanita'}</h3>
             <p className="text-[9px] text-slate-500 mb-2">Kepada Yth. Bapak/Ibu/Saudara/i:</p>
             <div className="bg-white border border-slate-100 rounded-2xl px-4 py-1.5 inline-block shadow-sm">
               <div className="font-bold text-[11px]">Tamu Undangan</div>
@@ -466,7 +473,7 @@ function GenerateContent() {
           </div>
           
           {/* Quote */}
-          <div className="my-2 px-2 italic text-[11px] leading-relaxed opacity-80">
+          <div className="my-3 px-4 italic text-xs leading-relaxed opacity-80 preview-serif">
             "{quote}"
           </div>
           
@@ -477,7 +484,7 @@ function GenerateContent() {
                 <img src={groom.image_url || defaultGroomAvatar} className="w-full h-full object-cover" />
               </div>
               <div>
-                <h4 className="font-bold text-xs">{groom.name || 'Nama Lengkap Pria'}</h4>
+                <h4 className="font-bold text-sm preview-serif">{groom.name || 'Nama Lengkap Pria'}</h4>
                 <p className="text-[9px] text-slate-500 mt-0.5">Putra dari Bpk. {groom.father || '...'} & Ibu {groom.mother || '...'}</p>
               </div>
             </div>
@@ -487,7 +494,7 @@ function GenerateContent() {
                 <img src={bride.image_url || defaultBrideAvatar} className="w-full h-full object-cover" />
               </div>
               <div>
-                <h4 className="font-bold text-xs">{bride.name || 'Nama Lengkap Wanita'}</h4>
+                <h4 className="font-bold text-sm preview-serif">{bride.name || 'Nama Lengkap Wanita'}</h4>
                 <p className="text-[9px] text-slate-500 mt-0.5">Putri dari Bpk. {bride.father || '...'} & Ibu {bride.mother || '...'}</p>
               </div>
             </div>
@@ -496,7 +503,7 @@ function GenerateContent() {
           {/* Stories Timeline */}
           {stories && stories.length > 0 && (
             <div className="my-4 text-left">
-              <h4 className="font-bold text-xs uppercase tracking-wider text-center mb-3" style={{ color: colors.primary }}>Cerita Cinta Kami</h4>
+              <h4 className="font-bold text-xs uppercase tracking-wider text-center mb-3 preview-serif" style={{ color: colors.primary }}>Cerita Cinta Kami</h4>
               <div className="space-y-3">
                 {stories.map((s, idx) => (
                   <div key={idx} className="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm flex gap-3">
@@ -505,7 +512,7 @@ function GenerateContent() {
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="text-[9px] font-bold text-slate-400">{s.date}</div>
-                      <div className="text-[10px] font-bold text-slate-800">{s.title}</div>
+                      <div className="text-[10px] font-bold text-slate-800 preview-sans">{s.title}</div>
                       <div className="text-[9px] text-slate-500 leading-normal mt-0.5 break-words">{s.desc}</div>
                     </div>
                   </div>
@@ -516,16 +523,16 @@ function GenerateContent() {
           
           {/* Event Cards */}
           <div className="my-4 space-y-3 bg-white/40 p-3 rounded-2xl border border-slate-100">
-            <h4 className="font-bold text-[10px] uppercase tracking-wider" style={{ color: colors.primary }}>Waktu & Tempat</h4>
+            <h4 className="font-bold text-[10px] uppercase tracking-wider preview-serif" style={{ color: colors.primary }}>Waktu & Tempat</h4>
             <div className="bg-white border border-slate-100 rounded-2xl p-3.5 shadow-sm text-left">
-              <h5 className="font-bold text-[11px] flex items-center gap-1" style={{ color: colors.primary }}>💍 Akad Nikah</h5>
+              <h5 className="font-bold text-[11px] flex items-center gap-1 preview-serif" style={{ color: colors.primary }}>💍 Akad Nikah</h5>
               <div className="text-[9px] text-slate-600 mt-1 font-semibold">📅 {akad.date || 'Tanggal'}</div>
               <div className="text-[9px] text-slate-600">⏰ {akad.time || 'Waktu'}</div>
               <div className="text-[9px] text-slate-500 mt-1">📍 {akad.location || 'Tempat'}</div>
             </div>
             
             <div className="bg-white border border-slate-100 rounded-2xl p-3.5 shadow-sm text-left">
-              <h5 className="font-bold text-[11px] flex items-center gap-1" style={{ color: colors.primary }}>🎉 Resepsi</h5>
+              <h5 className="font-bold text-[11px] flex items-center gap-1 preview-serif" style={{ color: colors.primary }}>🎉 Resepsi</h5>
               <div className="text-[9px] text-slate-600 mt-1 font-semibold">📅 {resepsi.date || 'Tanggal'}</div>
               <div className="text-[9px] text-slate-600">⏰ {resepsi.time || 'Waktu'}</div>
               <div className="text-[9px] text-slate-500 mt-1">📍 {resepsi.location || 'Tempat'}</div>
@@ -536,7 +543,7 @@ function GenerateContent() {
           {gift && gift.bank_name && gift.account_number && (
             <div className="my-4 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm text-center">
               <div className="text-base">🎁</div>
-              <h4 className="font-bold text-[11px] mt-1">Kado Digital</h4>
+              <h4 className="font-bold text-[11px] mt-1 preview-serif">Kado Digital</h4>
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 mt-2">
                 <div className="text-[9px] font-bold text-slate-500">{gift.bank_name}</div>
                 <div className="font-mono font-bold text-xs my-0.5" style={{ color: colors.primary }}>{gift.account_number}</div>
@@ -1249,15 +1256,18 @@ function GenerateContent() {
           <div className="flex-grow w-full lg:w-2/3 min-h-[500px] lg:min-h-0 bg-slate-900/30 border border-slate-800 rounded-2xl flex flex-col overflow-hidden relative">
             
             {/* Preview Toolbar */}
-            <div className="bg-slate-900/80 px-6 py-3.5 border-b border-slate-800/80 flex justify-between items-center flex-shrink-0">
+            <div className="bg-slate-900/80 px-4 md:px-6 py-3.5 border-b border-slate-800/80 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 flex-shrink-0">
                   <div className="h-3.5 w-3.5 rounded-full bg-red-500/80"></div>
                   <div className="h-3.5 w-3.5 rounded-full bg-amber-500/80"></div>
                   <div className="h-3.5 w-3.5 rounded-full bg-emerald-500/80"></div>
                 </div>
-                <span className="text-xs text-slate-400 font-medium ml-3 bg-slate-950 px-3 py-1 rounded-md border border-slate-850">
+                <span className="text-xs text-slate-400 font-medium ml-2 md:ml-3 bg-slate-950 px-2 md:px-3 py-1 rounded-md border border-slate-850 truncate max-w-[120px] md:max-w-none">
                   {pageData ? `Preview: ${pageData.meta?.title || 'Draft Page'}` : 'Mode Preview'}
+                </span>
+                <span className="text-[9px] text-indigo-400 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 animate-pulse hidden sm:inline-block">
+                  ✨ Desain Web Aktif saat di-publish
                 </span>
               </div>
 
