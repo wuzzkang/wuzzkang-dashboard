@@ -20,6 +20,7 @@ export default function TopUpPage() {
   const [activeTransaction, setActiveTransaction] = useState(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [products, setProducts] = useState([]);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -27,6 +28,29 @@ export default function TopUpPage() {
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  // Fetch active products list from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!session) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data)) {
+            setProducts(result.data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+      }
+    };
+    fetchProducts();
+  }, [session]);
 
   if (loading || (!user && loading)) {
     return (
@@ -310,10 +334,21 @@ export default function TopUpPage() {
                 <span>Generate Landing Page AI</span>
                 <span className="font-semibold text-emerald-400">Gratis (Draft)</span>
               </li>
-              <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
-                <span>Publikasi Website</span>
-                <span className="font-semibold text-theme-text">Rp 10.000 / Halaman</span>
-              </li>
+              {products && products.length > 0 ? (
+                products.map((prod) => (
+                  <li key={prod.id} className="flex justify-between items-center py-1.5 border-b border-theme-border animate-fadeIn">
+                    <span>Publikasi ({prod.name})</span>
+                    <span className="font-semibold text-theme-text">
+                      {prod.is_active ? `Rp ${prod.cost.toLocaleString('id-ID')} / ${prod.unit || 'Halaman'}` : 'Dinonaktifkan'}
+                    </span>
+                  </li>
+                ))
+              ) : (
+                <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
+                  <span>Publikasi Website</span>
+                  <span className="font-semibold text-theme-text">Rp 10.000 / Halaman</span>
+                </li>
+              )}
               <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
                 <span>Hosting Website</span>
                 <span className="font-semibold text-emerald-400">Selamanya Gratis</span>
