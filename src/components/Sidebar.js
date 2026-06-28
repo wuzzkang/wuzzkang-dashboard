@@ -16,7 +16,9 @@ export default function Sidebar() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'clean';
-    setActiveTheme(savedTheme);
+    setTimeout(() => {
+      setActiveTheme(savedTheme);
+    }, 0);
     document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
 

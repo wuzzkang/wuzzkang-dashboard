@@ -106,6 +106,7 @@ function GenerateContent() {
 
   // Wedding modular additions
   const [designKey, setDesignKey] = useState('sage-green');
+  const [previewDesignKey, setPreviewDesignKey] = useState(null);
   const [groomImage, setGroomImage] = useState(DEFAULT_GROOM_AVATAR);
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
   const [storyList, setStoryList] = useState([]);
@@ -244,7 +245,10 @@ function GenerateContent() {
       }
     };
 
-    setPageData(assembledPageData);
+    setTimeout(() => {
+      setPageData(assembledPageData);
+    }, 0);
+
   }, [
     editMode,
     projectId,
@@ -683,7 +687,7 @@ function GenerateContent() {
 
           {/* Wedding Cover */}
           <div className="my-6 py-6 border-b border-dashed border-slate-200">
-            <span className="text-[9px] tracking-widest uppercase font-semibold opacity-70" style={{ color: colors.primary }}>Walimatul 'Ursy</span>
+            <span className="text-[9px] tracking-widest uppercase font-semibold opacity-70" style={{ color: colors.primary }}>Walimatul &apos;Ursy</span>
             <h3 className="text-5xl preview-cursive my-4" style={{ color: colors.primary }}>{groom.nickname || 'Pria'} & {bride.nickname || 'Wanita'}</h3>
             <p className="text-[9px] text-slate-500 mb-2">Kepada Yth. Bapak/Ibu/Saudara/i:</p>
             <div className="bg-white border border-slate-100 rounded-2xl px-4 py-1.5 inline-block shadow-sm">
@@ -693,7 +697,7 @@ function GenerateContent() {
           
           {/* Quote */}
           <div className="my-3 px-4 italic text-xs leading-relaxed opacity-80 preview-serif">
-            "{quote}"
+            &quot;{quote}&quot;
           </div>
           
           {/* Groom & Bride Details */}
@@ -1050,27 +1054,45 @@ function GenerateContent() {
                           <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                             Pilih Desain Tema
                           </label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setDesignKey('sage-green')}
-                              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                                designKey === 'sage-green' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                              }`}
-                            >
-                              <span className="text-base">🌿</span>
-                              <span className="text-[9px] font-bold">Sage Green</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setDesignKey('floral-pink')}
-                              className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                                designKey === 'floral-pink' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                              }`}
-                            >
-                              <span className="text-base">🌸</span>
-                              <span className="text-[9px] font-bold">Floral Pink</span>
-                            </button>
+                          <div className="flex gap-3 overflow-x-auto pb-2 pt-1 scrollbar-none snap-x snap-mandatory">
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('sage-green')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'sage-green' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                }`}
+                              >
+                                <span className="text-lg">🌿</span>
+                                <span className="text-[10px] font-bold">Sage Green</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('sage-green')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('floral-pink')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'floral-pink' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                }`}
+                              >
+                                <span className="text-lg">🌸</span>
+                                <span className="text-[10px] font-bold">Floral Pink</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('floral-pink')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
                           </div>
                         </div>
 
@@ -1770,6 +1792,110 @@ function GenerateContent() {
                 className="px-5 py-2.5 bg-theme-card hover:bg-theme-surface text-theme-text rounded-xl text-xs font-semibold transition-colors"
               >
                 Tutup Galeri
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Design Theme Preview Modal */}
+      {previewDesignKey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme-bg/85 backdrop-blur-md animate-fadeIn">
+          <div className="bg-theme-surface border border-theme-border rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col h-[85vh]">
+            
+            {/* Modal Header */}
+            <div className="p-4 border-b border-theme-border flex justify-between items-center bg-theme-surface/50">
+              <div>
+                <h3 className="text-sm font-bold text-theme-text">
+                  Contoh Tema: {previewDesignKey === 'sage-green' ? 'Sage Green 🌿' : 'Floral Pink 🌸'}
+                </h3>
+                <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan undangan digital</p>
+              </div>
+              <button 
+                onClick={() => setPreviewDesignKey(null)}
+                className="p-2 text-theme-text-sec hover:text-theme-text bg-theme-bg/50 hover:bg-theme-bg rounded-xl transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Content - Iframe Viewport */}
+            <div className="flex-grow bg-slate-950 p-2 flex items-center justify-center relative">
+              <iframe
+                src="/preview/index.html"
+                className="w-full h-full border-0 bg-transparent rounded-2xl"
+                title="Design Live Preview"
+                onLoad={(e) => {
+                  const iframe = e.target;
+                  const mockData = {
+                    meta: {
+                      title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : 'Floral Pink'}`,
+                      template_type: 'wedding',
+                      design_key: previewDesignKey
+                    },
+                    content: {
+                      groom: {
+                        name: 'Rian Adiputra, S.T.',
+                        nickname: 'Rian',
+                        father: 'Bpk. Ir. H. Ahmad Sudrajat',
+                        mother: 'Ibu Hj. Siti Aminah',
+                        image_url: '/groom-avatar.jpg'
+                      },
+                      bride: {
+                        name: 'Adinda Saraswati, M.B.A.',
+                        nickname: 'Dinda',
+                        father: 'Bpk. Prof. Dr. Budi Santoso',
+                        mother: 'Ibu Dr. Rini Kartika',
+                        image_url: '/bride-avatar.jpg'
+                      },
+                      story: [
+                        { year: '2021', title: 'Pertama Bertemu', desc: 'Kami diperkenalkan oleh seorang teman baik di sebuah acara sosial, di mana kami menemukan banyak kesamaan minat.' },
+                        { year: '2023', title: 'Menyatakan Komitmen', desc: 'Setelah dua tahun tumbuh bersama dalam persahabatan dan kecocokan, kami berkomitmen untuk melangkah ke arah masa depan bersama.' },
+                        { year: '2025', title: 'Pertunangan', desc: 'Di hadapan keluarga besar, Rian melamar Dinda untuk membangun keluarga bahagia dan abadi bersama.' }
+                      ],
+                      akad: {
+                        date: '2026-10-10',
+                        time: '09:00 - 11:00 WIB',
+                        location: 'Masjid Raya Pondok Indah',
+                        maps_url: 'https://maps.google.com'
+                      },
+                      resepsi: {
+                        date: '2026-10-10',
+                        time: '11:00 - 14:00 WIB',
+                        location: 'Hotel Mulia Senayan, Jakarta',
+                        maps_url: 'https://maps.google.com'
+                      },
+                      gift: {
+                        bank_name: 'Bank BCA',
+                        account_number: '1234567890',
+                        account_holder: 'Rian Adiputra'
+                      },
+                      quote: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir. (QS. Ar-Rum: 21)'
+                    }
+                  };
+                  
+                  // Wait a brief moment to ensure iframe listener is registered
+                  setTimeout(() => {
+                    if (iframe.contentWindow) {
+                      iframe.contentWindow.postMessage({
+                        type: 'UPDATE_PREVIEW',
+                        pageData: mockData
+                      }, '*');
+                    }
+                  }, 150);
+                }}
+              />
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-theme-border bg-theme-bg flex justify-between items-center">
+              <span className="text-[10px] text-theme-text-muted">Desain responsif untuk HP & Desktop</span>
+              <button
+                onClick={() => setPreviewDesignKey(null)}
+                className="px-4 py-2 bg-theme-card hover:bg-theme-surface text-theme-text rounded-xl text-xs font-semibold transition-colors"
+              >
+                Tutup Preview
               </button>
             </div>
 
