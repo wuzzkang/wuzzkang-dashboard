@@ -133,6 +133,13 @@ function GenerateContent() {
   const [previewDevice, setPreviewDevice] = useState('mobile');
   const [activeTab, setActiveTab] = useState('edit');
 
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
+
   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
@@ -270,6 +277,67 @@ function GenerateContent() {
   const displayProducts = getDisplayProducts();
   const currentProduct = displayProducts.find(p => p.id === templateType);
   const currentCost = currentProduct?.cost ?? 10000;
+
+  const getFinalCost = () => {
+    const baseCost = currentProduct?.cost ?? 10000;
+    if (!appliedCoupon) return baseCost;
+    if (appliedCoupon.discount_type === 'percentage') {
+      const discount = Math.round((baseCost * appliedCoupon.discount_value) / 100);
+      return Math.max(0, baseCost - discount);
+    } else if (appliedCoupon.discount_type === 'fixed_amount') {
+      return Math.max(0, baseCost - appliedCoupon.discount_value);
+    }
+    return baseCost;
+  };
+
+  const finalCost = getFinalCost();
+
+  const handleValidateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Masukkan kode kupon terlebih dahulu.');
+      return;
+    }
+
+    setCouponError('');
+    setCouponSuccess('');
+    setIsValidatingCoupon(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/coupons/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ code: couponCode }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setAppliedCoupon(result.data);
+        const discountDesc = result.data.discount_type === 'percentage' 
+          ? `${result.data.discount_value}%` 
+          : `Rp ${result.data.discount_value.toLocaleString('id-ID')}`;
+        setCouponSuccess(`Kupon "${result.data.code}" berhasil diterapkan! Diskon ${discountDesc}.`);
+      } else {
+        setAppliedCoupon(null);
+        setCouponError(result.error || 'Kupon tidak valid atau sudah kedaluwarsa.');
+      }
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponError('Gagal memvalidasi kupon. Periksa koneksi internet Anda.');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponSuccess('');
+    setCouponError('');
+  };
 
   if (loading || (!user && loading)) {
     return (
@@ -450,14 +518,14 @@ function GenerateContent() {
     }
   };
 
-  // Handle publishing landing page (deducts 10,000 balance)
+  // Handle publishing landing page (deducts dynamic cost based on coupon)
   const handlePublish = async (e) => {
     e.preventDefault();
     if (!projectId || !slug) return;
 
-    // Check balance first
-    if ((profile?.balance ?? 0) < 10000) {
-      setError('Saldo Anda tidak mencukupi untuk mempublikasikan halaman. Biaya: Rp 10.000. Silakan top up saldo terlebih dahulu.');
+    // Check balance first based on finalCost
+    if (finalCost > 0 && (profile?.balance ?? 0) < finalCost) {
+      setError(`Saldo Anda tidak mencukupi untuk mempublikasikan halaman. Biaya: Rp ${finalCost.toLocaleString('id-ID')}. Silakan top up saldo terlebih dahulu.`);
       return;
     }
 
@@ -471,7 +539,7 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ slug }),
+        body: JSON.stringify({ slug, couponCode: appliedCoupon?.code || null }),
       });
 
       const result = await response.json();
@@ -1296,9 +1364,70 @@ function GenerateContent() {
                   </div>
                 </div>
 
-                <div className="bg-theme-bg border border-theme-border rounded-xl p-3 flex justify-between items-center text-[10px] font-bold text-theme-text-sec">
-                  <span>Biaya: Rp {currentCost.toLocaleString('id-ID')}</span>
-                  <span>Saldo Anda: <span className={(profile?.balance ?? 0) < currentCost ? 'text-red-400' : 'text-emerald-400'}>Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}</span></span>
+                {/* Coupon Code Section */}
+                <div className="border-t border-theme-border/50 pt-3.5 space-y-2">
+                  <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
+                    Masukkan Kode Kupon (Opsional)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Contoh: DISKON100"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      disabled={isPublishing || appliedCoupon}
+                      className="block flex-grow px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                    />
+                    {appliedCoupon ? (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        disabled={isPublishing}
+                        className="bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-[10px] font-bold px-3 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
+                      >
+                        Hapus
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleValidateCoupon}
+                        disabled={isPublishing || !couponCode.trim() || isValidatingCoupon}
+                        className="bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text text-[10px] font-bold px-4 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
+                      >
+                        {isValidatingCoupon ? 'Memproses...' : 'Terapkan'}
+                      </button>
+                    )}
+                  </div>
+                  {couponError && (
+                    <p className="text-[10px] text-red-400 font-medium pl-1">{couponError}</p>
+                  )}
+                  {couponSuccess && (
+                    <p className="text-[10px] text-emerald-400 font-medium pl-1">{couponSuccess}</p>
+                  )}
+                </div>
+
+                <div className="bg-theme-bg border border-theme-border rounded-xl p-3 flex flex-col gap-1.5 text-[10px] font-bold text-theme-text-sec">
+                  <div className="flex justify-between items-center">
+                    <span>Biaya Publikasi:</span>
+                    <span>
+                      {appliedCoupon ? (
+                        <>
+                          <span className="line-through text-theme-text-muted mr-1.5">Rp {currentCost.toLocaleString('id-ID')}</span>
+                          <span className="text-emerald-400">
+                            {finalCost === 0 ? 'Gratis' : `Rp ${finalCost.toLocaleString('id-ID')}`}
+                          </span>
+                        </>
+                      ) : (
+                        `Rp ${currentCost.toLocaleString('id-ID')}`
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-theme-border/50 pt-1.5">
+                    <span>Saldo Anda:</span>
+                    <span className={(profile?.balance ?? 0) < finalCost ? 'text-red-400' : 'text-emerald-400'}>
+                      Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
+                    </span>
+                  </div>
                 </div>
               </form>
 
@@ -1353,7 +1482,7 @@ function GenerateContent() {
             <button
               type="submit"
               form="publish-form"
-              disabled={isPublishing || !slug || (profile?.balance ?? 0) < currentCost}
+              disabled={isPublishing || !slug || (finalCost > 0 && (profile?.balance ?? 0) < finalCost)}
               className="w-full bg-[#c0623a] hover:bg-[#a8502d] disabled:opacity-50 text-white font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               {isPublishing ? (
@@ -1364,7 +1493,11 @@ function GenerateContent() {
               ) : (
                 <>
                   <Globe className="h-4 w-4" />
-                  <span>Publikasikan Sekarang (Rp {currentCost.toLocaleString('id-ID')})</span>
+                  <span>
+                    {finalCost === 0 
+                      ? 'Publikasikan Sekarang (Gratis)' 
+                      : `Publikasikan Sekarang (Rp ${finalCost.toLocaleString('id-ID')})`}
+                  </span>
                 </>
               )}
             </button>
