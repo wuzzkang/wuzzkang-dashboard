@@ -916,104 +916,310 @@ function GenerateContent() {
 
     if (templateType === 'birthday') {
       const design = pageData.meta?.design_key || 'cute-balloon';
-      const birthdayThemes = {
-        'cute-balloon': { primary: '#FF8DA1', secondary: '#FFF0F3', text: '#6C5B7B', bg: '#FFFDF9', name: 'Cute Balloon' },
-        'elegant-gold': { primary: '#D4AF37', secondary: '#1E1E1E', text: '#FFFFFF', bg: '#121212', name: 'Elegant Gold' },
-      };
-
-      const colors = birthdayThemes[design] || birthdayThemes['cute-balloon'];
+      const isGold = design === 'elegant-gold';
       const celebrant = pageData.content?.celebrant || {};
       const event = pageData.content?.event || {};
       const gift = pageData.content?.gift || {};
-      const quote = pageData.content?.quote || '';
+      const quote = pageData.content?.quote || (isGold
+        ? 'As we celebrate this milestone, every year lived is a story worth telling. We humbly request the honor of your presence.'
+        : 'Dengan penuh suka cita, kami mengundang Bapak/Ibu/Saudara/i untuk hadir merayakan hari istimewa bersama kami! 🎉');
 
       const defaultAvatar = DEFAULT_GROOM_AVATAR;
-      const isGold = design === 'elegant-gold';
 
+      // Countdown helper
+      const computeCountdown = () => {
+        if (!event.date) return null;
+        const eventDate = new Date(event.date);
+        if (isNaN(eventDate)) return null;
+        const diff = eventDate - new Date();
+        if (diff <= 0) return { expired: true };
+        return {
+          days:    Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours:   Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        };
+      };
+      const countdown = computeCountdown();
+
+      // Roman numeral helper
+      const toRoman = (num) => {
+        const val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+        const sym = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+        let r = '';
+        for (let i = 0; i < val.length; i++) {
+          while (num >= val[i]) {
+            r += sym[i];
+            num -= val[i];
+          }
+        }
+        return r;
+      };
+      const ageNum = parseInt(celebrant.age) || 0;
+
+      // ── CUTE BALLOON PREVIEW ──────────────────────────────────────────────────
+      if (!isGold) {
+        return (
+          <div
+            className="w-full h-full flex flex-col overflow-y-auto pb-12 select-none"
+            style={{
+              background: 'linear-gradient(160deg,#FFF0F7 0%,#FFF9E6 40%,#F0F7FF 100%)',
+              fontFamily: "'Nunito', sans-serif",
+              position: 'relative'
+            }}
+          >
+            <style dangerouslySetInnerHTML={{__html: `
+              @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+              .cb-p-title { font-family: 'Fredoka One', cursive; }
+              .cb-p-body  { font-family: 'Nunito', sans-serif; }
+              @keyframes cb-balloon { 0%{transform:translateY(0)rotate(-3deg)} 100%{transform:translateY(-16px)rotate(3deg)} }
+              .cb-balloon-anim { animation: cb-balloon 4s ease-in-out infinite alternate; display:inline-block; }
+              .cb-balloon-2    { animation-duration:5.5s; animation-delay:-1.5s; }
+              .cb-balloon-3    { animation-duration:3.8s; animation-delay:-2s; }
+              .cb-card-p { background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border:1.5px solid rgba(255,141,161,0.2); border-radius:24px; box-shadow:0 4px 20px rgba(255,141,161,0.1); }
+              .cb-info-row { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px dashed rgba(255,141,161,0.2); }
+              .cb-info-row:last-child { border-bottom:none; }
+              .cb-info-icon { width:34px; height:34px; min-width:34px; background:linear-gradient(135deg,#FFD6E0,#FFE8B8); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+            `}} />
+
+            {/* Confetti simulation (static/css animated) */}
+            {['#FF8DA1', '#FFD93D', '#6BCB77', '#4D96FF', '#FF6B6B'].map((c, i) => (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  width: 8,
+                  height: 8,
+                  background: c,
+                  borderRadius: i % 2 === 0 ? '50%' : '2px',
+                  opacity: 0.6,
+                  left: `${20 * i + 10}%`,
+                  top: `${15 * i + 5}%`,
+                  pointerEvents: 'none'
+                }}
+              />
+            ))}
+
+            {/* Hero */}
+            <div style={{ background: 'linear-gradient(160deg,#FFD6E7 0%,#FFF0B3 50%,#C3F4FD 100%)', padding: '36px 20px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 8, left: 6, fontSize: 36, opacity: 0.7 }} className="cb-balloon-anim">🎈</div>
+              <div style={{ position: 'absolute', top: 4, right: 8, fontSize: 30, opacity: 0.6 }} className="cb-balloon-anim cb-balloon-2">🎀</div>
+              <div style={{ position: 'absolute', bottom: 6, left: 16, fontSize: 24, opacity: 0.5 }} className="cb-balloon-anim cb-balloon-3">🎊</div>
+
+              <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 800, color: '#E8537A', marginBottom: 4 }}>🎈 Kamu Diundang! 🎈</div>
+              <h1 className="cb-p-title text-3xl" style={{ color: '#D63060', margin: '0 0 6px', lineHeight: 1.2 }}>Pesta Ulang Tahun</h1>
+              <div style={{ display: 'inline-block', position: 'relative' }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#5B3680' }}>
+                  {celebrant.nickname || celebrant.name?.split(' ')[0] || 'Si Kecil'}
+                </div>
+                {ageNum > 0 && (
+                  <div style={{ position: 'absolute', top: -24, right: -32, width: 44, height: 44, background: 'linear-gradient(135deg,#FF6B6B,#FFD93D)', borderRadius: '50%', border: '2px solid white', boxShadow: '0 3px 8px rgba(255,107,107,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span className="cb-p-title" style={{ fontSize: 15, color: 'white', lineHeight: 1 }}>{ageNum}</span>
+                    <span style={{ fontSize: 6, color: 'rgba(255,255,255,0.9)', fontWeight: 700 }}>TAHUN</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Content Container */}
+            <div className="px-5 py-4 flex flex-col gap-4 text-center" style={{ position: 'relative', zIndex: 1 }}>
+              {/* Photo */}
+              <div style={{ margin: '10px 0' }}>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <div style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 6px 20px rgba(255,141,161,0.25)' }}>
+                    <img src={celebrant.image_url || defaultAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Celebrant" />
+                  </div>
+                  <span style={{ position: 'absolute', top: -4, right: -4, fontSize: 16 }}>⭐</span>
+                  <span style={{ position: 'absolute', bottom: -2, left: -2, fontSize: 14 }}>✨</span>
+                </div>
+                <h2 className="cb-p-title text-xl mt-2" style={{ color: '#D63060', margin: '8px 0 0' }}>{celebrant.name || 'Nama Celebrant'}</h2>
+                {celebrant.parent_name && <p style={{ fontSize: 10, color: '#999', margin: '2px 0 0' }}>Putra/Putri tercinta dari:<br/><span style={{ fontWeight: 700, color: '#5B3680' }}>{celebrant.parent_name}</span></p>}
+              </div>
+
+              {/* Quote */}
+              <div className="cb-card-p p-4 text-xs">
+                <p style={{ fontStyle: 'italic', margin: 0, color: '#666' }}>"{quote}"</p>
+              </div>
+
+              {/* Countdown */}
+              {countdown && !countdown.expired && (
+                <div className="my-2">
+                  <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, color: '#FF8DA1', fontWeight: 700, marginBottom: 8 }}>⏰ Hitung Mundur Acara</div>
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                    {[{ v: countdown.days, l: 'Hari', c: '#FF8DA1' }, { v: countdown.hours, l: 'Jam', c: '#FFB347' }, { v: countdown.minutes, l: 'Menit', c: '#77DDE7' }].map(({ v, l, c }) => (
+                      <div key={l} style={{ background: 'white', border: '1.5px solid rgba(255,141,161,0.2)', borderRadius: 12, padding: '8px 10px', textAlign: 'center', minWidth: 48, boxShadow: '0 3px 10px rgba(255,141,161,0.1)' }}>
+                        <div className="cb-p-title text-lg" style={{ color: c, lineHeight: 1 }}>{v}</div>
+                        <div style={{ fontSize: 8, color: '#aaa', marginTop: 1 }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Details */}
+              <div className="cb-card-p p-4 text-left">
+                <div className="cb-p-title text-sm mb-3" style={{ color: '#D63060' }}>🎉 Detail Acara</div>
+                {[{ icon: '📅', label: 'Tanggal', val: event.date }, { icon: '⏰', label: 'Waktu', val: event.time }, { icon: '📍', label: 'Lokasi', val: event.location }].map(({ icon, label, val }) => (
+                  <div key={label} className="cb-info-row">
+                    <div className="cb-info-icon">{icon}</div>
+                    <div>
+                      <div style={{ fontSize: 8, color: '#bbb', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>{label}</div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: '#333' }}>{val || 'TBA'}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Gift */}
+              {(gift.bank_name || gift.account_number) && (
+                <div className="cb-card-p p-4 text-left">
+                  <div className="cb-p-title text-sm mb-2" style={{ color: '#D63060' }}>🎁 Kado Digital</div>
+                  <div style={{ background: 'linear-gradient(135deg,#FFF0F7,#FFF9E6)', border: '1.5px solid rgba(255,141,161,0.2)', borderRadius: 12, padding: 10, textAlign: 'center' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#555' }}>{gift.bank_name}</div>
+                    <div className="cb-p-title text-lg" style={{ color: '#D63060', margin: '2px 0' }}>{gift.account_number}</div>
+                    <div style={{ fontSize: 9, color: '#aaa' }}>a.n. {gift.account_holder}</div>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-[9px] opacity-40 mt-4">Siluet Birthday Template • Cute Balloon</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── ELEGANT GOLD PREVIEW ──────────────────────────────────────────────────
       return (
-        <div 
-          className="w-full h-full flex flex-col overflow-y-auto text-center px-6 py-8 select-none pb-12"
-          style={{ backgroundColor: colors.bg, color: isGold ? '#FFFFFF' : colors.text, fontFamily: isGold ? "'Playfair Display', serif" : "'Poppins', sans-serif" }}
+        <div
+          className="w-full h-full flex flex-col overflow-y-auto pb-12 select-none"
+          style={{
+            background: '#0a0a0a',
+            color: '#e0e0e0',
+            fontFamily: "'Poppins', sans-serif",
+            position: 'relative'
+          }}
         >
           <style dangerouslySetInnerHTML={{__html: `
-            @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap');
-            .birthday-cute-title { font-family: 'Fredoka One', cursive; }
-            .birthday-gold-title { font-family: 'Playfair Display', serif; }
-            .birthday-sans { font-family: 'Poppins', sans-serif; }
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cormorant+Garamond:ital,wght@1,400&family=Poppins:wght@300;400;500;600&display=swap');
+            .eg-p-serif  { font-family: 'Playfair Display', serif; }
+            .eg-p-italic { font-family: 'Cormorant Garamond', serif; font-style:italic; }
+            .eg-p-sans   { font-family: 'Poppins', sans-serif; }
+            @keyframes eg-gold-flow { 0%{background-position:0% center} 100%{background-position:300% center} }
+            @keyframes eg-ring-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+            .eg-gold-shimmer { background:linear-gradient(90deg,#B8860B 0%,#FFD700 30%,#F5DE7A 50%,#FFD700 70%,#B8860B 100%); background-size:300% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:eg-gold-flow 4s linear infinite; }
+            .eg-ornament::before,.eg-ornament::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,#D4AF37,transparent); }
+            .eg-ornament { display:flex; align-items:center; gap:10px; margin:10px 0; color:#D4AF37; font-size:12px; }
+            .eg-card-p { background:#141414; border:1px solid rgba(212,175,55,0.2); border-radius:20px; overflow:hidden; position:relative; }
+            .eg-info-row { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid rgba(212,175,55,0.1); }
+            .eg-info-row:last-child { border-bottom:none; }
+            .eg-info-icon { width:32px; height:32px; min-width:32px; border:1px solid rgba(212,175,55,0.3); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; background:rgba(212,175,55,0.05); }
+            .eg-cd-box { background:#161616; border:1px solid rgba(212,175,55,0.3); border-radius:10px; padding:8px 12px; text-align:center; min-width:50px; }
           `}} />
 
-          {/* Cover Header */}
-          <div className={`my-6 py-6 border-b border-dashed ${isGold ? 'border-yellow-900/30' : 'border-pink-200'}`}>
-            <span className={`text-[10px] tracking-widest uppercase font-bold ${isGold ? 'text-[#D4AF37]' : 'text-pink-400'}`}>
-              {isGold ? 'YOU ARE INVITED' : 'Kamu Diundang! 🎈'}
-            </span>
-            <h3 className={`text-3xl my-4 font-bold ${isGold ? 'birthday-gold-title text-[#D4AF37]' : 'birthday-cute-title text-pink-500'}`}>
-              Pesta Ulang Tahun
-            </h3>
-            <div className={`text-lg font-bold ${isGold ? 'text-slate-100' : 'text-slate-800'}`}>
-              {celebrant.nickname || 'Celebrant'} yang ke-{celebrant.age || '1'}
+          {/* Sparkles simulation */}
+          {Array.from({length:15}).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                width: i % 2 === 0 ? 2 : 3,
+                height: i % 2 === 0 ? 2 : 3,
+                background: '#D4AF37',
+                borderRadius: '50%',
+                opacity: 0.5,
+                left: `${(i * 27 + 13) % 100}%`,
+                top: `${(i * 19 + 7) % 100}%`,
+                pointerEvents: 'none'
+              }}
+            />
+          ))}
+
+          {/* Hero */}
+          <div style={{ position: 'relative', textAlign: 'center', padding: '36px 20px 24px', borderBottom: '1px solid rgba(212,175,55,0.12)', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ height: 1, width: 30, background: 'linear-gradient(90deg,transparent,#D4AF37)' }} />
+              <span style={{ color: '#D4AF37', fontSize: 10 }}>✦</span>
+              <div style={{ height: 1, width: 30, background: 'linear-gradient(90deg,#D4AF37,transparent)' }} />
             </div>
+            <div style={{ fontSize: 8, letterSpacing: 3, textTransform: 'uppercase', color: '#D4AF37', opacity: 0.7, marginBottom: 8 }}>— You Are Cordially Invited —</div>
+            <h1 className="eg-p-serif eg-gold-shimmer text-3xl" style={{ fontWeight: 700, margin: '0 0 4px', lineHeight: 1.2 }}>The Birthday</h1>
+            <h2 className="eg-p-serif eg-gold-shimmer text-lg" style={{ fontWeight: 400, margin: 0, fontStyle: 'italic', opacity: 0.9 }}>Celebration</h2>
+            {ageNum > 0 && (
+              <div style={{ margin: '14px 0' }}>
+                <span className="eg-p-serif" style={{ fontSize: 36, fontWeight: 900, color: '#D4AF37', letterSpacing: 4 }}>{toRoman(ageNum)}</span>
+                <div style={{ fontSize: 8, color: '#D4AF37', opacity: 0.6, letterSpacing: 2, textTransform: 'uppercase', marginTop: 2 }}>
+                  The {ageNum}{ageNum===1?'st':ageNum===2?'nd':ageNum===3?'rd':'th'} Anniversary
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Celebrant Profile */}
-          <div className="my-6 flex flex-col items-center gap-4">
-            <div className={`w-24 h-24 rounded-full overflow-hidden border-4 shadow-sm ${isGold ? 'border-yellow-600/50 p-0.5 bg-[#1E1E1E]' : 'border-pink-300'}`}>
-              <img src={celebrant.image_url || defaultAvatar} className="w-full h-full object-cover rounded-full" alt="Celebrant" />
+          {/* Content */}
+          <div className="px-5 py-4 flex flex-col gap-4 text-center" style={{ position: 'relative', zIndex: 1 }}>
+            {/* Photo */}
+            <div style={{ margin: '10px 0' }}>
+              <div style={{ display: 'inline-block', position: 'relative' }}>
+                <div style={{ width: 110, height: 110, borderRadius: '50%', background: 'conic-gradient(from 0deg,#B8860B,#FFD700,#F5DE7A,#FFD700,#B8860B)', padding: 2, boxShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', border: '2px solid #0a0a0a', overflow: 'hidden' }}>
+                    <img src={celebrant.image_url || defaultAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Celebrant" />
+                  </div>
+                </div>
+                <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 18 }}>👑</div>
+              </div>
+              <h2 className="eg-p-serif text-2xl" style={{ color: '#f0f0f0', fontWeight: 700, margin: '12px 0 0' }}>{celebrant.name || 'Celebrant Name'}</h2>
+              {celebrant.parent_name && <p style={{ fontSize: 10, color: '#555', margin: '4px 0 0' }}>Born of: <span style={{ color: '#D4AF37', fontStyle: 'italic' }}>{celebrant.parent_name}</span></p>}
             </div>
-            <div>
-              <h4 className={`font-bold text-xl ${isGold ? 'birthday-gold-title text-slate-100' : 'birthday-cute-title text-pink-600'}`}>
-                {celebrant.name || 'Nama Lengkap'}
-              </h4>
-              {celebrant.parent_name && (
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Putra/Putri tercinta dari: <br/>
-                  <span className="font-semibold text-slate-300">{celebrant.parent_name}</span>
-                </p>
-              )}
+
+            {/* Quote */}
+            <div className="eg-card-p p-4 text-center">
+              <div className="eg-ornament"><span>✦</span></div>
+              <p className="eg-p-italic text-sm" style={{ color: '#aaa', margin: '4px 0' }}>&ldquo;{quote}&rdquo;</p>
+              <div className="eg-ornament"><span>✦</span></div>
             </div>
+
+            {/* Countdown */}
+            {countdown && !countdown.expired && (
+              <div className="my-2">
+                <div className="eg-ornament"><span>◆</span></div>
+                <div style={{ fontSize: 8, textTransform: 'uppercase', letterSpacing: 2, color: '#D4AF37', opacity: 0.7, marginBottom: 8 }}>Menuju Hari Istimewa</div>
+                <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                  {[{ v: countdown.days, l: 'Days' }, { v: countdown.hours, l: 'Hours' }, { v: countdown.minutes, l: 'Min' }].map(({ v, l }) => (
+                    <div key={l} className="eg-cd-box">
+                      <div className="eg-p-serif eg-gold-shimmer text-xl" style={{ fontWeight: 700, lineHeight: 1 }}>{v}</div>
+                      <div style={{ fontSize: 7, color: '#666', marginTop: 2, letterSpacing: 1, textTransform: 'uppercase' }}>{l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Event Details */}
+            <div className="eg-card-p p-4 text-left">
+              <div className="eg-p-serif text-xs mb-3 text-center" style={{ letterSpacing: 2, color: '#D4AF37' }}>✦ Event Details ✦</div>
+              {[{ icon: '📅', label: 'Date', val: event.date }, { icon: '🕰️', label: 'Time', val: event.time }, { icon: '🏛️', label: 'Venue', val: event.location }].map(({ icon, label, val }) => (
+                <div key={label} className="eg-info-row">
+                  <div className="eg-info-icon">{icon}</div>
+                  <div>
+                    <div style={{ fontSize: 7, color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 1 }}>{label}</div>
+                    <div style={{ fontSize: 13, color: '#e0e0e0', fontWeight: 500 }}>{val || 'TBA'}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Gift */}
+            {(gift.bank_name || gift.account_number) && (
+              <div className="eg-card-p p-4 text-left">
+                <div className="eg-p-serif text-xs mb-2 text-center" style={{ letterSpacing: 2, color: '#D4AF37' }}>✦ Birthday Gift ✦</div>
+                <div style={{ background: '#0f0f0f', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                  <div style={{ fontSize: 10, color: '#888', marginBottom: 2 }}>{gift.bank_name}</div>
+                  <div className="eg-p-serif eg-gold-shimmer text-lg" style={{ fontWeight: 700, margin: '2px 0' }}>{gift.account_number}</div>
+                  <div style={{ fontSize: 9, color: '#555' }}>a.n. {gift.account_holder}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="text-[9px] text-slate-700 tracking-wider mt-4">Siluet Birthday Template • Elegant Gold</div>
           </div>
-
-          {/* Quote */}
-          <div className={`my-3 px-4 py-3 rounded-2xl text-xs italic leading-relaxed ${isGold ? 'bg-[#1E1E1E] border border-yellow-950/40 text-slate-400' : 'bg-pink-50/50 border border-pink-100 text-slate-600'}`}>
-            &ldquo;{quote}&rdquo;
-          </div>
-
-          {/* Event details */}
-          <div className={`my-5 p-5 rounded-3xl shadow-sm text-left ${isGold ? 'bg-[#1E1E1E] border border-yellow-950/40' : 'bg-white border border-pink-100'}`}>
-            <h4 className={`font-bold text-xs mb-3 tracking-wider ${isGold ? 'text-[#D4AF37]' : 'text-pink-600 birthday-cute-title'}`}>
-              📅 DETAIL ACARA
-            </h4>
-            <div className="space-y-2.5 text-xs">
-              <div>
-                <div className="text-[10px] opacity-60">Hari / Tanggal:</div>
-                <div className="font-semibold">{event.date || 'TBA'}</div>
-              </div>
-              <div>
-                <div className="text-[10px] opacity-60">Waktu / Jam:</div>
-                <div className="font-semibold">{event.time || 'TBA'}</div>
-              </div>
-              <div>
-                <div className="text-[10px] opacity-60">Tempat:</div>
-                <div className="font-semibold">{event.location || 'TBA'}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Gift Section */}
-          {(gift.bank_name || gift.account_number) && (
-            <div className={`my-5 p-5 rounded-3xl shadow-sm text-left ${isGold ? 'bg-[#1E1E1E] border border-yellow-950/40' : 'bg-white border border-pink-100'}`}>
-              <h4 className={`font-bold text-xs mb-3 tracking-wider ${isGold ? 'text-[#D4AF37]' : 'text-pink-600 birthday-cute-title'}`}>
-                🎁 KADO DIGITAL
-              </h4>
-              <div className={`border p-3.5 rounded-2xl ${isGold ? 'bg-[#121212] border-yellow-950/30' : 'bg-pink-50/50 border-pink-100'}`}>
-                <div className="text-[11px] font-bold opacity-80">{gift.bank_name}</div>
-                <div className={`font-bold text-xs my-0.5 ${isGold ? 'text-[#D4AF37]' : 'text-pink-500'}`}>{gift.account_number}</div>
-                <div className="text-[9px] opacity-60">a/n {gift.account_holder}</div>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-6 text-[9px] opacity-50">Siluet Birthday Template • {colors.name}</div>
         </div>
       );
     }
