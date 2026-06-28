@@ -71,6 +71,16 @@
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
                     }
+                } else if (templateType === 'birthday') {
+                    try {
+                        // Dynamically import the exact JS birthday template module
+                        const module = await import(`./templates/birthday/${designKey}.js`);
+                        
+                        // Execute the template renderer
+                        await module.render(pageData, 'Nama Tamu Undangan');
+                    } catch (err) {
+                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
+                    }
                 } else {
                     // Default mockup preview for Store template
                     appEl.innerHTML = `

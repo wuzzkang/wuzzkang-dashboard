@@ -111,6 +111,26 @@ function GenerateContent() {
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
   const [storyList, setStoryList] = useState([]);
   
+  // Birthday modular additions
+  const [celebrantName, setCelebrantName] = useState('');
+  const [celebrantNickname, setCelebrantNickname] = useState('');
+  const [celebrantAge, setCelebrantAge] = useState('');
+  const [celebrantParents, setCelebrantParents] = useState('');
+  const [celebrantImage, setCelebrantImage] = useState(DEFAULT_GROOM_AVATAR);
+  const [celebrantGender, setCelebrantGender] = useState('male');
+  
+  const [birthdayDate, setBirthdayDate] = useState('');
+  const [birthdayTime, setBirthdayTime] = useState('');
+  const [birthdayLocation, setBirthdayLocation] = useState('');
+  const [birthdayMaps, setBirthdayMaps] = useState('');
+  
+  const [birthdayGiftBank, setBirthdayGiftBank] = useState('');
+  const [birthdayGiftAccount, setBirthdayGiftAccount] = useState('');
+  const [birthdayGiftHolder, setBirthdayGiftHolder] = useState('');
+  
+  const [isUploadingCelebrantImage, setIsUploadingCelebrantImage] = useState(false);
+  const [isGeneratingCelebrantImage, setIsGeneratingCelebrantImage] = useState(false);
+  
   // Adding story temp states
   const [newStoryTitle, setNewStoryTitle] = useState('');
   const [newStoryDate, setNewStoryDate] = useState('');
@@ -131,6 +151,7 @@ function GenerateContent() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState('');
   const [successUrl, setSuccessUrl] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   // Preview mode (desktop vs mobile)
   const [previewDevice, setPreviewDevice] = useState('mobile');
@@ -210,6 +231,26 @@ function GenerateContent() {
               setGroomImage(content.groom?.image_url || DEFAULT_GROOM_AVATAR);
               setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
               setStoryList(content.story || []);
+            } else if (pageConfig && pageConfig.meta?.template_type === 'birthday') {
+              setTemplateType('birthday');
+              const content = pageConfig.content || {};
+              setCelebrantName(content.celebrant?.name || '');
+              setCelebrantNickname(content.celebrant?.nickname || '');
+              setCelebrantAge(content.celebrant?.age || '');
+              setCelebrantParents(content.celebrant?.parent_name || '');
+              setCelebrantImage(content.celebrant?.image_url || DEFAULT_GROOM_AVATAR);
+              setCelebrantGender(content.celebrant?.gender || 'male');
+              
+              setBirthdayDate(content.event?.date || '');
+              setBirthdayTime(content.event?.time || '');
+              setBirthdayLocation(content.event?.location || '');
+              setBirthdayMaps(content.event?.maps_url || '');
+              
+              setBirthdayGiftBank(content.gift?.bank_name || '');
+              setBirthdayGiftAccount(content.gift?.account_number || '');
+              setBirthdayGiftHolder(content.gift?.account_holder || '');
+              
+              setDesignKey(pageConfig.meta?.design_key || 'cute-balloon');
             } else {
               setTemplateType('store');
             }
@@ -233,8 +274,35 @@ function GenerateContent() {
       meta: {
         template_type: templateType,
         design_key: designKey,
+        title: templateType === 'birthday' 
+          ? `Undangan Ulang Tahun ${celebrantNickname || 'Celebrant'}`
+          : templateType === 'wedding'
+            ? `Undangan Pernikahan ${groomNickname || 'Groom'} & ${brideNickname || 'Bride'}`
+            : 'Draft Page',
+        theme: designKey
       },
-      content: {
+      content: templateType === 'birthday' ? {
+        celebrant: {
+          name: celebrantName,
+          nickname: celebrantNickname,
+          age: celebrantAge,
+          parent_name: celebrantParents || null,
+          image_url: celebrantImage || null,
+          gender: celebrantGender
+        },
+        event: {
+          date: birthdayDate,
+          time: birthdayTime,
+          location: birthdayLocation,
+          maps_url: birthdayMaps || null
+        },
+        gift: birthdayGiftBank && birthdayGiftAccount ? {
+          bank_name: birthdayGiftBank,
+          account_number: birthdayGiftAccount,
+          account_holder: birthdayGiftHolder || ''
+        } : null,
+        quote: pageData?.content?.quote || 'Selamat hari lahir! Semoga panjang umur, sehat selalu, dan dilimpahi kebahagiaan serta kesuksesan.'
+      } : {
         groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage || null },
         bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage || null },
         story: storyList.length > 0 ? storyList : null,
@@ -275,7 +343,20 @@ function GenerateContent() {
     resepsiMaps,
     giftBank,
     giftAccount,
-    giftHolder
+    giftHolder,
+    celebrantName,
+    celebrantNickname,
+    celebrantAge,
+    celebrantParents,
+    celebrantImage,
+    celebrantGender,
+    birthdayDate,
+    birthdayTime,
+    birthdayLocation,
+    birthdayMaps,
+    birthdayGiftBank,
+    birthdayGiftAccount,
+    birthdayGiftHolder
   ]);
 
   // Synchronize state with live preview iframe
@@ -328,7 +409,8 @@ function GenerateContent() {
     }
     return [
       { id: 'store', name: 'Toko Online / Bisnis', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.' },
-      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.' }
+      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.' },
+      { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.' }
     ];
   };
 
@@ -414,6 +496,10 @@ function GenerateContent() {
              !akadDate || !akadTime || !akadLocation ||
              !resepsiDate || !resepsiTime || !resepsiLocation;
     }
+    if (templateType === 'birthday') {
+      return !celebrantName || !celebrantNickname || !celebrantAge ||
+             !birthdayDate || !birthdayTime || !birthdayLocation;
+    }
     if (templateType === 'store') {
       return !prompt;
     }
@@ -426,10 +512,12 @@ function GenerateContent() {
     const isGroom = target === 'groom';
     const isBride = target === 'bride';
     const isStory = target === 'story';
+    const isCelebrant = target === 'celebrant';
 
     if (isGroom) setIsUploadingGroomImage(true);
     if (isBride) setIsUploadingBrideImage(true);
     if (isStory) setIsUploadingStoryImage(true);
+    if (isCelebrant) setIsUploadingCelebrantImage(true);
 
     try {
       let fileToUpload = file;
@@ -449,20 +537,21 @@ function GenerateContent() {
 
       console.log(`[Dashboard] Uploading file to storage: ${fileName}`);
       const { data, error } = await supabase.storage
-        .from('wuzzkang-bucket')
-        .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
+          .from('wuzzkang-bucket')
+          .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
 
       if (error) throw error;
 
       const { data: publicUrlData } = supabase.storage
-        .from('wuzzkang-bucket')
-        .getPublicUrl(filePath);
+          .from('wuzzkang-bucket')
+          .getPublicUrl(filePath);
 
       const publicUrl = publicUrlData.publicUrl;
 
       if (isGroom) setGroomImage(publicUrl);
       if (isBride) setBrideImage(publicUrl);
       if (isStory) setNewStoryImage(publicUrl);
+      if (isCelebrant) setCelebrantImage(publicUrl);
     } catch (err) {
       console.error('[Dashboard] File upload error:', err);
       setError('Gagal mengunggah foto: ' + err.message);
@@ -470,23 +559,31 @@ function GenerateContent() {
       if (isGroom) setIsUploadingGroomImage(false);
       if (isBride) setIsUploadingBrideImage(false);
       if (isStory) setIsUploadingStoryImage(false);
+      if (isCelebrant) setIsUploadingCelebrantImage(false);
     }
   };
 
   const handleGenerateAIImage = async (target) => {
     const isGroom = target === 'groom';
     const isBride = target === 'bride';
+    const isCelebrant = target === 'celebrant';
     
-    const defaultPrompt = isGroom 
-      ? 'A cute 3D Pixar-style groom avatar, clean minimalist background, wedding theme, smiling, handsome'
-      : 'A cute 3D Pixar-style bride avatar, clean minimalist background, wedding theme, smiling, beautiful';
+    let defaultPrompt = 'A cute 3D Pixar-style avatar, clean minimalist background, smiling';
+    if (isGroom) {
+      defaultPrompt = 'A cute 3D Pixar-style groom avatar, clean minimalist background, wedding theme, smiling, handsome';
+    } else if (isBride) {
+      defaultPrompt = 'A cute 3D Pixar-style bride avatar, clean minimalist background, wedding theme, smiling, beautiful';
+    } else if (isCelebrant) {
+      defaultPrompt = `A cute 3D Pixar-style ${celebrantGender === 'female' ? 'girl' : 'boy'} avatar celebrating birthday, holding balloons, colorful theme, smiling, happy`;
+    }
 
-    const userPrompt = window.prompt(`Masukkan deskripsi/prompt untuk avatar AI ${isGroom ? 'Pria' : 'Wanita'}:`, defaultPrompt);
+    const userPrompt = window.prompt(`Masukkan deskripsi/prompt untuk avatar AI ${isGroom ? 'Pria' : isBride ? 'Wanita' : celebrantGender === 'female' ? 'Perempuan' : 'Laki-laki'}:`, defaultPrompt);
     if (userPrompt === null) return;
     if (!userPrompt.trim()) return;
 
     if (isGroom) setIsGeneratingGroomImage(true);
     if (isBride) setIsGeneratingBrideImage(true);
+    if (isCelebrant) setIsGeneratingCelebrantImage(true);
     setError('');
 
     try {
@@ -503,6 +600,7 @@ function GenerateContent() {
       if (response.ok && result.success) {
         if (isGroom) setGroomImage(result.url);
         if (isBride) setBrideImage(result.url);
+        if (isCelebrant) setCelebrantImage(result.url);
       } else {
         throw new Error(result.error || 'Gagal men-generate gambar.');
       }
@@ -510,11 +608,13 @@ function GenerateContent() {
       console.error('[Dashboard] AI avatar error, falling back to default:', err);
       if (isGroom) setGroomImage(DEFAULT_GROOM_AVATAR);
       if (isBride) setBrideImage(DEFAULT_BRIDE_AVATAR);
+      if (isCelebrant) setCelebrantImage(DEFAULT_GROOM_AVATAR);
       
       alert(`Gagal men-generate foto AI: ${err.message || 'Error'}\n\nSistem otomatis menggunakan avatar default untuk Anda.`);
     } finally {
       if (isGroom) setIsGeneratingGroomImage(false);
       if (isBride) setIsGeneratingBrideImage(false);
+      if (isCelebrant) setIsGeneratingCelebrantImage(false);
     }
   };
 
@@ -541,6 +641,30 @@ function GenerateContent() {
           akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
           resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
           gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null
+        };
+      }
+      if (templateType === 'birthday') {
+        payload.birthday_details = {
+          design_key: designKey,
+          celebrant: {
+            name: celebrantName,
+            nickname: celebrantNickname,
+            age: celebrantAge,
+            parent_name: celebrantParents || null,
+            image_url: celebrantImage || null,
+            gender: celebrantGender
+          },
+          event: {
+            date: birthdayDate,
+            time: birthdayTime,
+            location: birthdayLocation,
+            maps_url: birthdayMaps || null
+          },
+          gift: birthdayGiftBank && birthdayGiftAccount ? {
+            bank_name: birthdayGiftBank,
+            account_number: birthdayGiftAccount,
+            account_holder: birthdayGiftHolder || ''
+          } : null
         };
       }
 
@@ -636,6 +760,7 @@ function GenerateContent() {
 
       if (response.ok && result.success) {
         setSuccessUrl(result.liveUrl);
+        setShowSuccessModal(true);
         await refreshProfile(); // Refresh balance
       } else {
         setError(result.error ? Object.values(result.error).flat().join(', ') : (result.error || 'Gagal mempublikasikan landing page.'));
@@ -780,6 +905,110 @@ function GenerateContent() {
       );
     }
 
+    if (templateType === 'birthday') {
+      const design = pageData.meta?.design_key || 'cute-balloon';
+      const birthdayThemes = {
+        'cute-balloon': { primary: '#FF8DA1', secondary: '#FFF0F3', text: '#6C5B7B', bg: '#FFFDF9', name: 'Cute Balloon' },
+        'elegant-gold': { primary: '#D4AF37', secondary: '#1E1E1E', text: '#FFFFFF', bg: '#121212', name: 'Elegant Gold' },
+      };
+
+      const colors = birthdayThemes[design] || birthdayThemes['cute-balloon'];
+      const celebrant = pageData.content?.celebrant || {};
+      const event = pageData.content?.event || {};
+      const gift = pageData.content?.gift || {};
+      const quote = pageData.content?.quote || '';
+
+      const defaultAvatar = DEFAULT_GROOM_AVATAR;
+      const isGold = design === 'elegant-gold';
+
+      return (
+        <div 
+          className="w-full h-full flex flex-col overflow-y-auto text-center px-6 py-8 select-none pb-12"
+          style={{ backgroundColor: colors.bg, color: isGold ? '#FFFFFF' : colors.text, fontFamily: isGold ? "'Playfair Display', serif" : "'Poppins', sans-serif" }}
+        >
+          <style dangerouslySetInnerHTML={{__html: `
+            @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;500;600;700&display=swap');
+            .birthday-cute-title { font-family: 'Fredoka One', cursive; }
+            .birthday-gold-title { font-family: 'Playfair Display', serif; }
+            .birthday-sans { font-family: 'Poppins', sans-serif; }
+          `}} />
+
+          {/* Cover Header */}
+          <div className={`my-6 py-6 border-b border-dashed ${isGold ? 'border-yellow-900/30' : 'border-pink-200'}`}>
+            <span className={`text-[10px] tracking-widest uppercase font-bold ${isGold ? 'text-[#D4AF37]' : 'text-pink-400'}`}>
+              {isGold ? 'YOU ARE INVITED' : 'Kamu Diundang! 🎈'}
+            </span>
+            <h3 className={`text-3xl my-4 font-bold ${isGold ? 'birthday-gold-title text-[#D4AF37]' : 'birthday-cute-title text-pink-500'}`}>
+              Pesta Ulang Tahun
+            </h3>
+            <div className={`text-lg font-bold ${isGold ? 'text-slate-100' : 'text-slate-800'}`}>
+              {celebrant.nickname || 'Celebrant'} yang ke-{celebrant.age || '1'}
+            </div>
+          </div>
+
+          {/* Celebrant Profile */}
+          <div className="my-6 flex flex-col items-center gap-4">
+            <div className={`w-24 h-24 rounded-full overflow-hidden border-4 shadow-sm ${isGold ? 'border-yellow-600/50 p-0.5 bg-[#1E1E1E]' : 'border-pink-300'}`}>
+              <img src={celebrant.image_url || defaultAvatar} className="w-full h-full object-cover rounded-full" alt="Celebrant" />
+            </div>
+            <div>
+              <h4 className={`font-bold text-xl ${isGold ? 'birthday-gold-title text-slate-100' : 'birthday-cute-title text-pink-600'}`}>
+                {celebrant.name || 'Nama Lengkap'}
+              </h4>
+              {celebrant.parent_name && (
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Putra/Putri tercinta dari: <br/>
+                  <span className="font-semibold text-slate-300">{celebrant.parent_name}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Quote */}
+          <div className={`my-3 px-4 py-3 rounded-2xl text-xs italic leading-relaxed ${isGold ? 'bg-[#1E1E1E] border border-yellow-950/40 text-slate-400' : 'bg-pink-50/50 border border-pink-100 text-slate-600'}`}>
+            &ldquo;{quote}&rdquo;
+          </div>
+
+          {/* Event details */}
+          <div className={`my-5 p-5 rounded-3xl shadow-sm text-left ${isGold ? 'bg-[#1E1E1E] border border-yellow-950/40' : 'bg-white border border-pink-100'}`}>
+            <h4 className={`font-bold text-xs mb-3 tracking-wider ${isGold ? 'text-[#D4AF37]' : 'text-pink-600 birthday-cute-title'}`}>
+              📅 DETAIL ACARA
+            </h4>
+            <div className="space-y-2.5 text-xs">
+              <div>
+                <div className="text-[10px] opacity-60">Hari / Tanggal:</div>
+                <div className="font-semibold">{event.date || 'TBA'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] opacity-60">Waktu / Jam:</div>
+                <div className="font-semibold">{event.time || 'TBA'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] opacity-60">Tempat:</div>
+                <div className="font-semibold">{event.location || 'TBA'}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Gift Section */}
+          {(gift.bank_name || gift.account_number) && (
+            <div className={`my-5 p-5 rounded-3xl shadow-sm text-left ${isGold ? 'bg-[#1E1E1E] border border-yellow-950/40' : 'bg-white border border-pink-100'}`}>
+              <h4 className={`font-bold text-xs mb-3 tracking-wider ${isGold ? 'text-[#D4AF37]' : 'text-pink-600 birthday-cute-title'}`}>
+                🎁 KADO DIGITAL
+              </h4>
+              <div className={`border p-3.5 rounded-2xl ${isGold ? 'bg-[#121212] border-yellow-950/30' : 'bg-pink-50/50 border-pink-100'}`}>
+                <div className="text-[11px] font-bold opacity-80">{gift.bank_name}</div>
+                <div className={`font-bold text-xs my-0.5 ${isGold ? 'text-[#D4AF37]' : 'text-pink-500'}`}>{gift.account_number}</div>
+                <div className="text-[9px] opacity-60">a/n {gift.account_holder}</div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 text-[9px] opacity-50">Siluet Birthday Template • {colors.name}</div>
+        </div>
+      );
+    }
+
     // Default Store template preview
     const themeColors = {
       light: '#3b82f6',
@@ -909,7 +1138,7 @@ function GenerateContent() {
         </div>
 
         {/* Success Modal Overlay */}
-        {successUrl && (
+        {showSuccessModal && successUrl && (
           <div className="fixed inset-0 bg-theme-bg/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
             <div className="bg-theme-surface border border-theme-border rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl relative">
               <div className="h-16 w-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
@@ -944,6 +1173,7 @@ function GenerateContent() {
                 </a>
                 <button
                   onClick={() => {
+                    setShowSuccessModal(false);
                     setSuccessUrl('');
                     setPageData(null);
                     setProjectId(null);
@@ -1015,11 +1245,11 @@ function GenerateContent() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="h-7 w-7 rounded-lg bg-theme-accent/10 flex items-center justify-center text-theme-accent group-hover:scale-105 transition-transform text-sm">
-                            {templateType === 'wedding' ? '🌸' : '🛍️'}
+                            {templateType === 'wedding' ? '🌸' : templateType === 'birthday' ? '🎂' : '🛍️'}
                           </div>
                           <div>
                             <p className="text-xs font-bold text-theme-text">
-                              {templateType === 'wedding' ? 'Undangan Pernikahan' : 'Toko Online / Bisnis'}
+                              {templateType === 'wedding' ? 'Undangan Pernikahan' : templateType === 'birthday' ? 'Undangan Ulang Tahun' : 'Toko Online / Bisnis'}
                             </p>
                             <p className="text-[9px] text-theme-text-sec">
                               {editMode ? 'Tipe produk dikunci pada mode edit' : 'Klik untuk mengganti tipe produk/template'}
@@ -1322,12 +1552,11 @@ function GenerateContent() {
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
                           />
                           <input
-                            type="text"
+                            type="time"
                             required
-                            placeholder="Jam Akad (09:00 - Selesai)"
                             value={akadTime}
                             onChange={(e) => setAkadTime(e.target.value)}
-                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
                           />
                         </div>
                         <input
@@ -1357,12 +1586,11 @@ function GenerateContent() {
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
                           />
                           <input
-                            type="text"
+                            type="time"
                             required
-                            placeholder="Jam Resepsi (11:00 - 13:00)"
                             value={resepsiTime}
                             onChange={(e) => setResepsiTime(e.target.value)}
-                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
                           />
                         </div>
                         <input
@@ -1409,15 +1637,229 @@ function GenerateContent() {
                       </div>
                     )}
 
+                    {/* Birthday Fields */}
+                    {templateType === 'birthday' && (
+                      <div className="space-y-4 border-t border-theme-border pt-4">
+                        {/* Desain Template Picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                            Pilih Desain Tema
+                          </label>
+                          <div className="flex gap-3 overflow-x-auto pb-2 pt-1 scrollbar-none snap-x snap-mandatory">
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('cute-balloon')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'cute-balloon' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                }`}
+                              >
+                                <span className="text-lg">🎈</span>
+                                <span className="text-[10px] font-bold">Cute Balloon</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('cute-balloon')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('elegant-gold')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'elegant-gold' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                }`}
+                              >
+                                <span className="text-lg">✨</span>
+                                <span className="text-[10px] font-bold">Elegant Gold</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('elegant-gold')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Yang Berulang Tahun */}
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Yang Berulang Tahun</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Lengkap"
+                            value={celebrantName}
+                            onChange={(e) => setCelebrantName(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            required
+                            placeholder="Nama Panggilan"
+                            value={celebrantNickname}
+                            onChange={(e) => setCelebrantNickname(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            required
+                            placeholder="Umur (e.g. 5 atau Sweet 17)"
+                            value={celebrantAge}
+                            onChange={(e) => setCelebrantAge(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Nama Orang Tua (Opsional)"
+                            value={celebrantParents}
+                            onChange={(e) => setCelebrantParents(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Jenis Kelamin */}
+                        <div className="grid grid-cols-2 gap-2 items-center">
+                          <label className="text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">Jenis Kelamin</label>
+                          <div className="flex gap-1 bg-theme-bg p-0.5 rounded-lg border border-theme-border">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCelebrantGender('male');
+                                if (celebrantImage === DEFAULT_GROOM_AVATAR || celebrantImage === DEFAULT_BRIDE_AVATAR) {
+                                  setCelebrantImage(DEFAULT_GROOM_AVATAR);
+                                }
+                              }}
+                              className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${
+                                celebrantGender === 'male' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-theme-text-sec hover:text-theme-text'
+                              }`}
+                            >
+                              Laki-laki
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCelebrantGender('female');
+                                if (celebrantImage === DEFAULT_GROOM_AVATAR || celebrantImage === DEFAULT_BRIDE_AVATAR) {
+                                  setCelebrantImage(DEFAULT_BRIDE_AVATAR);
+                                }
+                              }}
+                              className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${
+                                celebrantGender === 'female' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-theme-text-sec hover:text-theme-text'
+                              }`}
+                            >
+                              Perempuan
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Foto Yang Berulang Tahun */}
+                        <div className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Foto Profil</div>
+                        <div className="flex gap-2.5 items-center bg-theme-bg p-2.5 rounded-xl border border-theme-border">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[9px] text-theme-text-muted">
+                            {celebrantImage ? <img src={celebrantImage} className="w-full h-full object-cover" /> : 'No image'}
+                          </div>
+                          <div className="flex-grow flex flex-col gap-1">
+                            <div className="flex gap-1.5">
+                              <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-colors">
+                                {isUploadingCelebrantImage ? 'Uploading...' : 'Upload'}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleUploadImage(e.target.files[0], 'celebrant')}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleGenerateAIImage('celebrant')}
+                                disabled={isGeneratingCelebrantImage}
+                                className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors"
+                              >
+                                {isGeneratingCelebrantImage ? 'Generating...' : 'AI Avatar'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Waktu & Lokasi Acara */}
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Perayaan</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="date"
+                            required
+                            value={birthdayDate}
+                            onChange={(e) => setBirthdayDate(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
+                          />
+                          <input
+                            type="time"
+                            required
+                            value={birthdayTime}
+                            onChange={(e) => setBirthdayTime(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Nama Tempat / Lokasi Acara"
+                          value={birthdayLocation}
+                          onChange={(e) => setBirthdayLocation(e.target.value)}
+                          className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Link Google Maps Lokasi (Opsional)"
+                          value={birthdayMaps}
+                          onChange={(e) => setBirthdayMaps(e.target.value)}
+                          className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                        />
+
+                        {/* Kado Digital */}
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Kado Digital (Opsional)</div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <input
+                            type="text"
+                            placeholder="Bank (BCA)"
+                            value={birthdayGiftBank}
+                            onChange={(e) => setBirthdayGiftBank(e.target.value)}
+                            className="block w-full px-2 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="No Rekening"
+                            value={birthdayGiftAccount}
+                            onChange={(e) => setBirthdayGiftAccount(e.target.value)}
+                            className="block w-full px-2 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Atas Nama"
+                            value={birthdayGiftHolder}
+                            onChange={(e) => setBirthdayGiftHolder(e.target.value)}
+                            className="block w-full px-2 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+
                       {/* Prompt input */}
                       <div>
                       <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
-                        {templateType === 'wedding' ? 'Preferensi Kutipan / Doa Pembuka (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
+                        {templateType === 'wedding' || templateType === 'birthday' ? 'Preferensi Kutipan / Doa (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
                       </label>
                       <textarea
-                        required={templateType !== 'wedding'}
-                        rows={templateType === 'wedding' ? 3 : 5}
-                        placeholder={templateType === 'wedding' ? "Contoh: Ayat Al-Quran tentang pernikahan, atau doa dengan nuansa islami penuh keikhlasan... (kosongkan untuk kutipan default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
+                        required={templateType === 'store'}
+                        rows={templateType === 'store' ? 5 : 3}
+                        placeholder={templateType === 'wedding' || templateType === 'birthday' ? "Tulis ucapan/doa atau kata-kata pembuka secara kustom... (kosongkan untuk teks default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         disabled={isGenerating || editMode}
@@ -1563,7 +2005,7 @@ function GenerateContent() {
 
               {/* Viewport for preview */}
               <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
-                {templateType === 'wedding' ? (
+                { (templateType === 'wedding' || templateType === 'birthday') ? (
                   <iframe
                     ref={iframeRef}
                     src="/preview/index.html"
@@ -1808,7 +2250,11 @@ function GenerateContent() {
             <div className="p-4 border-b border-theme-border flex justify-between items-center bg-theme-surface/50">
               <div>
                 <h3 className="text-sm font-bold text-theme-text">
-                  Contoh Tema: {previewDesignKey === 'sage-green' ? 'Sage Green 🌿' : 'Floral Pink 🌸'}
+                  Contoh Tema: {
+                    previewDesignKey === 'sage-green' ? 'Sage Green 🌿' :
+                    previewDesignKey === 'floral-pink' ? 'Floral Pink 🌸' :
+                    previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' : 'Elegant Gold ✨'
+                  }
                 </h3>
                 <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan undangan digital</p>
               </div>
@@ -1828,7 +2274,44 @@ function GenerateContent() {
                 title="Design Live Preview"
                 onLoad={(e) => {
                   const iframe = e.target;
-                  const mockData = {
+                  const isBirthday = ['cute-balloon', 'elegant-gold'].includes(previewDesignKey);
+                  const isGold = previewDesignKey === 'elegant-gold';
+                  const mockData = isBirthday ? {
+                    meta: {
+                      title: `Contoh Undangan - Tema ${isGold ? 'Elegant Gold' : 'Cute Balloon'}`,
+                      template_type: 'birthday',
+                      design_key: previewDesignKey
+                    },
+                    content: {
+                      celebrant: isGold ? {
+                        name: 'Kayla Amanda',
+                        nickname: 'Kayla',
+                        age: 'Sweet 17',
+                        parent_name: 'Bpk. Hendra & Ibu Rini',
+                        image_url: DEFAULT_BRIDE_AVATAR,
+                        gender: 'female'
+                      } : {
+                        name: 'Rafa Al-Fatih',
+                        nickname: 'Rafa',
+                        age: '5',
+                        parent_name: 'Bpk. Hendra & Ibu Siska',
+                        image_url: DEFAULT_GROOM_AVATAR,
+                        gender: 'male'
+                      },
+                      event: {
+                        date: '2026-08-15',
+                        time: '15:00 - 17:30 WIB',
+                        location: 'McDonalds Kemang, Jakarta',
+                        maps_url: 'https://maps.google.com'
+                      },
+                      gift: {
+                        bank_name: 'Bank BCA',
+                        account_number: '9876543210',
+                        account_holder: 'Hendra Wijaya'
+                      },
+                      quote: 'Puji syukur kepada Tuhan YME atas bertambahnya usia putra kami tercinta. Kehadiran dan doa dari teman-teman semua akan melengkapi kebahagiaan di hari istimewa Rafa!'
+                    }
+                  } : {
                     meta: {
                       title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : 'Floral Pink'}`,
                       template_type: 'wedding',
