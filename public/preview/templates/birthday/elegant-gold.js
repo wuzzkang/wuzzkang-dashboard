@@ -48,7 +48,7 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
     const defaultAvatar = '/groom-avatar.jpg'; // fallback avatar
 
     appEl.innerHTML = `
-        <div class="w-full h-full flex flex-col overflow-y-auto text-center px-6 py-10 select-none gold-sans pb-24 bg-[#121212] text-white">
+        <div class="w-full h-full flex flex-col overflow-y-auto text-center px-6 py-10 gold-sans pb-24 bg-[#121212] text-white">
             
             <div class="my-6 py-6 border-b border-yellow-900/30 relative">
                 <span class="text-[9px] tracking-widest uppercase font-bold text-[#D4AF37] opacity-80">YOU ARE INVITED TO CELEBRATE</span>
