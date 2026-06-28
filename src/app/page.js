@@ -95,6 +95,19 @@ export default function DashboardPage() {
     }
   };
 
+  const getProjectTemplateType = (project) => {
+    if (!project.page_data) return 'store';
+    let config = project.page_data;
+    if (typeof config === 'string') {
+      try {
+        config = JSON.parse(config);
+      } catch (e) {
+        return 'store';
+      }
+    }
+    return config?.meta?.template_type || 'store';
+  };
+
   return (
     <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
       <Sidebar />
@@ -135,71 +148,94 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col justify-between hover:border-theme-accent transition-all group"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-2.5">
-                    <h3 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors" style={{ fontFamily: "'Sora', sans-serif" }}>
-                      {project.name}
-                    </h3>
-                    {getStatusBadge(project.status)}
-                  </div>
-                  
-                  <div className="space-y-2 text-xs text-theme-text-sec mt-3">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
-                      <span>{new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            {projects.map((project) => {
+              const templateType = getProjectTemplateType(project);
+              return (
+                <div
+                  key={project.id}
+                  className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col justify-between hover:border-theme-accent transition-all group"
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-2.5">
+                      <h3 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors" style={{ fontFamily: "'Sora', sans-serif" }}>
+                        {project.name}
+                      </h3>
+                      {getStatusBadge(project.status)}
                     </div>
-
-                    {project.status === 'deployed' && project.live_url && (
+                    
+                    <div className="space-y-2 text-xs text-theme-text-sec mt-3">
                       <div className="flex items-center gap-2">
-                        <Globe className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
+                        <Calendar className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
+                        <span>{new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      </div>
+
+                      {project.status === 'deployed' && project.live_url && (
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
+                          <a
+                            href={project.live_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-theme-accent hover:text-theme-accent-hover font-bold truncate flex items-center gap-1 hover:underline"
+                          >
+                            <span className="truncate">{project.live_url.replace(/^https?:\/\//, '')}</span>
+                            <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 pt-4 border-t border-theme-border flex flex-col gap-2">
+                    {project.status === 'deployed' ? (
+                      <div className="flex gap-2 w-full">
                         <a
                           href={project.live_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-theme-accent hover:text-theme-accent-hover font-bold truncate flex items-center gap-1 hover:underline"
+                          className="flex-1 text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text font-bold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5"
                         >
-                          <span className="truncate">{project.live_url.replace(/^https?:\/\//, '')}</span>
-                          <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                          <span>Lihat</span>
+                          <ExternalLink className="h-3.5 w-3.5" />
                         </a>
+                        {templateType === 'wedding' && (
+                          (project.edit_count || 0) >= 3 ? (
+                            <button
+                              disabled
+                              className="flex-1 text-center bg-theme-border/50 text-theme-text-muted font-bold text-xs py-2.5 px-3 rounded-xl cursor-not-allowed border border-theme-border"
+                              title="Batas edit habis (maksimal 3x). Silakan hubungi admin."
+                            >
+                              Edit (0/3)
+                            </button>
+                          ) : (
+                            <Link
+                              href={`/generate?id=${project.id}&editMode=true`}
+                              className="flex-1 text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
+                            >
+                              <span>Edit ({3 - (project.edit_count || 0)}/3)</span>
+                            </Link>
+                          )
+                        )}
                       </div>
+                    ) : project.status === 'draft' ? (
+                      <Link
+                        href={`/generate?id=${project.id}`}
+                        className="w-full text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
+                      >
+                        <span>Publikasikan Halaman</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/generate"
+                        className="w-full text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text-sec font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
+                      >
+                        Coba Buat Lagi
+                      </Link>
                     )}
                   </div>
                 </div>
-
-                <div className="mt-5 pt-4 border-t border-theme-border flex items-center justify-end gap-2.5">
-                  {project.status === 'deployed' ? (
-                    <a
-                      href={project.live_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2"
-                    >
-                      <span>Lihat Website</span>
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  ) : project.status === 'draft' ? (
-                    <Link
-                      href={`/generate?id=${project.id}`}
-                      className="w-full text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
-                    >
-                      <span>Publikasikan Halaman</span>
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/generate"
-                      className="w-full text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text-sec font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
-                    >
-                      Coba Buat Lagi
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

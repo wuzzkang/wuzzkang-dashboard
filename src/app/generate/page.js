@@ -65,6 +65,8 @@ function GenerateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftId = searchParams.get('id');
+  const editMode = searchParams.get('editMode') === 'true';
+  const [editCount, setEditCount] = useState(0);
   const iframeRef = useRef(null);
   const [iframeReady, setIframeReady] = useState(false);
 
@@ -163,11 +165,13 @@ function GenerateContent() {
             const project = result.data;
             setName(project.name);
             setProjectId(project.id);
+            setEditCount(project.edit_count || 0);
+            setSuccessUrl(project.live_url || '');
             const pageConfig = project.page_data;
             setPageData(pageConfig);
             
-            // Deduce a clean default slug from project name
-            const suggestedSlug = project.name
+            // Deduce a clean default slug from project name or use already existing slug
+            const suggestedSlug = project.slug || project.name
               .toLowerCase()
               .replace(/[^a-z0-9]+/g, '-')
               .replace(/(^-|-$)/g, '');
@@ -219,6 +223,56 @@ function GenerateContent() {
       fetchDraft();
     }
   }, [session, draftId]);
+
+  // Auto-update pageData in editMode to refresh the iframe live preview in real-time
+  useEffect(() => {
+    if (!editMode || !projectId) return;
+
+    const assembledPageData = {
+      meta: {
+        template_type: templateType,
+        design_key: designKey,
+      },
+      content: {
+        groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage || null },
+        bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage || null },
+        story: storyList.length > 0 ? storyList : null,
+        akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
+        resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
+        gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
+        quote: pageData?.content?.quote || ''
+      }
+    };
+
+    setPageData(assembledPageData);
+  }, [
+    editMode,
+    projectId,
+    templateType,
+    designKey,
+    groomName,
+    groomNickname,
+    groomFather,
+    groomMother,
+    groomImage,
+    brideName,
+    brideNickname,
+    brideFather,
+    brideMother,
+    brideImage,
+    storyList,
+    akadDate,
+    akadTime,
+    akadLocation,
+    akadMaps,
+    resepsiDate,
+    resepsiTime,
+    resepsiLocation,
+    resepsiMaps,
+    giftBank,
+    giftAccount,
+    giftHolder
+  ]);
 
   // Synchronize state with live preview iframe
   // Only send postMessage when both iframeReady AND pageData exist
@@ -515,6 +569,38 @@ function GenerateContent() {
       setError('Terjadi kesalahan jaringan.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Handle saving deployed changes (specifically for editMode)
+  const handleSaveDeployed = async (e) => {
+    e.preventDefault();
+    if (!projectId) return;
+
+    setError('');
+    setIsPublishing(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ pageData }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        router.push('/');
+      } else {
+        setError(result.error || 'Gagal menyimpan perubahan.');
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan saat menyimpan perubahan.');
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -911,7 +997,7 @@ function GenerateContent() {
                     <p className="text-[10px] text-theme-text-sec mt-0.5">Lengkapi formulir untuk membuat pratinjau halaman Anda</p>
                   </div>
 
-                  <form id="generate-form" onSubmit={handleGenerate} className="space-y-4">
+                  <form id="generate-form" onSubmit={editMode ? handleSaveDeployed : handleGenerate} className="space-y-4">
                     {/* Tipe Template Selector */}
                     <div>
                       <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
@@ -919,8 +1005,9 @@ function GenerateContent() {
                       </label>
                       <button
                         type="button"
-                        onClick={() => setIsTemplateModalOpen(true)}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-theme-bg border border-theme-border hover:border-theme-accent rounded-xl text-left transition-all group"
+                        onClick={() => !editMode && setIsTemplateModalOpen(true)}
+                        disabled={editMode}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 bg-theme-bg border border-theme-border rounded-xl text-left transition-all group ${editMode ? 'opacity-70 cursor-not-allowed' : 'hover:border-theme-accent'}`}
                       >
                         <div className="flex items-center gap-3">
                           <div className="h-7 w-7 rounded-lg bg-theme-accent/10 flex items-center justify-center text-theme-accent group-hover:scale-105 transition-transform text-sm">
@@ -931,11 +1018,11 @@ function GenerateContent() {
                               {templateType === 'wedding' ? 'Undangan Pernikahan' : 'Toko Online / Bisnis'}
                             </p>
                             <p className="text-[9px] text-theme-text-sec">
-                              Klik untuk mengganti tipe produk/template
+                              {editMode ? 'Tipe produk dikunci pada mode edit' : 'Klik untuk mengganti tipe produk/template'}
                             </p>
                           </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-theme-text-muted group-hover:text-theme-text transition-colors" />
+                        {!editMode && <ChevronRight className="h-4 w-4 text-theme-text-muted group-hover:text-theme-text transition-colors" />}
                       </button>
                     </div>
 
@@ -1300,8 +1387,8 @@ function GenerateContent() {
                       </div>
                     )}
 
-                    {/* Prompt input */}
-                    <div>
+                      {/* Prompt input */}
+                      <div>
                       <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                         {templateType === 'wedding' ? 'Preferensi Kutipan / Doa Pembuka (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
                       </label>
@@ -1311,9 +1398,14 @@ function GenerateContent() {
                         placeholder={templateType === 'wedding' ? "Contoh: Ayat Al-Quran tentang pernikahan, atau doa dengan nuansa islami penuh keikhlasan... (kosongkan untuk kutipan default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
-                        disabled={isGenerating}
-                        className="block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                        disabled={isGenerating || editMode}
+                        className={`block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed ${editMode ? 'opacity-70 cursor-not-allowed' : 'focus:border-theme-accent'}`}
                       />
+                      {editMode && (
+                        <p className="text-[9px] text-theme-text-muted mt-1">
+                          Kolom preferensi AI ini dikunci pada mode edit halaman aktif.
+                        </p>
+                      )}
                     </div>
                   </form>
                 </div>
@@ -1324,17 +1416,31 @@ function GenerateContent() {
           {/* Tab 2: Preview & Publish */}
           {pageData && activeTab === 'preview' && (
             <div className="w-full flex-grow flex flex-col">
-              {/* Draft Info & Re-edit trigger */}
+              {/* Deployed Info or Draft Info */}
               <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 mb-4">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Proyek Terpilih</div>
+                    <div className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                      {editMode ? 'Undangan Aktif' : 'Proyek Terpilih'}
+                    </div>
                     <div className="text-xs font-bold text-theme-text mt-0.5">{name}</div>
+                    {editMode && (
+                      <>
+                        <div className="text-[10px] text-emerald-400 font-semibold mt-2.5">
+                          Tautan: <a href={successUrl || `http://localhost:5000/?slug=${slug}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-300 inline-flex items-center gap-0.5">{slug} <ExternalLink className="h-2.5 w-2.5 inline" /></a>
+                        </div>
+                        <div className="text-[9px] text-theme-text-muted mt-1.5">
+                          Kuota edit tersisa: {3 - editCount} dari 3 kali
+                        </div>
+                      </>
+                    )}
                   </div>
                   <button
                     type="button"
                     onClick={() => {
-                      setPageData(null);
+                      if (!editMode) {
+                        setPageData(null);
+                      }
                       setActiveTab('edit');
                     }}
                     className="text-[10px] text-theme-accent hover:text-theme-accent-hover font-bold transition-colors"
@@ -1344,92 +1450,94 @@ function GenerateContent() {
                 </div>
               </div>
 
-              {/* URL Customization */}
-              <form id="publish-form" onSubmit={handlePublish} className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 mb-4 space-y-3.5">
-                <div>
-                  <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
-                    Tentukan Custom Slug URL
-                  </label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-3 text-theme-text-muted text-xs select-none">/p/</span>
-                    <input
-                      type="text"
-                      required
-                      placeholder="nama-toko-anda"
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
-                      disabled={isPublishing}
-                      className="block w-full pl-8 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-
-                {/* Coupon Code Section */}
-                <div className="border-t border-theme-border/50 pt-3.5 space-y-2">
-                  <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
-                    Masukkan Kode Kupon (Opsional)
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Contoh: DISKON100"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      disabled={isPublishing || appliedCoupon}
-                      className="block flex-grow px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-                    />
-                    {appliedCoupon ? (
-                      <button
-                        type="button"
-                        onClick={handleRemoveCoupon}
+              {/* URL Customization - Only for draft publishing */}
+              {!editMode && (
+                <form id="publish-form" onSubmit={handlePublish} className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 mb-4 space-y-3.5">
+                  <div>
+                    <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                      Tentukan Custom Slug URL
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-theme-text-muted text-xs select-none">/p/</span>
+                      <input
+                        type="text"
+                        required
+                        placeholder="nama-toko-anda"
+                        value={slug}
+                        onChange={(e) => setSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
                         disabled={isPublishing}
-                        className="bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-[10px] font-bold px-3 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
-                      >
-                        Hapus
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleValidateCoupon}
-                        disabled={isPublishing || !couponCode.trim() || isValidatingCoupon}
-                        className="bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text text-[10px] font-bold px-4 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
-                      >
-                        {isValidatingCoupon ? 'Memproses...' : 'Terapkan'}
-                      </button>
+                        className="block w-full pl-8 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Coupon Code Section */}
+                  <div className="border-t border-theme-border/50 pt-3.5 space-y-2">
+                    <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
+                      Masukkan Kode Kupon (Opsional)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Contoh: DISKON100"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        disabled={isPublishing || appliedCoupon}
+                        className="block flex-grow px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                      />
+                      {appliedCoupon ? (
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          disabled={isPublishing}
+                          className="bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-[10px] font-bold px-3 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
+                        >
+                          Hapus
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleValidateCoupon}
+                          disabled={isPublishing || !couponCode.trim() || isValidatingCoupon}
+                          className="bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text text-[10px] font-bold px-4 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
+                        >
+                          {isValidatingCoupon ? 'Memproses...' : 'Terapkan'}
+                        </button>
+                      )}
+                    </div>
+                    {couponError && (
+                      <p className="text-[10px] text-red-400 font-medium pl-1">{couponError}</p>
+                    )}
+                    {couponSuccess && (
+                      <p className="text-[10px] text-emerald-400 font-medium pl-1">{couponSuccess}</p>
                     )}
                   </div>
-                  {couponError && (
-                    <p className="text-[10px] text-red-400 font-medium pl-1">{couponError}</p>
-                  )}
-                  {couponSuccess && (
-                    <p className="text-[10px] text-emerald-400 font-medium pl-1">{couponSuccess}</p>
-                  )}
-                </div>
 
-                <div className="bg-theme-bg border border-theme-border rounded-xl p-3 flex flex-col gap-1.5 text-[10px] font-bold text-theme-text-sec">
-                  <div className="flex justify-between items-center">
-                    <span>Biaya Publikasi:</span>
-                    <span>
-                      {appliedCoupon ? (
-                        <>
-                          <span className="line-through text-theme-text-muted mr-1.5">Rp {currentCost.toLocaleString('id-ID')}</span>
-                          <span className="text-emerald-400">
-                            {finalCost === 0 ? 'Gratis' : `Rp ${finalCost.toLocaleString('id-ID')}`}
-                          </span>
-                        </>
-                      ) : (
-                        `Rp ${currentCost.toLocaleString('id-ID')}`
-                      )}
-                    </span>
+                  <div className="bg-theme-bg border border-theme-border rounded-xl p-3 flex flex-col gap-1.5 text-[10px] font-bold text-theme-text-sec">
+                    <div className="flex justify-between items-center">
+                      <span>Biaya Publikasi:</span>
+                      <span>
+                        {appliedCoupon ? (
+                          <>
+                            <span className="line-through text-theme-text-muted mr-1.5">Rp {currentCost.toLocaleString('id-ID')}</span>
+                            <span className="text-emerald-400">
+                              {finalCost === 0 ? 'Gratis' : `Rp ${finalCost.toLocaleString('id-ID')}`}
+                            </span>
+                          </>
+                        ) : (
+                          `Rp ${currentCost.toLocaleString('id-ID')}`
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-theme-border/50 pt-1.5">
+                      <span>Saldo Anda:</span>
+                      <span className={(profile?.balance ?? 0) < finalCost ? 'text-red-400' : 'text-emerald-400'}>
+                        Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center border-t border-theme-border/50 pt-1.5">
-                    <span>Saldo Anda:</span>
-                    <span className={(profile?.balance ?? 0) < finalCost ? 'text-red-400' : 'text-emerald-400'}>
-                      Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
-                    </span>
-                  </div>
-                </div>
-              </form>
+                </form>
+              )}
 
               {/* Viewport for preview */}
               <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
@@ -1459,7 +1567,26 @@ function GenerateContent() {
 
         {/* Fixed Sticky Action Bar at the Bottom */}
         <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 backdrop-blur-md border-t border-theme-border p-4 z-40 flex flex-col gap-2 shadow-2xl transition-theme">
-          {(!pageData || activeTab === 'edit') ? (
+          {editMode ? (
+            <button
+              type="submit"
+              form="generate-form"
+              disabled={isPublishing || isFormInvalid() || editCount >= 3}
+              className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+            >
+              {isPublishing ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-theme-accent-text/20 border-t-theme-accent-text animate-spin"></div>
+                  <span>Menyimpan Perubahan...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Simpan Perubahan ({3 - editCount}/3)</span>
+                </>
+              )}
+            </button>
+          ) : (!pageData || activeTab === 'edit') ? (
             <button
               type="submit"
               form="generate-form"
