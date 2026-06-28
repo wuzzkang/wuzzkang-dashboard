@@ -189,7 +189,14 @@ function GenerateContent() {
             setProjectId(project.id);
             setEditCount(project.edit_count || 0);
             setSuccessUrl(project.live_url || '');
-            const pageConfig = project.page_data;
+            let pageConfig = project.page_data;
+            if (typeof pageConfig === 'string') {
+              try {
+                pageConfig = JSON.parse(pageConfig);
+              } catch (e) {
+                console.error('Gagal parsing page_data string:', e);
+              }
+            }
             setPageData(pageConfig);
             
             // Deduce a clean default slug from project name or use already existing slug
@@ -385,12 +392,14 @@ function GenerateContent() {
           if (result.success && Array.isArray(result.data)) {
             setProducts(result.data);
             
-            // Set the first active template as default if templateType is not in the active products
-            const activeProducts = result.data.filter(p => p.is_active);
-            if (activeProducts.length > 0) {
-              const currentIsActive = activeProducts.some(p => p.id === templateType);
-              if (!currentIsActive) {
-                setTemplateType(activeProducts[0].id);
+            // Set the first active template as default ONLY if creating a new project (no draftId)
+            if (!draftId) {
+              const activeProducts = result.data.filter(p => p.is_active);
+              if (activeProducts.length > 0) {
+                setTemplateType(prev => {
+                  const currentIsActive = activeProducts.some(p => p.id === prev);
+                  return currentIsActive ? prev : activeProducts[0].id;
+                });
               }
             }
           }
@@ -400,7 +409,7 @@ function GenerateContent() {
       }
     };
     fetchProducts();
-  }, [session]);
+  }, [session, draftId]);
 
   // Fallback default mock products if API products is empty (e.g. table not created yet)
   const getDisplayProducts = () => {
