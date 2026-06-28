@@ -2,7 +2,7 @@
  * Cute Balloon Birthday Invitation Template
  * Cheerful balloon theme, pastel colors, playful fonts, perfect for kids.
  */
-export async function render(pageConfig, guestName) {
+export async function render(pageConfig, guestName = 'Tamu Undangan') {
     const appEl = document.getElementById('app');
     const content = pageConfig.content || {};
     const celebrant = content.celebrant || {};
@@ -59,14 +59,19 @@ export async function render(pageConfig, guestName) {
     appEl.innerHTML = `
         <div class="w-full h-full flex flex-col overflow-y-auto text-center px-6 py-8 select-none balloon-sans pb-24">
             
-            {/* Header / Intro */}
             <div class="my-6 py-6 border-b border-dashed border-pink-200 relative">
                 <span class="text-[10px] tracking-widest uppercase font-bold text-pink-400">Kamu Diundang! 🎈</span>
                 <h3 class="text-3xl balloon-title my-4 text-pink-500 float-balloon">Pesta Ulang Tahun</h3>
                 <div class="text-[18px] font-extrabold text-slate-800">${celebrant.nickname || 'Anak'} yang ke-${celebrant.age || '1'}</div>
+                
+                <div class="mt-4">
+                    <p class="text-[9px] text-slate-400 mb-1.5">Spesial untuk Bapak/Ibu/Teman:</p>
+                    <div class="bg-white/80 border border-pink-100 rounded-full px-4 py-1.5 inline-block shadow-sm">
+                        <div class="font-bold text-xs text-pink-600">${guestName}</div>
+                    </div>
+                </div>
             </div>
 
-            {/* Celebrant Profile */}
             <div class="my-6 flex flex-col items-center gap-4">
                 <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-pink-300 shadow-md float-balloon">
                     <img src="${celebrant.image_url || defaultAvatar}" class="w-full h-full object-cover" alt="Celebrant" />
@@ -77,12 +82,10 @@ export async function render(pageConfig, guestName) {
                 </div>
             </div>
 
-            {/* Quote */}
             <div class="my-4 px-4 py-3 bg-pink-50/50 rounded-2xl border border-pink-100 text-xs italic leading-relaxed text-slate-600">
                 &ldquo;${quote}&rdquo;
             </div>
 
-            {/* Event Info */}
             <div class="my-6 p-5 bg-white border border-pink-100 rounded-3xl shadow-sm text-left relative overflow-hidden">
                 <div class="absolute top-2 right-2 text-2xl">🍰</div>
                 <h4 class="font-bold text-sm text-pink-600 mb-3 balloon-title">📅 Acara Ulang Tahun</h4>
@@ -107,7 +110,6 @@ export async function render(pageConfig, guestName) {
                 ` : ''}
             </div>
 
-            {/* Gift Section */}
             ${gift.bank_name || gift.account_number ? `
                 <div class="my-6 p-5 bg-white border border-pink-100 rounded-3xl shadow-sm text-left relative overflow-hidden">
                     <h4 class="font-bold text-sm text-pink-600 mb-3 balloon-title">🎁 Kado Ulang Tahun</h4>

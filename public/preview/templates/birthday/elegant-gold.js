@@ -2,7 +2,7 @@
  * Elegant Gold Birthday Invitation Template
  * Luxury dark-gold theme, serif fonts, perfect for adult/teenagers celebrations.
  */
-export async function render(pageConfig, guestName) {
+export async function render(pageConfig, guestName = 'Tamu Undangan') {
     const appEl = document.getElementById('app');
     const content = pageConfig.content || {};
     const celebrant = content.celebrant || {};
@@ -50,14 +50,18 @@ export async function render(pageConfig, guestName) {
     appEl.innerHTML = `
         <div class="w-full h-full flex flex-col overflow-y-auto text-center px-6 py-10 select-none gold-sans pb-24 bg-[#121212] text-white">
             
-            {/* Header / Intro */}
             <div class="my-6 py-6 border-b border-yellow-900/30 relative">
-                <span class="text-[9px] tracking-widest uppercase font-bold text-[#D4AF37] opacity-80">YOU ARE INVIPED TO CELEBRATE</span>
+                <span class="text-[9px] tracking-widest uppercase font-bold text-[#D4AF37] opacity-80">YOU ARE INVITED TO CELEBRATE</span>
                 <h3 class="text-3xl gold-title my-4 font-bold tracking-wide shining-gold">THE BIRTHDAY PARTY</h3>
-                <div class="text-[10px] tracking-widest uppercase text-slate-400">Honoring the milestone of</div>
+                
+                <div class="mt-4">
+                    <p class="text-[9px] text-slate-400 mb-1.5">Dear Guest:</p>
+                    <div class="bg-[#1E1E1E] border border-yellow-950/40 rounded-full px-4 py-1.5 inline-block shadow-sm">
+                        <div class="font-bold text-xs text-[#D4AF37]">${guestName}</div>
+                    </div>
+                </div>
             </div>
 
-            {/* Celebrant Profile */}
             <div class="my-6 flex flex-col items-center gap-4">
                 <div class="w-28 h-28 rounded-full overflow-hidden border-2 border-yellow-600/50 shadow-lg p-0.5 bg-[#1E1E1E]">
                     <img src="${celebrant.image_url || defaultAvatar}" class="w-full h-full object-cover rounded-full" alt="Celebrant" />
@@ -69,12 +73,10 @@ export async function render(pageConfig, guestName) {
                 </div>
             </div>
 
-            {/* Quote */}
             <div class="my-4 px-5 py-4 bg-[#1E1E1E] border border-yellow-950/40 rounded-2xl text-xs italic leading-relaxed text-slate-400 gold-title">
                 &ldquo;${quote}&rdquo;
             </div>
 
-            {/* Event Info */}
             <div class="my-6 p-6 bg-[#1E1E1E] border border-yellow-950/40 rounded-3xl shadow-sm text-left relative overflow-hidden">
                 <h4 class="font-bold text-sm text-[#D4AF37] mb-4 gold-title tracking-wider">EVENT DETAILS</h4>
                 <div class="space-y-3 text-xs text-slate-300">
@@ -98,7 +100,6 @@ export async function render(pageConfig, guestName) {
                 ` : ''}
             </div>
 
-            {/* Gift Section */}
             ${gift.bank_name || gift.account_number ? `
                 <div class="my-6 p-6 bg-[#1E1E1E] border border-yellow-950/40 rounded-3xl shadow-sm text-left relative overflow-hidden">
                     <h4 class="font-bold text-sm text-[#D4AF37] mb-3 gold-title tracking-wider">BIRTHDAY GIFT</h4>
