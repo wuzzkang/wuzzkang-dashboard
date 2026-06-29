@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
-import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -14,6 +14,10 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState('');
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareProject, setShareProject] = useState(null);
+  const [guestName, setGuestName] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -188,33 +192,50 @@ export default function DashboardPage() {
 
                   <div className="mt-5 pt-4 border-t border-theme-border flex flex-col gap-2">
                     {project.status === 'deployed' ? (
-                      <div className="flex gap-2 w-full">
-                        <a
-                          href={project.live_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text font-bold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5"
-                        >
-                          <span>Lihat</span>
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
+                      <div className="flex flex-col gap-2 w-full">
+                        <div className="flex gap-2 w-full">
+                          <a
+                            href={project.live_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text font-bold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <span>Lihat</span>
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                          {(templateType === 'wedding' || templateType === 'birthday') && (
+                            (project.edit_count || 0) >= 3 ? (
+                              <button
+                                disabled
+                                className="flex-1 text-center bg-theme-border/50 text-theme-text-muted font-bold text-xs py-2.5 px-3 rounded-xl cursor-not-allowed border border-theme-border"
+                                title="Batas edit habis (maksimal 3x). Silakan hubungi admin."
+                              >
+                                Edit (0/3)
+                              </button>
+                            ) : (
+                              <Link
+                                href={`/generate?id=${project.id}&editMode=true`}
+                                className="flex-1 text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
+                              >
+                                <span>Edit ({3 - (project.edit_count || 0)}/3)</span>
+                              </Link>
+                            )
+                          )}
+                        </div>
+                        
                         {(templateType === 'wedding' || templateType === 'birthday') && (
-                          (project.edit_count || 0) >= 3 ? (
-                            <button
-                              disabled
-                              className="flex-1 text-center bg-theme-border/50 text-theme-text-muted font-bold text-xs py-2.5 px-3 rounded-xl cursor-not-allowed border border-theme-border"
-                              title="Batas edit habis (maksimal 3x). Silakan hubungi admin."
-                            >
-                              Edit (0/3)
-                            </button>
-                          ) : (
-                            <Link
-                              href={`/generate?id=${project.id}&editMode=true`}
-                              className="flex-1 text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
-                            >
-                              <span>Edit ({3 - (project.edit_count || 0)}/3)</span>
-                            </Link>
-                          )
+                          <button
+                            onClick={() => {
+                              setShareProject(project);
+                              setShareModalOpen(true);
+                              setGuestName('');
+                              setCopied(false);
+                            }}
+                            className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <Share2 className="h-3.5 w-3.5" />
+                            <span>Bagikan Undangan</span>
+                          </button>
                         )}
                       </div>
                     ) : project.status === 'draft' ? (
@@ -248,6 +269,138 @@ export default function DashboardPage() {
             <Plus className="h-6 w-6 font-bold" />
           </Link>
         </div>
+
+        {/* Share Modal */}
+        {shareModalOpen && shareProject && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
+            <div className="bg-theme-card border border-theme-border rounded-3xl w-full max-w-xs p-5 shadow-2xl relative text-theme-text animate-in fade-in zoom-in-95 duration-200">
+              {/* Close button */}
+              <button 
+                onClick={() => {
+                  setShareModalOpen(false);
+                  setShareProject(null);
+                  setGuestName('');
+                  setCopied(false);
+                }}
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-theme-border/50 text-theme-text-muted hover:text-theme-text transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <h3 className="text-sm font-bold mb-1 pr-6 tracking-tight text-theme-text" style={{ fontFamily: "'Sora', sans-serif" }}>
+                🔗 Bagikan Undangan
+              </h3>
+              <p className="text-[10px] text-theme-text-sec mb-4 truncate">
+                {shareProject.name}
+              </p>
+
+              <div className="space-y-4">
+                {/* Base Link */}
+                <div>
+                  <label className="block text-[9px] uppercase tracking-wider font-bold text-theme-text-muted mb-1">
+                    Link Utama (Tanpa Nama)
+                  </label>
+                  <div className="flex gap-1.5">
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={shareProject.live_url || ''} 
+                      onClick={(e) => e.target.select()}
+                      className="flex-grow bg-theme-surface border border-theme-border rounded-xl px-2.5 py-1.5 text-xs focus:outline-none text-theme-text truncate"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(shareProject.live_url || '');
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="p-2 rounded-xl border border-theme-border bg-theme-card hover:bg-theme-surface text-theme-text-muted hover:text-theme-text transition-all flex-shrink-0"
+                      title="Salin Link"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Guest Input */}
+                <div>
+                  <label className="block text-[9px] uppercase tracking-wider font-bold text-theme-text-muted mb-1">
+                    Nama Tamu Undangan
+                  </label>
+                  <input 
+                    type="text"
+                    placeholder="Ketik nama tamu (misal: Budi)"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    className="w-full bg-theme-surface border border-theme-border rounded-xl px-3 py-2 text-xs focus:border-theme-accent focus:outline-none text-theme-text"
+                  />
+                </div>
+
+                {/* Personalized Link Details */}
+                {guestName.trim() && (() => {
+                  const hasParams = shareProject.live_url.includes('?');
+                  const personalizedUrl = `${shareProject.live_url}${hasParams ? '&' : '?'}to=${encodeURIComponent(guestName.trim())}`;
+                  const waMessage = `Halo ${guestName.trim()},\n\nKami mengundang Anda untuk hadir di acara kami. Silakan buka tautan undangan online berikut untuk info detail:\n\n${personalizedUrl}`;
+                  const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMessage)}`;
+
+                  return (
+                    <div className="space-y-3 pt-3 border-t border-theme-border transition-all duration-200">
+                      <div>
+                        <label className="block text-[9px] uppercase tracking-wider font-bold text-theme-text-muted mb-1">
+                          Link Khusus Tamu
+                        </label>
+                        <div className="flex gap-1.5">
+                          <input 
+                            type="text" 
+                            readOnly 
+                            value={personalizedUrl} 
+                            onClick={(e) => e.target.select()}
+                            className="flex-grow bg-theme-surface border border-theme-border rounded-xl px-2.5 py-1.5 text-xs focus:outline-none text-theme-text truncate"
+                          />
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(personalizedUrl);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 2000);
+                            }}
+                            className="p-2 rounded-xl border border-theme-border bg-theme-card hover:bg-theme-surface text-theme-text-muted hover:text-theme-text transition-all flex-shrink-0"
+                            title="Salin Link Khusus"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(personalizedUrl);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className="flex-1 py-2 px-3 bg-theme-surface hover:bg-theme-card border border-theme-border text-theme-text rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1"
+                        >
+                          <Copy className="h-3 w-3" />
+                          <span>{copied ? 'Tersalin! ✅' : 'Salin'}</span>
+                        </button>
+                        
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 text-center shadow-md shadow-emerald-900/10"
+                        >
+                          <Send className="h-3 w-3" />
+                          <span>Kirim WA</span>
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
