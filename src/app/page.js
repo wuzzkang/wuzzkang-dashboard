@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
-import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X } from 'lucide-react';
+import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -18,6 +18,8 @@ export default function DashboardPage() {
   const [shareProject, setShareProject] = useState(null);
   const [guestName, setGuestName] = useState('');
   const [copied, setCopied] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('all');
 
   // Redirect if not logged in
   useEffect(() => {
@@ -112,6 +114,20 @@ export default function DashboardPage() {
     return config?.meta?.template_type || 'store';
   };
 
+  const filteredProjects = projects.filter((project) => {
+    const templateType = getProjectTemplateType(project);
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterType === 'all') return matchesSearch;
+    if (filterType === 'undangan') {
+      return matchesSearch && (templateType === 'wedding' || templateType === 'birthday');
+    }
+    if (filterType === 'bisnis') {
+      return matchesSearch && templateType === 'store';
+    }
+    return matchesSearch && templateType === filterType;
+  });
+
   return (
     <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
       <Sidebar />
@@ -119,10 +135,62 @@ export default function DashboardPage() {
       {/* Main Content - Mobile-First */}
       <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
         {/* Header */}
-        <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-4">
           <div>
             <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Landing Pages</h1>
             <p className="text-theme-text-sec text-xs mt-1">Daftar semua landing page Anda yang telah digenerate</p>
+          </div>
+        </div>
+
+        {/* Sticky Search and Filter Controls */}
+        <div 
+          className="sticky top-14 z-20 pb-3 pt-2 -mx-4 px-4 border-b transition-theme backdrop-blur-md"
+          style={{ 
+            backgroundColor: 'var(--theme-surface)', 
+            borderColor: 'var(--theme-border)' 
+          }}
+        >
+          {/* Search Input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 h-4 w-4" style={{ color: 'var(--theme-text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Cari nama landing page..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full border rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none transition-theme"
+              style={{
+                backgroundColor: 'var(--theme-card)',
+                borderColor: 'var(--theme-border)',
+                color: 'var(--theme-text)'
+              }}
+            />
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex gap-1.5 mt-2.5 overflow-x-auto no-scrollbar">
+            {[
+              { id: 'all', label: 'Semua' },
+              { id: 'undangan', label: 'Undangan' },
+              { id: 'bisnis', label: 'Toko / Bisnis' }
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setFilterType(t.id)}
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all border whitespace-nowrap ${
+                  filterType === t.id
+                    ? 'bg-theme-accent border-theme-accent text-theme-accent-text'
+                    : 'bg-theme-card border-theme-border text-theme-text-sec hover:border-theme-text-muted'
+                }`}
+                style={filterType !== t.id ? {
+                  backgroundColor: 'var(--theme-card)',
+                  borderColor: 'var(--theme-border)',
+                  color: 'var(--theme-text-sec)'
+                } : {}}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -152,111 +220,117 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {projects.map((project) => {
-              const templateType = getProjectTemplateType(project);
-              return (
-                <div
-                  key={project.id}
-                  className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col justify-between hover:border-theme-accent transition-all group"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-2.5">
-                      <h3 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors" style={{ fontFamily: "'Sora', sans-serif" }}>
-                        {project.name}
-                      </h3>
-                      {getStatusBadge(project.status)}
-                    </div>
-                    
-                    <div className="space-y-2 text-xs text-theme-text-sec mt-3">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
-                        <span>{new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            {filteredProjects.length === 0 ? (
+              <div className="border border-dashed border-theme-border rounded-2xl p-8 text-center bg-theme-card/10 mt-2">
+                <p className="text-theme-text-sec text-xs">Tidak ada landing page yang cocok dengan kriteria pencarian.</p>
+              </div>
+            ) : (
+              filteredProjects.map((project) => {
+                const templateType = getProjectTemplateType(project);
+                return (
+                  <div
+                    key={project.id}
+                    className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col justify-between hover:border-theme-accent transition-all group"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-2.5">
+                        <h3 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors" style={{ fontFamily: "'Sora', sans-serif" }}>
+                          {project.name}
+                        </h3>
+                        {getStatusBadge(project.status)}
                       </div>
-
-                      {project.status === 'deployed' && project.live_url && (
+                      
+                      <div className="space-y-2 text-xs text-theme-text-sec mt-3">
                         <div className="flex items-center gap-2">
-                          <Globe className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
-                          <a
-                            href={project.live_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-theme-accent hover:text-theme-accent-hover font-bold truncate flex items-center gap-1 hover:underline"
-                          >
-                            <span className="truncate">{project.live_url.replace(/^https?:\/\//, '')}</span>
-                            <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                          </a>
+                          <Calendar className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
+                          <span>{new Date(project.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </div>
+
+                        {project.status === 'deployed' && project.live_url && (
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
+                            <a
+                              href={project.live_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-theme-accent hover:text-theme-accent-hover font-bold truncate flex items-center gap-1 hover:underline"
+                            >
+                              <span className="truncate">{project.live_url.replace(/^https?:\/\//, '')}</span>
+                              <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-5 pt-4 border-t border-theme-border flex flex-col gap-2">
+                      {project.status === 'deployed' ? (
+                        <div className="flex flex-col gap-2 w-full">
+                          <div className="flex gap-2 w-full">
+                            <a
+                              href={project.live_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text font-bold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <span>Lihat</span>
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                            {(templateType === 'wedding' || templateType === 'birthday') && (
+                              (project.edit_count || 0) >= 3 ? (
+                                <button
+                                  disabled
+                                  className="flex-1 text-center bg-theme-border/50 text-theme-text-muted font-bold text-xs py-2.5 px-3 rounded-xl cursor-not-allowed border border-theme-border"
+                                  title="Batas edit habis (maksimal 3x). Silakan hubungi admin."
+                                >
+                                  Edit (0/3)
+                                </button>
+                              ) : (
+                                <Link
+                                  href={`/generate?id=${project.id}&editMode=true`}
+                                  className="flex-1 text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
+                                >
+                                  <span>Edit ({3 - (project.edit_count || 0)}/3)</span>
+                                </Link>
+                              )
+                            )}
+                          </div>
+                          
+                          {(templateType === 'wedding' || templateType === 'birthday') && (
+                            <button
+                              onClick={() => {
+                                setShareProject(project);
+                                setShareModalOpen(true);
+                                setGuestName('');
+                                setCopied(false);
+                              }}
+                              className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <Share2 className="h-3.5 w-3.5" />
+                              <span>Bagikan Undangan</span>
+                            </button>
+                          )}
+                        </div>
+                      ) : project.status === 'draft' ? (
+                        <Link
+                          href={`/generate?id=${project.id}`}
+                          className="w-full text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
+                        >
+                          <span>Publikasikan Halaman</span>
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/generate"
+                          className="w-full text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text-sec font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
+                        >
+                          Coba Buat Lagi
+                        </Link>
                       )}
                     </div>
                   </div>
-
-                  <div className="mt-5 pt-4 border-t border-theme-border flex flex-col gap-2">
-                    {project.status === 'deployed' ? (
-                      <div className="flex flex-col gap-2 w-full">
-                        <div className="flex gap-2 w-full">
-                          <a
-                            href={project.live_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text font-bold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5"
-                          >
-                            <span>Lihat</span>
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
-                          {(templateType === 'wedding' || templateType === 'birthday') && (
-                            (project.edit_count || 0) >= 3 ? (
-                              <button
-                                disabled
-                                className="flex-1 text-center bg-theme-border/50 text-theme-text-muted font-bold text-xs py-2.5 px-3 rounded-xl cursor-not-allowed border border-theme-border"
-                                title="Batas edit habis (maksimal 3x). Silakan hubungi admin."
-                              >
-                                Edit (0/3)
-                              </button>
-                            ) : (
-                              <Link
-                                href={`/generate?id=${project.id}&editMode=true`}
-                                className="flex-1 text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
-                              >
-                                <span>Edit ({3 - (project.edit_count || 0)}/3)</span>
-                              </Link>
-                            )
-                          )}
-                        </div>
-                        
-                        {(templateType === 'wedding' || templateType === 'birthday') && (
-                          <button
-                            onClick={() => {
-                              setShareProject(project);
-                              setShareModalOpen(true);
-                              setGuestName('');
-                              setCopied(false);
-                            }}
-                            className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5"
-                          >
-                            <Share2 className="h-3.5 w-3.5" />
-                            <span>Bagikan Undangan</span>
-                          </button>
-                        )}
-                      </div>
-                    ) : project.status === 'draft' ? (
-                      <Link
-                        href={`/generate?id=${project.id}`}
-                        className="w-full text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
-                      >
-                        <span>Publikasikan Halaman</span>
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/generate"
-                        className="w-full text-center bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text-sec font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
-                      >
-                        Coba Buat Lagi
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         )}
 

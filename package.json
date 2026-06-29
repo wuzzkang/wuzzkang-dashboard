@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:templates": "cp -r ../wuzzkang-lp/templates/birthday public/preview/templates/birthday && cp -r ../wuzzkang-lp/templates/wedding public/preview/templates/wedding && echo '✅ Templates synced from wuzzkang-lp'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
