@@ -132,13 +132,13 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
             </nav>
 
             <!-- Hero Section -->
-            <section class="store-hero px-6 py-12 md:py-20 text-center relative overflow-hidden">
+            <section class="store-hero px-6 py-12 md:py-20 text-center relative overflow-hidden" ${store.banner_url ? `style="background: linear-gradient(rgba(15,23,42,0.55), rgba(15,23,42,0.45)), url('${store.banner_url}') center center / cover no-repeat;"` : ''}>
                 <div class="max-w-2xl mx-auto relative z-10">
-                    <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold bg-blue-600/10 text-blue-600 uppercase tracking-widest mb-4">Selamat Datang</span>
-                    <h1 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight tracking-tight mb-4">${store.name || 'Nama Toko'}</h1>
-                    <p class="text-sm md:text-base text-blue-800/80 font-medium tracking-wide mb-6">${store.tagline || 'Tagline Toko Online Anda'}</p>
+                    <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold ${store.banner_url ? 'bg-white/20 text-white' : 'bg-blue-600/10 text-blue-600'} uppercase tracking-widest mb-4">Selamat Datang</span>
+                    <h1 class="text-3xl md:text-5xl font-black ${store.banner_url ? 'text-white drop-shadow-lg' : 'text-slate-900'} leading-tight tracking-tight mb-4">${store.name || 'Nama Toko'}</h1>
+                    <p class="text-sm md:text-base ${store.banner_url ? 'text-white/80' : 'text-blue-800/80'} font-medium tracking-wide mb-6">${store.tagline || 'Tagline Toko Online Anda'}</p>
                     
-                    ${store.description ? `<p class="text-xs md:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed mb-8">${store.description}</p>` : ''}
+                    ${store.description ? `<p class="text-xs md:text-sm ${store.banner_url ? 'text-white/70' : 'text-slate-600'} max-w-lg mx-auto leading-relaxed mb-8">${store.description}</p>` : ''}
 
                     <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
                         <a 

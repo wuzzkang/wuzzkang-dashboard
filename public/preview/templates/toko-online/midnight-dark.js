@@ -143,7 +143,7 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
             </nav>
 
             <!-- Hero Section -->
-            <section class="store-hero-dark px-6 py-16 md:py-24 text-center relative overflow-hidden">
+            <section class="store-hero-dark px-6 py-16 md:py-24 text-center relative overflow-hidden" ${store.banner_url ? `style="background: linear-gradient(rgba(9,9,11,0.70), rgba(9,9,11,0.60)), url('${store.banner_url}') center center / cover no-repeat; border-bottom: 1px solid rgba(212,175,55,0.15);"` : ''}>
                 <div class="max-w-2xl mx-auto relative z-10">
                     <div class="flex justify-center items-center gap-2 mb-4">
                         <div class="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#d4af37]"></div>
