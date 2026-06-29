@@ -188,6 +188,14 @@ function GenerateContent() {
   const [campaignUrgency, setCampaignUrgency] = useState('');
   const [campaignClosingCta, setCampaignClosingCta] = useState('Dapatkan Sekarang!');
   const [campaignWhatsapp, setCampaignWhatsapp] = useState('');
+  const [campaignBrief, setCampaignBrief] = useState('');
+
+  // Campaign AI loader states
+  const [isGeneratingCampaignHero, setIsGeneratingCampaignHero] = useState(false);
+  const [isGeneratingCampaignProblems, setIsGeneratingCampaignProblems] = useState(false);
+  const [isGeneratingCampaignBenefits, setIsGeneratingCampaignBenefits] = useState(false);
+  const [isGeneratingCampaignTestimonials, setIsGeneratingCampaignTestimonials] = useState(false);
+  const [isGeneratingCampaignUrgency, setIsGeneratingCampaignUrgency] = useState(false);
 
   // Toko Online upload & AI loader states
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -343,6 +351,7 @@ function GenerateContent() {
             } else if (pageConfig && pageConfig.meta?.template_type === 'campaign') {
               setTemplateType('campaign');
               const content = pageConfig.content || {};
+              setCampaignBrief(content.brief || pageConfig.meta?.brief || '');
               setCampaignHeadline(content.hero?.headline || '');
               setCampaignSubheadline(content.hero?.subheadline || '');
               setCampaignCtaText(content.hero?.cta_text || 'Dapatkan Sekarang!');
@@ -918,6 +927,105 @@ function GenerateContent() {
     }
   };
 
+  const handleAICampaignAssist = async (fieldType) => {
+    if (!session?.access_token) return;
+
+    if (!campaignBrief.trim()) {
+      alert('Harap isi Brief Deskripsi Campaign terlebih dahulu di bagian atas sebagai acuan AI.');
+      return;
+    }
+
+    const remainingFree = profile?.remainingFree ?? 0;
+    const cost = profile?.ai_generate_cost ?? 100;
+
+    if (remainingFree === 0) {
+      const confirmCharge = window.confirm(
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya Rp ${cost.toLocaleString('id-ID')} yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+      );
+      if (!confirmCharge) return;
+    }
+
+    if (fieldType === 'campaign_hero') setIsGeneratingCampaignHero(true);
+    if (fieldType === 'campaign_problems') setIsGeneratingCampaignProblems(true);
+    if (fieldType === 'campaign_benefits') setIsGeneratingCampaignBenefits(true);
+    if (fieldType === 'campaign_testimonials') setIsGeneratingCampaignTestimonials(true);
+    if (fieldType === 'campaign_urgency') setIsGeneratingCampaignUrgency(true);
+
+    const context = {
+      campaignName: name,
+      campaignBrief: campaignBrief
+    };
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ fieldType, context }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        const content = result.data.content;
+
+        if (fieldType === 'campaign_hero') {
+          setCampaignHeadline(content.headline || '');
+          setCampaignSubheadline(content.subheadline || '');
+          if (content.cta_text) setCampaignCtaText(content.cta_text);
+        }
+        if (fieldType === 'campaign_problems') {
+          setCampaignProblemsTitle(content.title || 'Hambatan Utama Anda');
+          setCampaignProblemsList(content.list || ['', '', '']);
+        }
+        if (fieldType === 'campaign_benefits') {
+          setCampaignSolutionsTitle(content.title || 'Solusi Kami');
+          setCampaignSolutionsIntro(content.intro || '');
+          setCampaignBenefits(content.benefits || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+        }
+        if (fieldType === 'campaign_testimonials') {
+          setCampaignTestimonials(content.testimonials || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
+        }
+        if (fieldType === 'campaign_urgency') {
+          setCampaignUrgency(content.urgency || '');
+          if (content.cta_text) setCampaignClosingCta(content.cta_text);
+        }
+
+        await refreshProfile();
+      } else {
+        alert(result.error || 'Gagal men-generate copywriting dengan AI.');
+      }
+    } catch (err) {
+      console.error('[Dashboard] Campaign AI Assist error:', err);
+      alert('Terjadi kesalahan jaringan saat memanggil AI.');
+    } finally {
+      if (fieldType === 'campaign_hero') setIsGeneratingCampaignHero(false);
+      if (fieldType === 'campaign_problems') setIsGeneratingCampaignProblems(false);
+      if (fieldType === 'campaign_benefits') setIsGeneratingCampaignBenefits(false);
+      if (fieldType === 'campaign_testimonials') setIsGeneratingCampaignTestimonials(false);
+      if (fieldType === 'campaign_urgency') setIsGeneratingCampaignUrgency(false);
+    }
+  };
+
+  const renderAICampaignButton = (fieldType, isLoading) => {
+    const remainingFree = profile?.remainingFree ?? 15;
+    const cost = profile?.ai_generate_cost ?? 100;
+    const isFree = remainingFree > 0;
+
+    return (
+      <button
+        type="button"
+        disabled={isLoading || !campaignBrief.trim()}
+        onClick={() => handleAICampaignAssist(fieldType)}
+        className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
+      >
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `Rp ${cost}`})`}
+      </button>
+    );
+  };
+
   // Handle generating preview from prompt
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -996,6 +1104,7 @@ function GenerateContent() {
       if (templateType === 'campaign') {
         payload.campaign_details = {
           design_key: designKey,
+          brief: campaignBrief || null,
           hero: {
             headline: campaignHeadline,
             subheadline: campaignSubheadline,
@@ -2331,9 +2440,30 @@ function GenerateContent() {
                           </div>
                         </div>
 
+                        {/* Brief Deskripsi Campaign */}
+                        <div className="space-y-1.5">
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
+                            Brief Deskripsi Campaign (Context AI)
+                          </label>
+                          <textarea
+                            rows={3}
+                            required
+                            placeholder="Jelaskan produk/penawaran, target audiens, dan nilai jual utama Anda secara detail sebagai acuan untuk AI Copywriter..."
+                            value={campaignBrief}
+                            onChange={(e) => setCampaignBrief(e.target.value)}
+                            className="block w-full px-3 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                          />
+                          <p className="text-[8px] text-theme-text-muted leading-tight">
+                            * Wajib diisi agar fitur <b>AI Generate</b> di masing-masing bagian dapat menghasilkan copywriting yang akurat.
+                          </p>
+                        </div>
+
                         {/* HERO SECTION FORM */}
                         <div className="space-y-2.5">
-                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">1. Hero Section</div>
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">1. Hero Section</div>
+                            {renderAICampaignButton('campaign_hero', isGeneratingCampaignHero)}
+                          </div>
                           <div>
                             <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Headline Utama</label>
                             <textarea
@@ -2387,7 +2517,10 @@ function GenerateContent() {
 
                         {/* PROBLEMS SECTION FORM */}
                         <div className="space-y-2.5">
-                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">3. Bagian Masalah (Problem & Agitation)</div>
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">3. Bagian Masalah (Problem & Agitation)</div>
+                            {renderAICampaignButton('campaign_problems', isGeneratingCampaignProblems)}
+                          </div>
                           <div>
                             <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Judul Bagian Masalah</label>
                             <input
@@ -2440,7 +2573,10 @@ function GenerateContent() {
 
                         {/* SOLUTIONS & BENEFITS FORM */}
                         <div className="space-y-2.5">
-                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">4. Bagian Solusi & Manfaat</div>
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">4. Bagian Solusi & Manfaat</div>
+                            {renderAICampaignButton('campaign_benefits', isGeneratingCampaignBenefits)}
+                          </div>
                           <div>
                             <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Judul Bagian Solusi</label>
                             <input
@@ -2497,7 +2633,10 @@ function GenerateContent() {
 
                         {/* SOCIAL PROOF SECTION FORM */}
                         <div className="space-y-2.5">
-                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">5. Testimoni & Elemen Kepercayaan</div>
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">5. Testimoni & Elemen Kepercayaan</div>
+                            {renderAICampaignButton('campaign_testimonials', isGeneratingCampaignTestimonials)}
+                          </div>
                           <div className="space-y-3">
                             <label className="block text-[8px] font-semibold text-theme-text-sec">Contoh Testimoni Pelanggan (Max 2)</label>
                             {campaignTestimonials.map((t, index) => (
@@ -2556,7 +2695,10 @@ function GenerateContent() {
 
                         {/* CLOSING SECTION FORM */}
                         <div className="space-y-2.5">
-                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">6. Penutup & Urgensi</div>
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">6. Penutup & Urgensi</div>
+                            {renderAICampaignButton('campaign_urgency', isGeneratingCampaignUrgency)}
+                          </div>
                           <div>
                             <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Urgensi / Kelangkaan (Scarcity)</label>
                             <textarea
