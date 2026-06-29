@@ -123,8 +123,8 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
       "name": "Nama Toko",
       "tagline": "Tagline singkat",
       "description": "Deskripsi toko (opsional)",
-      "logo_url": "https://... (opsional)",
-      "banner_url": "https://... (opsional)"
+      "logo_url": "https://... (opsional, ditampilkan di navbar)",
+      "banner_url": "https://... (opsional, ditampilkan sebagai background hero section)"
     },
     "products": [
       {
@@ -565,6 +565,55 @@ Sistem Wuzzkang menyediakan asisten berbasis AI untuk copywriting teks dan pembu
   - Tombol-tombol AI akan otomatis mendeteksi sisa limit harian: `✨ AI Generate (Gratis: X)` atau `✨ AI Generate (Rp Y)`.
   - Sebelum menagih (jika gratis = 0), dashboard memicu popup dialog `window.confirm` untuk mengonfirmasi pemotongan saldo.
   - Setelah generate sukses, dashboard memanggil `await refreshProfile()` untuk menyelaraskan sisa kuota dan saldo user di UI secara real-time.
+
+---
+
+## 🐛 Bug Fixes & Catatan Implementasi
+
+Bagian ini mencatat perbaikan bug dan keputusan implementasi yang penting sebagai referensi untuk developer berikutnya.
+
+### 2026-06-29 — Perbaikan Avatar Default Gender-Aware
+
+**Masalah**: Saat generate AI avatar (Wedding/Birthday) gagal (misalnya karena limit OpenAI habis), fallback di dashboard selalu menggunakan avatar pria (`DEFAULT_GROOM_AVATAR`) untuk semua target — termasuk avatar pengantin wanita dan celebrant berjenis kelamin wanita.
+
+**Root cause ada di dua tempat:**
+
+1. **Backend (`image.route.js`)** — Saat OpenAI DALL-E gagal, sebelumnya backend mengembalikan `{ success: true, url: "<URL foto pria dari Unsplash>"}` (mock fallback statis). Akibatnya frontend menerima respons sukses dan menimpa `brideImage` dengan foto pria.
+   - **Fix**: Saat DALL-E gagal, backend kini melempar error (`throw`) sehingga API mengembalikan `success: false`. Frontend masuk ke blok `catch` yang sudah memiliki logika default yang benar per target.
+
+2. **Frontend (`generate/page.js`, blok `catch` di `handleGenerateAIImage`)** — Celebrant selalu di-fallback ke `DEFAULT_GROOM_AVATAR` tanpa memeriksa gender.
+   - **Fix**: Fallback celebrant sekarang gender-aware:
+     ```js
+     if (isCelebrant) setCelebrantImage(celebrantGender === 'female' ? DEFAULT_BRIDE_AVATAR : DEFAULT_GROOM_AVATAR);
+     ```
+
+**Aturan fallback yang benar setelah fix:**
+| Target | Fallback |
+|---|---|
+| Groom (Wedding) | `DEFAULT_GROOM_AVATAR` |
+| Bride (Wedding) | `DEFAULT_BRIDE_AVATAR` |
+| Celebrant laki-laki (Birthday) | `DEFAULT_GROOM_AVATAR` |
+| Celebrant perempuan (Birthday) | `DEFAULT_BRIDE_AVATAR` |
+
+---
+
+### 2026-06-29 — Banner Hero Toko Online Tidak Tampil di LP
+
+**Masalah**: Upload banner berhasil dan URL tersimpan di database (`content.store.banner_url`), namun gambar tidak tampil di landing page. Logo juga dicurigai bermasalah, ternyata logo sudah benar (dirender di navbar).
+
+**Root cause**: Kedua template toko-online (`modern-clean.js` dan `midnight-dark.js`) **tidak pernah membaca `store.banner_url`**. Hero section hanya menggunakan CSS gradient statis.
+
+**Fix**: Hero section di kedua template kini menggunakan `banner_url` sebagai `background-image` dengan overlay gelap semi-transparan (agar teks tetap terbaca) jika field tersebut ada:
+```js
+// Jika ada banner_url, inject sebagai background dengan overlay
+style="background: linear-gradient(rgba(15,23,42,0.55), ...), url('${store.banner_url}') center center / cover no-repeat;"
+```
+Jika `banner_url` kosong/null, fallback ke gradient CSS default (tidak ada breaking change).
+
+**Catatan penting**: Setelah mengubah file template di `wuzzkang-lp/`, **wajib** jalankan sync:
+```bash
+cd wuzzkang-dashboard && npm run sync:templates
+```
 
 ---
 
