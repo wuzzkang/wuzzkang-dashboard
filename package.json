@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sync:templates": "rm -rf public/preview/templates/birthday public/preview/templates/wedding public/preview/templates/toko-online && mkdir -p public/preview/templates/birthday public/preview/templates/wedding public/preview/templates/toko-online && cp -r ../wuzzkang-lp/templates/birthday/. public/preview/templates/birthday && cp -r ../wuzzkang-lp/templates/wedding/. public/preview/templates/wedding && cp -r ../wuzzkang-lp/templates/toko-online/. public/preview/templates/toko-online && echo '✅ Templates synced from wuzzkang-lp'"
+    "sync:templates": "rm -rf public/preview/templates/birthday public/preview/templates/wedding public/preview/templates/toko-online public/preview/templates/campaign && mkdir -p public/preview/templates/birthday public/preview/templates/wedding public/preview/templates/toko-online public/preview/templates/campaign && cp -r ../wuzzkang-lp/templates/birthday/. public/preview/templates/birthday && cp -r ../wuzzkang-lp/templates/wedding/. public/preview/templates/wedding && cp -r ../wuzzkang-lp/templates/toko-online/. public/preview/templates/toko-online && cp -r ../wuzzkang-lp/templates/campaign/. public/preview/templates/campaign && echo '✅ Templates synced from wuzzkang-lp'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

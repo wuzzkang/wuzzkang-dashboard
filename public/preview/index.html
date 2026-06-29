@@ -34,7 +34,7 @@
     <script type="module">
         // Version stamp — bump this (matching LP_VERSION in wuzzkang-lp/script.js) 
         // to invalidate cached template modules after a deployment to GitHub Pages.
-        const PREVIEW_VERSION = '1.0.5';
+        const PREVIEW_VERSION = '1.0.6';
         const cacheBust = `?v=${PREVIEW_VERSION}`;
 
         // Notify parent that iframe is ready to receive postMessage data
@@ -83,6 +83,16 @@
                     try {
                         // Dynamically import the exact JS toko-online template module with cache-bust
                         const module = await import(`./templates/toko-online/${designKey}.js${cacheBust}`);
+                        
+                        // Execute the template renderer
+                        await module.render(pageData, 'Tamu');
+                    } catch (err) {
+                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
+                    }
+                } else if (templateType === 'campaign') {
+                    try {
+                        // Dynamically import the exact JS campaign template module with cache-bust
+                        const module = await import(`./templates/campaign/${designKey}.js${cacheBust}`);
                         
                         // Execute the template renderer
                         await module.render(pageData, 'Tamu');

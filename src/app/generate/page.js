@@ -145,6 +145,28 @@ function GenerateContent() {
   const [tokoAddress, setTokoAddress] = useState('');
   const [tokoQuote, setTokoQuote] = useState('');
 
+  // Campaign form states
+  const [campaignHeadline, setCampaignHeadline] = useState('');
+  const [campaignSubheadline, setCampaignSubheadline] = useState('');
+  const [campaignCtaText, setCampaignCtaText] = useState('Dapatkan Sekarang!');
+  const [campaignProblemsTitle, setCampaignProblemsTitle] = useState('Hambatan Utama Anda');
+  const [campaignProblemsList, setCampaignProblemsList] = useState(['', '', '']);
+  const [campaignSolutionsTitle, setCampaignSolutionsTitle] = useState('Solusi Kami');
+  const [campaignSolutionsIntro, setCampaignSolutionsIntro] = useState('');
+  const [campaignBenefits, setCampaignBenefits] = useState([
+    { title: '', desc: '' },
+    { title: '', desc: '' },
+    { title: '', desc: '' }
+  ]);
+  const [campaignTestimonials, setCampaignTestimonials] = useState([
+    { name: '', role: '', content: '' },
+    { name: '', role: '', content: '' }
+  ]);
+  const [campaignGuarantee, setCampaignGuarantee] = useState('');
+  const [campaignUrgency, setCampaignUrgency] = useState('');
+  const [campaignClosingCta, setCampaignClosingCta] = useState('Dapatkan Sekarang!');
+  const [campaignWhatsapp, setCampaignWhatsapp] = useState('');
+
   // Toko Online upload & AI loader states
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
@@ -296,6 +318,23 @@ function GenerateContent() {
               setTokoAddress(content.contact?.address || '');
               setTokoQuote(content.quote || '');
               setDesignKey(pageConfig.meta?.design_key || 'modern-clean');
+            } else if (pageConfig && pageConfig.meta?.template_type === 'campaign') {
+              setTemplateType('campaign');
+              const content = pageConfig.content || {};
+              setCampaignHeadline(content.hero?.headline || '');
+              setCampaignSubheadline(content.hero?.subheadline || '');
+              setCampaignCtaText(content.hero?.cta_text || 'Dapatkan Sekarang!');
+              setCampaignProblemsTitle(content.problems?.title || 'Hambatan Utama Anda');
+              setCampaignProblemsList(content.problems?.list || ['', '', '']);
+              setCampaignSolutionsTitle(content.solutions?.title || 'Solusi Kami');
+              setCampaignSolutionsIntro(content.solutions?.intro || '');
+              setCampaignBenefits(content.solutions?.benefits || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+              setCampaignTestimonials(content.social_proof?.testimonials || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
+              setCampaignGuarantee(content.social_proof?.guarantee || '');
+              setCampaignUrgency(content.closing?.urgency || '');
+              setCampaignClosingCta(content.closing?.cta_text || 'Dapatkan Sekarang!');
+              setCampaignWhatsapp(content.contact?.whatsapp || '');
+              setDesignKey(pageConfig.meta?.design_key || 'neon-conversion');
             } else {
               setTemplateType('store');
             }
@@ -367,8 +406,36 @@ function GenerateContent() {
         },
         quote: tokoQuote || null
       };
-    } else {
-      // wedding
+    } else if (templateType === 'campaign') {
+      metaTitle = campaignHeadline || 'Campaign Halaman';
+      assembledContent = {
+        hero: {
+          headline: campaignHeadline,
+          subheadline: campaignSubheadline,
+          cta_text: campaignCtaText
+        },
+        problems: {
+          title: campaignProblemsTitle,
+          list: campaignProblemsList.filter(Boolean)
+        },
+        solutions: {
+          title: campaignSolutionsTitle,
+          intro: campaignSolutionsIntro,
+          benefits: campaignBenefits
+        },
+        social_proof: {
+          testimonials: campaignTestimonials,
+          guarantee: campaignGuarantee || null
+        },
+        closing: {
+          urgency: campaignUrgency,
+          cta_text: campaignClosingCta
+        },
+        contact: {
+          whatsapp: campaignWhatsapp
+        }
+      };
+    } else if (templateType === 'wedding') {
       metaTitle = `Undangan Pernikahan ${groomNickname || 'Groom'} & ${brideNickname || 'Bride'}`;
       assembledContent = {
         groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage || null },
@@ -379,6 +446,9 @@ function GenerateContent() {
         gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
         quote: pageData?.content?.quote || ''
       };
+    } else {
+      metaTitle = 'Draft Page';
+      assembledContent = {};
     }
 
     const assembledPageData = {
@@ -446,7 +516,20 @@ function GenerateContent() {
     tokoShopee,
     tokoTokopedia,
     tokoAddress,
-    tokoQuote
+    tokoQuote,
+    campaignHeadline,
+    campaignSubheadline,
+    campaignCtaText,
+    campaignProblemsTitle,
+    campaignProblemsList,
+    campaignSolutionsTitle,
+    campaignSolutionsIntro,
+    campaignBenefits,
+    campaignTestimonials,
+    campaignGuarantee,
+    campaignUrgency,
+    campaignClosingCta,
+    campaignWhatsapp
   ]);
 
   // Synchronize state with live preview iframe
@@ -519,6 +602,7 @@ function GenerateContent() {
     }
     return [
       { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko' },
+      { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 15000, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Toko' },
       { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan' },
       { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.', unit: 'Undangan' }
     ];
@@ -559,7 +643,7 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ code: couponCode }),
+        body: JSON.stringify({ code: couponCode, productId: templateType }),
       });
 
       const result = await response.json();
@@ -614,6 +698,11 @@ function GenerateContent() {
       return !storeName || !storeTagline || !tokoWhatsapp ||
         tokoProducts.length === 0 ||
         tokoProducts.some(p => !p.name || !p.price);
+    }
+    if (templateType === 'campaign') {
+      return !campaignHeadline || !campaignSubheadline || !campaignWhatsapp ||
+        campaignBenefits.some(b => !b.title || !b.desc) ||
+        campaignTestimonials.some(t => !t.name || !t.content);
     }
     if (templateType === 'store') {
       return !prompt;
@@ -880,6 +969,36 @@ function GenerateContent() {
             address: tokoAddress || null
           },
           quote: tokoQuote || null
+        };
+      }
+      if (templateType === 'campaign') {
+        payload.campaign_details = {
+          design_key: designKey,
+          hero: {
+            headline: campaignHeadline,
+            subheadline: campaignSubheadline,
+            cta_text: campaignCtaText
+          },
+          problems: {
+            title: campaignProblemsTitle,
+            list: campaignProblemsList.filter(Boolean)
+          },
+          solutions: {
+            title: campaignSolutionsTitle,
+            intro: campaignSolutionsIntro,
+            benefits: campaignBenefits
+          },
+          social_proof: {
+            testimonials: campaignTestimonials,
+            guarantee: campaignGuarantee || null
+          },
+          closing: {
+            urgency: campaignUrgency,
+            cta_text: campaignClosingCta
+          },
+          contact: {
+            whatsapp: campaignWhatsapp
+          }
         };
       }
 
@@ -2142,8 +2261,308 @@ function GenerateContent() {
                       </div>
                     )}
 
+                    {/* Campaign Fields */}
+                    {templateType === 'campaign' && (
+                      <div className="space-y-5 border-t border-theme-border pt-4">
+                        {/* Desain Template Picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                            Pilih Desain Tema
+                          </label>
+                          <div className="flex gap-3 overflow-x-auto pb-2 pt-1 scrollbar-none snap-x snap-mandatory">
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('neon-conversion')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'neon-conversion' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
+                              >
+                                <span className="text-lg">⚡</span>
+                                <span className="text-[10px] font-bold">Neon Conversion</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('neon-conversion')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('clean-trust')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'clean-trust' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
+                              >
+                                <span className="text-lg">🛡️</span>
+                                <span className="text-[10px] font-bold">Clean Trust</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('clean-trust')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* HERO SECTION FORM */}
+                        <div className="space-y-2.5">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">1. Hero Section</div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Headline Utama</label>
+                            <textarea
+                              rows={2}
+                              required
+                              placeholder="Tulis headline yang menghentak dan fokus ke solusi..."
+                              value={campaignHeadline}
+                              onChange={(e) => setCampaignHeadline(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Sub-headline</label>
+                            <textarea
+                              rows={2}
+                              required
+                              placeholder="Jelaskan detail pendukung dari headline utama Anda..."
+                              value={campaignSubheadline}
+                              onChange={(e) => setCampaignSubheadline(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Tombol CTA Utama</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Teks tombol, e.g. Dapatkan Sekarang!"
+                              value={campaignCtaText}
+                              onChange={(e) => setCampaignCtaText(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* CONTACT SECTION FORM */}
+                        <div className="space-y-2.5">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">2. Kontak WhatsApp</div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">WhatsApp Checkout (Format: 628xxx)</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. 6281234567890"
+                              value={campaignWhatsapp}
+                              onChange={(e) => setCampaignWhatsapp(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* PROBLEMS SECTION FORM */}
+                        <div className="space-y-2.5">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">3. Bagian Masalah (Problem & Agitation)</div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Judul Bagian Masalah</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Hambatan Utama Anda"
+                              value={campaignProblemsTitle}
+                              onChange={(e) => setCampaignProblemsTitle(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Daftar Poin Masalah (Minimal 1, Maksimal 3)</label>
+                            {campaignProblemsList.map((item, index) => (
+                              <input
+                                key={index}
+                                type="text"
+                                placeholder={`Masalah #${index + 1}`}
+                                value={item}
+                                onChange={(e) => {
+                                  const updated = [...campaignProblemsList];
+                                  updated[index] = e.target.value;
+                                  setCampaignProblemsList(updated);
+                                }}
+                                className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                              />
+                            ))}
+                            <div className="flex gap-2">
+                              {campaignProblemsList.length < 6 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCampaignProblemsList(prev => [...prev, ''])}
+                                  className="text-[9px] font-bold text-theme-accent hover:underline"
+                                >
+                                  + Tambah Poin
+                                </button>
+                              )}
+                              {campaignProblemsList.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCampaignProblemsList(prev => prev.slice(0, -1))}
+                                  className="text-[9px] font-bold text-red-400 hover:underline"
+                                >
+                                  - Kurangi Poin
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* SOLUTIONS & BENEFITS FORM */}
+                        <div className="space-y-2.5">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">4. Bagian Solusi & Manfaat</div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Judul Bagian Solusi</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Solusi Kami"
+                              value={campaignSolutionsTitle}
+                              onChange={(e) => setCampaignSolutionsTitle(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Pengantar Solusi</label>
+                            <textarea
+                              rows={2}
+                              placeholder="Teks singkat memperkenalkan solusi (opsional)..."
+                              value={campaignSolutionsIntro}
+                              onChange={(e) => setCampaignSolutionsIntro(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Poin-Poin Manfaat Utama (Max 3)</label>
+                            {campaignBenefits.map((benefit, index) => (
+                              <div key={index} className="bg-theme-bg/30 p-2.5 rounded-xl border border-theme-border space-y-1.5">
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder={`Nama Manfaat #${index + 1}`}
+                                  value={benefit.title}
+                                  onChange={(e) => {
+                                    const updated = [...campaignBenefits];
+                                    updated[index] = { ...updated[index], title: e.target.value };
+                                    setCampaignBenefits(updated);
+                                  }}
+                                  className="block w-full px-2 py-1 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none font-bold"
+                                />
+                                <textarea
+                                  rows={2}
+                                  required
+                                  placeholder={`Penjelasan Manfaat #${index + 1}`}
+                                  value={benefit.desc}
+                                  onChange={(e) => {
+                                    const updated = [...campaignBenefits];
+                                    updated[index] = { ...updated[index], desc: e.target.value };
+                                    setCampaignBenefits(updated);
+                                  }}
+                                  className="block w-full px-2 py-1 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none resize-none"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* SOCIAL PROOF SECTION FORM */}
+                        <div className="space-y-2.5">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">5. Testimoni & Elemen Kepercayaan</div>
+                          <div className="space-y-3">
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Contoh Testimoni Pelanggan (Max 2)</label>
+                            {campaignTestimonials.map((t, index) => (
+                              <div key={index} className="bg-theme-bg/30 p-2.5 rounded-xl border border-theme-border space-y-1.5">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <input
+                                    type="text"
+                                    required
+                                    placeholder={`Nama Testi #${index + 1}`}
+                                    value={t.name}
+                                    onChange={(e) => {
+                                      const updated = [...campaignTestimonials];
+                                      updated[index] = { ...updated[index], name: e.target.value };
+                                      setCampaignTestimonials(updated);
+                                    }}
+                                    className="block w-full px-2 py-1 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder={`Pekerjaan/Role #${index + 1}`}
+                                    value={t.role}
+                                    onChange={(e) => {
+                                      const updated = [...campaignTestimonials];
+                                      updated[index] = { ...updated[index], role: e.target.value };
+                                      setCampaignTestimonials(updated);
+                                    }}
+                                    className="block w-full px-2 py-1 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                                <textarea
+                                  rows={2}
+                                  required
+                                  placeholder={`Isi Testi #${index + 1}`}
+                                  value={t.content}
+                                  onChange={(e) => {
+                                    const updated = [...campaignTestimonials];
+                                    updated[index] = { ...updated[index], content: e.target.value };
+                                    setCampaignTestimonials(updated);
+                                  }}
+                                  className="block w-full px-2 py-1 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none resize-none"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Informasi Garansi (Opsional)</label>
+                            <textarea
+                              rows={2}
+                              placeholder="Tulis jaminan garansi atau pembangun kredibilitas..."
+                              value={campaignGuarantee}
+                              onChange={(e) => setCampaignGuarantee(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                            />
+                          </div>
+                        </div>
+
+                        {/* CLOSING SECTION FORM */}
+                        <div className="space-y-2.5">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">6. Penutup & Urgensi</div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Urgensi / Kelangkaan (Scarcity)</label>
+                            <textarea
+                              rows={2}
+                              required
+                              placeholder="e.g. Diskon 70% hanya untuk 100 pembeli pertama..."
+                              value={campaignUrgency}
+                              onChange={(e) => setCampaignUrgency(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Tombol CTA Penutup</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Dapatkan Sekarang!"
+                              value={campaignClosingCta}
+                              onChange={(e) => setCampaignClosingCta(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Prompt input */}
-                    {templateType !== 'toko-online' && (
+                    {templateType !== 'toko-online' && templateType !== 'campaign' && (
                       <div>
                         <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                           {templateType === 'wedding' || templateType === 'birthday' ? 'Preferensi Kutipan / Doa (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
@@ -2298,7 +2717,7 @@ function GenerateContent() {
 
               {/* Viewport for preview */}
               <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
-                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online') ? (
+                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign') ? (
                   <iframe
                     ref={iframeRef}
                     src="/preview/index.html"
@@ -2544,7 +2963,10 @@ function GenerateContent() {
                       previewDesignKey === 'floral-pink' ? 'Floral Pink 🌸' :
                         previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' :
                           previewDesignKey === 'elegant-gold' ? 'Elegant Gold ✨' :
-                            previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' : 'Midnight Dark 👑'
+                            previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' :
+                              previewDesignKey === 'midnight-dark' ? 'Midnight Dark 👑' :
+                                previewDesignKey === 'neon-conversion' ? 'Neon Conversion ⚡' :
+                                  previewDesignKey === 'clean-trust' ? 'Clean Trust 🛡️' : 'Theme'
                   }
                 </h3>
                 <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan landing page</p>
@@ -2567,6 +2989,7 @@ function GenerateContent() {
                   const iframe = e.target;
                   const isBirthday = ['cute-balloon', 'elegant-gold'].includes(previewDesignKey);
                   const isTokoOnline = ['modern-clean', 'midnight-dark'].includes(previewDesignKey);
+                  const isCampaign = ['neon-conversion', 'clean-trust'].includes(previewDesignKey);
                   const isGold = previewDesignKey === 'elegant-gold';
                   const isMidnight = previewDesignKey === 'midnight-dark';
 
@@ -2653,6 +3076,69 @@ function GenerateContent() {
                         quote: isMidnight
                           ? 'Waktu adalah kemewahan sejati. Hargai setiap detik perjalanan hidup Anda dengan arloji terbaik.'
                           : 'Teknologi terbaik untuk menunjang produktivitas dan kreativitas tanpa batas setiap hari.'
+                      }
+                    };
+                  } else if (isCampaign) {
+                    mockData = {
+                      meta: {
+                        title: `Contoh Campaign - Tema ${previewDesignKey === 'neon-conversion' ? 'Neon Conversion' : 'Clean Trust'}`,
+                        template_type: 'campaign',
+                        design_key: previewDesignKey
+                      },
+                      content: {
+                        hero: {
+                          headline: 'Tulis Copywriting Landing Page yang Menghasilkan Penjualan dalam 10 Menit 🚀',
+                          subheadline: 'Dapatkan formula prompts AI & video panduan praktis yang telah teruji mendatangkan ribuan pembeli, tanpa sewa copywriter mahal.',
+                          cta_text: 'Dapatkan Blueprint Sekarang!'
+                        },
+                        problems: {
+                          title: 'Hambatan Utama Jualan Online Anda 😰',
+                          list: [
+                            'Sudah bayar iklan mahal tapi pengunjung pergi tanpa membeli.',
+                            'Bingung memikirkan kata-kata penawaran yang menarik dan persuasif.',
+                            'Tidak punya budget besar untuk menyewa copywriter profesional.'
+                          ]
+                        },
+                        solutions: {
+                          title: 'Solusi Terbaik Untuk Anda 💡',
+                          intro: 'Memperkenalkan AI Copywriting Blueprint — Formula rahasia menyulap kata-kata menjadi mesin uang otomatis untuk bisnis Anda.',
+                          benefits: [
+                            {
+                              title: 'Tulis Instan ⚡',
+                              desc: 'Akses 100+ template promosi siap pakai tinggal copy-paste dan sesuaikan dengan produk Anda.'
+                            },
+                            {
+                              title: 'Dongkrak Konversi 📈',
+                              desc: 'Alur tulisan disusun menggunakan formula psikologi konsumen AIDA (Attention, Interest, Desire, Action).'
+                            },
+                            {
+                              title: 'Integrasi Prompts AI 🤖',
+                              desc: 'Panduan lengkap cara perintah ChatGPT/Claude agar menghasilkan teks iklan yang natural.'
+                            }
+                          ]
+                        },
+                        social_proof: {
+                          testimonials: [
+                            {
+                              name: 'Andi Prasetya',
+                              role: 'Pemilik Toko Online',
+                              content: 'Awalnya ragu beli blueprint seharga 99rb ini. Tapi setelah dipraktikkan, conversion rate jualan naik dari 1% jadi 4.5%! Luar biasa.'
+                            },
+                            {
+                              name: 'Siti Rahma',
+                              role: 'Solo-preneur Kuliner',
+                              content: 'Sangat membantu buat saya yang gaptek menulis. Templatenya tinggal dicontek, bahasa iklan jadi hidup dan tidak kaku lagi.'
+                            }
+                          ],
+                          guarantee: '🛡️ Jaminan 100% Garansi Kepuasan 7 Hari — Jika isi blueprint tidak memberikan manfaat bagi bisnis Anda, hubungi kami dan uang kembali utuh.'
+                        },
+                        closing: {
+                          urgency: '🔥 Penawaran Terbatas! Diskon 70% khusus untuk 100 pembeli pertama hari ini. Harga akan kembali normal ke Rp 330.000.',
+                          cta_text: 'Ambil Diskon 70% & Download Sekarang! 📥'
+                        },
+                        contact: {
+                          whatsapp: '6281234567890'
+                        }
                       }
                     };
                   } else {
