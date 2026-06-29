@@ -315,18 +315,12 @@ function GenerateContent() {
   useEffect(() => {
     if (!editMode || !projectId) return;
 
-    const assembledPageData = {
-      meta: {
-        template_type: templateType,
-        design_key: designKey,
-        title: templateType === 'birthday' 
-          ? `Undangan Ulang Tahun ${celebrantNickname || 'Celebrant'}`
-          : templateType === 'wedding'
-            ? `Undangan Pernikahan ${groomNickname || 'Groom'} & ${brideNickname || 'Bride'}`
-            : 'Draft Page',
-        theme: designKey
-      },
-      content: templateType === 'birthday' ? {
+    let assembledContent;
+    let metaTitle;
+
+    if (templateType === 'birthday') {
+      metaTitle = `Undangan Ulang Tahun ${celebrantNickname || 'Celebrant'}`;
+      assembledContent = {
         celebrant: {
           name: celebrantName,
           nickname: celebrantNickname,
@@ -347,7 +341,36 @@ function GenerateContent() {
           account_holder: birthdayGiftHolder || ''
         } : null,
         quote: pageData?.content?.quote || 'Selamat hari lahir! Semoga panjang umur, sehat selalu, dan dilimpahi kebahagiaan serta kesuksesan.'
-      } : {
+      };
+    } else if (templateType === 'toko-online') {
+      metaTitle = storeName || 'Toko Online';
+      assembledContent = {
+        store: {
+          name: storeName,
+          tagline: storeTagline,
+          description: storeDescription || null,
+          logo_url: storeLogoUrl || null,
+          banner_url: storeBannerUrl || null
+        },
+        products: tokoProducts.map(p => ({
+          name: p.name,
+          price: p.price,
+          description: p.description || null,
+          image_url: p.image_url || null
+        })),
+        contact: {
+          whatsapp: tokoWhatsapp,
+          instagram: tokoInstagram || null,
+          shopee_url: tokoShopee || null,
+          tokopedia_url: tokoTokopedia || null,
+          address: tokoAddress || null
+        },
+        quote: tokoQuote || null
+      };
+    } else {
+      // wedding
+      metaTitle = `Undangan Pernikahan ${groomNickname || 'Groom'} & ${brideNickname || 'Bride'}`;
+      assembledContent = {
         groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage || null },
         bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage || null },
         story: storyList.length > 0 ? storyList : null,
@@ -355,7 +378,17 @@ function GenerateContent() {
         resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
         gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
         quote: pageData?.content?.quote || ''
-      }
+      };
+    }
+
+    const assembledPageData = {
+      meta: {
+        template_type: templateType,
+        design_key: designKey,
+        title: metaTitle,
+        theme: designKey
+      },
+      content: assembledContent
     };
 
     setTimeout(() => {
@@ -401,7 +434,19 @@ function GenerateContent() {
     birthdayMaps,
     birthdayGiftBank,
     birthdayGiftAccount,
-    birthdayGiftHolder
+    birthdayGiftHolder,
+    storeName,
+    storeTagline,
+    storeDescription,
+    storeLogoUrl,
+    storeBannerUrl,
+    tokoProducts,
+    tokoWhatsapp,
+    tokoInstagram,
+    tokoShopee,
+    tokoTokopedia,
+    tokoAddress,
+    tokoQuote
   ]);
 
   // Synchronize state with live preview iframe
@@ -414,6 +459,25 @@ function GenerateContent() {
       }, '*');
     }
   }, [pageData, iframeReady]);
+
+  // Listen for IFRAME_READY message from the preview sandbox iframe
+  // This fires on every load of preview/index.html (fresh or refresh)
+  useEffect(() => {
+    const handleIframeMessage = (event) => {
+      if (event.data?.type === 'IFRAME_READY') {
+        setIframeReady(true);
+        // Immediately send current pageData if available
+        if (iframeRef.current && pageData) {
+          iframeRef.current.contentWindow.postMessage({
+            type: 'UPDATE_PREVIEW',
+            pageData: pageData
+          }, '*');
+        }
+      }
+    };
+    window.addEventListener('message', handleIframeMessage);
+    return () => window.removeEventListener('message', handleIframeMessage);
+  }, [pageData]);
 
   // Fetch active products list from backend
   useEffect(() => {
