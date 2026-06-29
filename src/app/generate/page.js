@@ -78,28 +78,28 @@ function GenerateContent() {
   const [products, setProducts] = useState([]);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
+
   // Wedding form states
   const [groomName, setGroomName] = useState('');
   const [groomNickname, setGroomNickname] = useState('');
   const [groomFather, setGroomFather] = useState('');
   const [groomMother, setGroomMother] = useState('');
-  
+
   const [brideName, setBrideName] = useState('');
   const [brideNickname, setBrideNickname] = useState('');
   const [brideFather, setBrideFather] = useState('');
   const [brideMother, setBrideMother] = useState('');
-  
+
   const [akadDate, setAkadDate] = useState('');
   const [akadTime, setAkadTime] = useState('');
   const [akadLocation, setAkadLocation] = useState('');
   const [akadMaps, setAkadMaps] = useState('');
-  
+
   const [resepsiDate, setResepsiDate] = useState('');
   const [resepsiTime, setResepsiTime] = useState('');
   const [resepsiLocation, setResepsiLocation] = useState('');
   const [resepsiMaps, setResepsiMaps] = useState('');
-  
+
   const [giftBank, setGiftBank] = useState('');
   const [giftAccount, setGiftAccount] = useState('');
   const [giftHolder, setGiftHolder] = useState('');
@@ -110,7 +110,7 @@ function GenerateContent() {
   const [groomImage, setGroomImage] = useState(DEFAULT_GROOM_AVATAR);
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
   const [storyList, setStoryList] = useState([]);
-  
+
   // Birthday modular additions
   const [celebrantName, setCelebrantName] = useState('');
   const [celebrantNickname, setCelebrantNickname] = useState('');
@@ -118,16 +118,16 @@ function GenerateContent() {
   const [celebrantParents, setCelebrantParents] = useState('');
   const [celebrantImage, setCelebrantImage] = useState(DEFAULT_GROOM_AVATAR);
   const [celebrantGender, setCelebrantGender] = useState('male');
-  
+
   const [birthdayDate, setBirthdayDate] = useState('');
   const [birthdayTime, setBirthdayTime] = useState('');
   const [birthdayLocation, setBirthdayLocation] = useState('');
   const [birthdayMaps, setBirthdayMaps] = useState('');
-  
+
   const [birthdayGiftBank, setBirthdayGiftBank] = useState('');
   const [birthdayGiftAccount, setBirthdayGiftAccount] = useState('');
   const [birthdayGiftHolder, setBirthdayGiftHolder] = useState('');
-  
+
   const [isUploadingCelebrantImage, setIsUploadingCelebrantImage] = useState(false);
   const [isGeneratingCelebrantImage, setIsGeneratingCelebrantImage] = useState(false);
 
@@ -152,7 +152,7 @@ function GenerateContent() {
   const [isGeneratingStoreDesc, setIsGeneratingStoreDesc] = useState(false);
   const [isGeneratingStoreQuote, setIsGeneratingStoreQuote] = useState(false);
   const [isGeneratingProductDesc, setIsGeneratingProductDesc] = useState({});
-  
+
   // Adding story temp states
   const [newStoryTitle, setNewStoryTitle] = useState('');
   const [newStoryDate, setNewStoryDate] = useState('');
@@ -174,7 +174,7 @@ function GenerateContent() {
   const [error, setError] = useState('');
   const [successUrl, setSuccessUrl] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  
+
   // Preview mode (desktop vs mobile)
   const [previewDevice, setPreviewDevice] = useState('mobile');
   const [activeTab, setActiveTab] = useState('edit');
@@ -220,7 +220,7 @@ function GenerateContent() {
               }
             }
             setPageData(pageConfig);
-            
+
             // Deduce a clean default slug from project name or use already existing slug
             const suggestedSlug = project.slug || project.name
               .toLowerCase()
@@ -236,26 +236,26 @@ function GenerateContent() {
               setGroomNickname(content.groom?.nickname || '');
               setGroomFather(content.groom?.father || '');
               setGroomMother(content.groom?.mother || '');
-              
+
               setBrideName(content.bride?.name || '');
               setBrideNickname(content.bride?.nickname || '');
               setBrideFather(content.bride?.father || '');
               setBrideMother(content.bride?.mother || '');
-              
+
               setAkadDate(content.akad?.date || '');
               setAkadTime(content.akad?.time || '');
               setAkadLocation(content.akad?.location || '');
               setAkadMaps(content.akad?.maps_url || '');
-              
+
               setResepsiDate(content.resepsi?.date || '');
               setResepsiTime(content.resepsi?.time || '');
               setResepsiLocation(content.resepsi?.location || '');
               setResepsiMaps(content.resepsi?.maps_url || '');
-              
+
               setGiftBank(content.gift?.bank_name || '');
               setGiftAccount(content.gift?.account_number || '');
               setGiftHolder(content.gift?.account_holder || '');
-              
+
               setDesignKey(pageConfig.meta?.design_key || 'sage-green');
               setGroomImage(content.groom?.image_url || DEFAULT_GROOM_AVATAR);
               setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
@@ -269,16 +269,16 @@ function GenerateContent() {
               setCelebrantParents(content.celebrant?.parent_name || '');
               setCelebrantImage(content.celebrant?.image_url || DEFAULT_GROOM_AVATAR);
               setCelebrantGender(content.celebrant?.gender || 'male');
-              
+
               setBirthdayDate(content.event?.date || '');
               setBirthdayTime(content.event?.time || '');
               setBirthdayLocation(content.event?.location || '');
               setBirthdayMaps(content.event?.maps_url || '');
-              
+
               setBirthdayGiftBank(content.gift?.bank_name || '');
               setBirthdayGiftAccount(content.gift?.account_number || '');
               setBirthdayGiftHolder(content.gift?.account_holder || '');
-              
+
               setDesignKey(pageConfig.meta?.design_key || 'cute-balloon');
             } else if (pageConfig && pageConfig.meta?.template_type === 'toko-online') {
               setTemplateType('toko-online');
@@ -493,7 +493,7 @@ function GenerateContent() {
           const result = await response.json();
           if (result.success && Array.isArray(result.data)) {
             setProducts(result.data);
-            
+
             // Set the first active template as default ONLY if creating a new project (no draftId)
             if (!draftId) {
               const activeProducts = result.data.filter(p => p.is_active);
@@ -518,9 +518,9 @@ function GenerateContent() {
       return products;
     }
     return [
-      { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.' },
-      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.' },
-      { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.' }
+      { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko' },
+      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan' },
+      { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.', unit: 'Undangan' }
     ];
   };
 
@@ -566,8 +566,8 @@ function GenerateContent() {
 
       if (response.ok && result.success) {
         setAppliedCoupon(result.data);
-        const discountDesc = result.data.discount_type === 'percentage' 
-          ? `${result.data.discount_value}%` 
+        const discountDesc = result.data.discount_type === 'percentage'
+          ? `${result.data.discount_value}%`
           : `Rp ${result.data.discount_value.toLocaleString('id-ID')}`;
         setCouponSuccess(`Kupon "${result.data.code}" berhasil diterapkan! Diskon ${discountDesc}.`);
       } else {
@@ -602,18 +602,18 @@ function GenerateContent() {
     if (!name) return true;
     if (templateType === 'wedding') {
       return !groomName || !groomNickname || !groomFather || !groomMother ||
-             !brideName || !brideNickname || !brideFather || !brideMother ||
-             !akadDate || !akadTime || !akadLocation ||
-             !resepsiDate || !resepsiTime || !resepsiLocation;
+        !brideName || !brideNickname || !brideFather || !brideMother ||
+        !akadDate || !akadTime || !akadLocation ||
+        !resepsiDate || !resepsiTime || !resepsiLocation;
     }
     if (templateType === 'birthday') {
       return !celebrantName || !celebrantNickname || !celebrantAge ||
-             !birthdayDate || !birthdayTime || !birthdayLocation;
+        !birthdayDate || !birthdayTime || !birthdayLocation;
     }
     if (templateType === 'toko-online') {
       return !storeName || !storeTagline || !tokoWhatsapp ||
-             tokoProducts.length === 0 ||
-             tokoProducts.some(p => !p.name || !p.price);
+        tokoProducts.length === 0 ||
+        tokoProducts.some(p => !p.name || !p.price);
     }
     if (templateType === 'store') {
       return !prompt;
@@ -623,7 +623,7 @@ function GenerateContent() {
 
   const handleUploadImage = async (file, target) => {
     if (!file) return;
-    
+
     const isGroom = target === 'groom';
     const isBride = target === 'bride';
     const isStory = target === 'story';
@@ -659,14 +659,14 @@ function GenerateContent() {
 
       console.log(`[Dashboard] Uploading file to storage: ${fileName}`);
       const { data, error } = await supabase.storage
-          .from('wuzzkang-bucket')
-          .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
+        .from('wuzzkang-bucket')
+        .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
 
       if (error) throw error;
 
       const { data: publicUrlData } = supabase.storage
-          .from('wuzzkang-bucket')
-          .getPublicUrl(filePath);
+        .from('wuzzkang-bucket')
+        .getPublicUrl(filePath);
 
       const publicUrl = publicUrlData.publicUrl;
 
@@ -701,7 +701,7 @@ function GenerateContent() {
     const isGroom = target === 'groom';
     const isBride = target === 'bride';
     const isCelebrant = target === 'celebrant';
-    
+
     let defaultPrompt = 'A cute 3D Pixar-style avatar, clean minimalist background, smiling';
     if (isGroom) {
       defaultPrompt = 'A cute 3D Pixar-style groom avatar, clean minimalist background, wedding theme, smiling, handsome';
@@ -743,7 +743,7 @@ function GenerateContent() {
       if (isGroom) setGroomImage(DEFAULT_GROOM_AVATAR);
       if (isBride) setBrideImage(DEFAULT_BRIDE_AVATAR);
       if (isCelebrant) setCelebrantImage(DEFAULT_GROOM_AVATAR);
-      
+
       alert(`Gagal men-generate foto AI: ${err.message || 'Error'}\n\nSistem otomatis menggunakan avatar default untuk Anda.`);
     } finally {
       if (isGroom) setIsGeneratingGroomImage(false);
@@ -897,7 +897,7 @@ function GenerateContent() {
       if (response.ok && result.success) {
         setProjectId(result.data.projectId);
         setPageData(result.data.pageData);
-        
+
         // Suggest slug based on name
         const suggestedSlug = name
           .toLowerCase()
@@ -1005,18 +1005,16 @@ function GenerateContent() {
     const isDark = ['dark', 'cyberpunk'].includes(themeName);
 
     return (
-      <div 
-        className={`w-full h-full flex flex-col overflow-y-auto transition-colors duration-300 select-none ${
-          isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
-        }`}
+      <div
+        className={`w-full h-full flex flex-col overflow-y-auto transition-colors duration-300 select-none ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'
+          }`}
         style={{ fontFamily: 'Poppins, system-ui, sans-serif' }}
       >
         {/* Navigation Bar Mockup */}
-        <header className={`sticky top-0 border-b z-10 px-6 py-4 flex justify-between items-center backdrop-blur-md ${
-          isDark ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-200/60'
-        }`}>
+        <header className={`sticky top-0 border-b z-10 px-6 py-4 flex justify-between items-center backdrop-blur-md ${isDark ? 'bg-slate-950/80 border-slate-900' : 'bg-white/80 border-slate-200/60'
+          }`}>
           <div className="flex items-center gap-2">
-            <div 
+            <div
               className="h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm"
               style={{ backgroundColor: primaryColor }}
             >
@@ -1026,7 +1024,7 @@ function GenerateContent() {
               {pageData.meta?.title || 'Brand'}
             </span>
           </div>
-          <button 
+          <button
             className="text-xs px-3 py-1.5 rounded-full text-white font-medium shadow-sm transition-all"
             style={{ backgroundColor: primaryColor }}
           >
@@ -1035,28 +1033,25 @@ function GenerateContent() {
         </header>
 
         {/* Hero Section Mockup */}
-        <section className={`relative py-16 px-6 text-center overflow-hidden border-b ${
-          isDark ? 'border-slate-900 bg-slate-950' : 'border-slate-100 bg-white'
-        }`}>
+        <section className={`relative py-16 px-6 text-center overflow-hidden border-b ${isDark ? 'border-slate-900 bg-slate-950' : 'border-slate-100 bg-white'
+          }`}>
           {/* Decorative background aura */}
-          <div 
+          <div
             className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-48 rounded-full blur-3xl opacity-10 pointer-events-none"
             style={{ backgroundColor: primaryColor }}
           ></div>
-          
+
           <div className="max-w-xl mx-auto relative z-10">
-            <h2 className={`text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight ${
-              isDark ? 'text-white' : 'text-slate-900'
-            }`}>
+            <h2 className={`text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'
+              }`}>
               {pageData.content?.hero?.heading || 'Headline'}
             </h2>
-            <p className={`text-sm md:text-base mt-4 leading-relaxed max-w-lg mx-auto ${
-              isDark ? 'text-slate-400' : 'text-slate-600'
-            }`}>
+            <p className={`text-sm md:text-base mt-4 leading-relaxed max-w-lg mx-auto ${isDark ? 'text-slate-400' : 'text-slate-600'
+              }`}>
               {pageData.content?.hero?.subheading || 'Subheading supporting the headline.'}
             </p>
             {pageData.content?.hero?.cta_text && (
-              <button 
+              <button
                 className="mt-6 px-6 py-2.5 rounded-full text-white text-sm font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
                 style={{ backgroundColor: primaryColor }}
               >
@@ -1070,26 +1065,23 @@ function GenerateContent() {
         <section className="py-12 px-6 max-w-3xl mx-auto w-full">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {pageData.features?.map((feature, idx) => (
-              <div 
+              <div
                 key={idx}
-                className={`rounded-2xl p-5 border text-center transition-all ${
-                  isDark ? 'bg-slate-900/40 border-slate-800' : 'bg-white border-slate-100 shadow-sm'
-                }`}
+                className={`rounded-2xl p-5 border text-center transition-all ${isDark ? 'bg-slate-900/40 border-slate-800' : 'bg-white border-slate-100 shadow-sm'
+                  }`}
               >
-                <div 
+                <div
                   className="text-3xl mb-4 w-12 h-12 flex items-center justify-center rounded-xl mx-auto"
                   style={{ backgroundColor: `${primaryColor}15` }}
                 >
                   {feature.icon || '✨'}
                 </div>
-                <h4 className={`text-sm font-bold tracking-tight mb-2 ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}>
+                <h4 className={`text-sm font-bold tracking-tight mb-2 ${isDark ? 'text-white' : 'text-slate-900'
+                  }`}>
                   {feature.title || 'Fitur'}
                 </h4>
-                <p className={`text-xs leading-relaxed ${
-                  isDark ? 'text-slate-400' : 'text-slate-500'
-                }`}>
+                <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'
+                  }`}>
                   {feature.desc || 'Deskripsi singkat mengenai keunggulan fitur.'}
                 </p>
               </div>
@@ -1098,9 +1090,8 @@ function GenerateContent() {
         </section>
 
         {/* Footer Mockup */}
-        <footer className={`py-8 text-center text-xs mt-auto border-t ${
-          isDark ? 'bg-slate-950 border-slate-900 text-slate-500' : 'bg-slate-100 border-slate-200/60 text-slate-400'
-        }`}>
+        <footer className={`py-8 text-center text-xs mt-auto border-t ${isDark ? 'bg-slate-950 border-slate-900 text-slate-500' : 'bg-slate-100 border-slate-200/60 text-slate-400'
+          }`}>
           <p>© {new Date().getFullYear()} {pageData.meta?.title || 'Brand'}. All Rights Reserved.</p>
         </footer>
       </div>
@@ -1115,7 +1106,7 @@ function GenerateContent() {
       <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
-          <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Landing Page</h1>
+          <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Siap Kerja Untukmu</h1>
           <p className="text-theme-text-sec text-xs mt-1">Masukkan data Anda, biarkan AI merancang halaman instan</p>
         </div>
 
@@ -1130,7 +1121,7 @@ function GenerateContent() {
               <p className="text-theme-text-sec text-xs mb-6 leading-relaxed">
                 Landing page Anda berhasil dipublikasikan secara instan dan kini dapat diakses oleh publik secara online!
               </p>
-              
+
               <div className="bg-theme-bg border border-theme-border rounded-xl p-3.5 mb-6 flex items-center justify-between text-xs overflow-hidden gap-3">
                 <span className="text-theme-accent font-medium truncate select-all">{successUrl}</span>
                 <a
@@ -1181,22 +1172,20 @@ function GenerateContent() {
               <button
                 type="button"
                 onClick={() => setActiveTab('edit')}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'edit'
-                    ? 'bg-theme-accent text-theme-accent-text shadow'
-                    : 'text-theme-text-sec hover:text-theme-text'
-                }`}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'edit'
+                  ? 'bg-theme-accent text-theme-accent-text shadow'
+                  : 'text-theme-text-sec hover:text-theme-text'
+                  }`}
               >
                 Edit Konten
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('preview')}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'preview'
-                    ? 'bg-theme-accent text-theme-accent-text shadow'
-                    : 'text-theme-text-sec hover:text-theme-text'
-                }`}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'preview'
+                  ? 'bg-theme-accent text-theme-accent-text shadow'
+                  : 'text-theme-text-sec hover:text-theme-text'
+                  }`}
               >
                 Lihat Preview
               </button>
@@ -1271,9 +1260,8 @@ function GenerateContent() {
                               <button
                                 type="button"
                                 onClick={() => setDesignKey('sage-green')}
-                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
-                                  designKey === 'sage-green' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                                }`}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'sage-green' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
                               >
                                 <span className="text-lg">🌿</span>
                                 <span className="text-[10px] font-bold">Sage Green</span>
@@ -1290,9 +1278,8 @@ function GenerateContent() {
                               <button
                                 type="button"
                                 onClick={() => setDesignKey('floral-pink')}
-                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
-                                  designKey === 'floral-pink' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                                }`}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'floral-pink' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
                               >
                                 <span className="text-lg">🌸</span>
                                 <span className="text-[10px] font-bold">Floral Pink</span>
@@ -1462,7 +1449,7 @@ function GenerateContent() {
                             ))}
                           </div>
                         )}
-                        
+
                         <div className="bg-theme-bg/50 p-2.5 rounded-xl border border-theme-border space-y-2">
                           <div className="grid grid-cols-2 gap-1.5">
                             <input
@@ -1491,11 +1478,11 @@ function GenerateContent() {
                             <label className="bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[8px] font-bold py-1 px-2 rounded cursor-pointer">
                               {isUploadingStoryImage ? 'Uploading...' : 'Pilih Foto'}
                               <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => handleUploadImage(e.target.files[0], 'story')}
-                                />
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleUploadImage(e.target.files[0], 'story')}
+                              />
                             </label>
                             {newStoryImage && <span className="text-[8px] text-emerald-400 truncate max-w-[80px]">Foto siap</span>}
                             <button
@@ -1632,9 +1619,8 @@ function GenerateContent() {
                               <button
                                 type="button"
                                 onClick={() => setDesignKey('cute-balloon')}
-                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
-                                  designKey === 'cute-balloon' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                                }`}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'cute-balloon' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
                               >
                                 <span className="text-lg">🎈</span>
                                 <span className="text-[10px] font-bold">Cute Balloon</span>
@@ -1651,9 +1637,8 @@ function GenerateContent() {
                               <button
                                 type="button"
                                 onClick={() => setDesignKey('elegant-gold')}
-                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
-                                  designKey === 'elegant-gold' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                                }`}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'elegant-gold' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
                               >
                                 <span className="text-lg">✨</span>
                                 <span className="text-[10px] font-bold">Elegant Gold</span>
@@ -1719,9 +1704,8 @@ function GenerateContent() {
                                   setCelebrantImage(DEFAULT_GROOM_AVATAR);
                                 }
                               }}
-                              className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${
-                                celebrantGender === 'male' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-theme-text-sec hover:text-theme-text'
-                              }`}
+                              className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${celebrantGender === 'male' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-theme-text-sec hover:text-theme-text'
+                                }`}
                             >
                               Laki-laki
                             </button>
@@ -1733,9 +1717,8 @@ function GenerateContent() {
                                   setCelebrantImage(DEFAULT_BRIDE_AVATAR);
                                 }
                               }}
-                              className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${
-                                celebrantGender === 'female' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-theme-text-sec hover:text-theme-text'
-                              }`}
+                              className={`flex-1 py-1 rounded text-[9px] font-bold transition-all ${celebrantGender === 'female' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-theme-text-sec hover:text-theme-text'
+                                }`}
                             >
                               Perempuan
                             </button>
@@ -1846,9 +1829,8 @@ function GenerateContent() {
                               <button
                                 type="button"
                                 onClick={() => setDesignKey('modern-clean')}
-                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
-                                  designKey === 'modern-clean' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                                }`}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'modern-clean' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
                               >
                                 <span className="text-lg">🛍️</span>
                                 <span className="text-[10px] font-bold">Modern Clean</span>
@@ -1865,9 +1847,8 @@ function GenerateContent() {
                               <button
                                 type="button"
                                 onClick={() => setDesignKey('midnight-dark')}
-                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
-                                  designKey === 'midnight-dark' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
-                                }`}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'midnight-dark' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
                               >
                                 <span className="text-lg">👑</span>
                                 <span className="text-[10px] font-bold">Midnight Dark</span>
@@ -2317,7 +2298,7 @@ function GenerateContent() {
 
               {/* Viewport for preview */}
               <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
-                { (templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online') ? (
+                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online') ? (
                   <iframe
                     ref={iframeRef}
                     src="/preview/index.html"
@@ -2397,8 +2378,8 @@ function GenerateContent() {
                 <>
                   <Globe className="h-4 w-4" />
                   <span>
-                    {finalCost === 0 
-                      ? 'Publikasikan Sekarang (Gratis)' 
+                    {finalCost === 0
+                      ? 'Publikasikan Sekarang (Gratis)'
                       : `Publikasikan Sekarang (Rp ${finalCost.toLocaleString('id-ID')})`}
                   </span>
                 </>
@@ -2411,14 +2392,14 @@ function GenerateContent() {
       {isTemplateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme-bg/85 backdrop-blur-md animate-fadeIn">
           <div className="bg-theme-surface border border-theme-border rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
-            
+
             {/* Modal Header */}
             <div className="p-6 border-b border-theme-border flex justify-between items-center bg-theme-surface/50">
               <div>
                 <h3 className="text-lg font-bold text-theme-text">Galeri Template & Layanan</h3>
                 <p className="text-xs text-theme-text-muted mt-1">Pilih tipe landing page yang ingin Anda rancang</p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsTemplateModalOpen(false)}
                 className="p-2 text-theme-text-sec hover:text-theme-text bg-theme-bg/50 hover:bg-theme-bg rounded-xl transition-colors"
               >
@@ -2430,25 +2411,22 @@ function GenerateContent() {
             <div className="px-6 py-4 bg-theme-surface/20 border-b border-theme-border flex gap-2 overflow-x-auto scrollbar-none">
               <button
                 onClick={() => setSelectedCategory('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === 'all' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === 'all' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
+                  }`}
               >
                 Semua Kategori
               </button>
               <button
-                onClick={() => setSelectedCategory('wedding')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === 'wedding' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
-                }`}
+                onClick={() => setSelectedCategory('Undangan')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === 'Undangan' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
+                  }`}
               >
                 Undangan
               </button>
               <button
-                onClick={() => setSelectedCategory('store')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === 'store' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
-                }`}
+                onClick={() => setSelectedCategory('Toko')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === 'Toko' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
+                  }`}
               >
                 E-Commerce / Toko
               </button>
@@ -2460,9 +2438,7 @@ function GenerateContent() {
                 {displayProducts
                   .filter(p => {
                     if (selectedCategory === 'all') return true;
-                    if (selectedCategory === 'wedding') return p.id === 'wedding';
-                    if (selectedCategory === 'store') return p.id === 'toko-online';
-                    return true;
+                    return p.unit === selectedCategory;
                   })
                   .map(product => {
                     const isSelected = templateType === product.id;
@@ -2483,29 +2459,26 @@ function GenerateContent() {
                             else if (product.id === 'birthday') setDesignKey('cute-balloon');
                           }
                         }}
-                        className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${
-                          !isActive 
-                            ? 'bg-theme-surface/40 border-theme-border opacity-60 cursor-not-allowed select-none'
-                            : isSelected
-                              ? 'bg-theme-accent/10 border-theme-accent shadow-lg shadow-theme-accent/5 cursor-pointer scale-[1.01]'
-                              : 'bg-theme-bg border-theme-border hover:border-theme-accent hover:bg-theme-surface/10 cursor-pointer hover:scale-[1.01]'
-                        }`}
+                        className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${!isActive
+                          ? 'bg-theme-surface/40 border-theme-border opacity-60 cursor-not-allowed select-none'
+                          : isSelected
+                            ? 'bg-theme-accent/10 border-theme-accent shadow-lg shadow-theme-accent/5 cursor-pointer scale-[1.01]'
+                            : 'bg-theme-bg border-theme-border hover:border-theme-accent hover:bg-theme-surface/10 cursor-pointer hover:scale-[1.01]'
+                          }`}
                       >
                         {/* Glow effect on hover if active */}
                         {isActive && (
-                          <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -z-10 transition-opacity duration-300 ${
-                            isSelected ? 'bg-theme-accent/10 opacity-100' : 'bg-theme-accent/5 opacity-0 group-hover:opacity-100'
-                          }`} />
+                          <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -z-10 transition-opacity duration-300 ${isSelected ? 'bg-theme-accent/10 opacity-100' : 'bg-theme-accent/5 opacity-0 group-hover:opacity-100'
+                            }`} />
                         )}
 
                         <div>
                           <div className="flex justify-between items-start mb-4">
-                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl shadow-sm ${
-                              isSelected ? 'bg-theme-accent/20 text-theme-accent' : 'bg-theme-card text-theme-text-sec'
-                            }`}>
+                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl shadow-sm ${isSelected ? 'bg-theme-accent/20 text-theme-accent' : 'bg-theme-card text-theme-text-sec'
+                              }`}>
                               {product.id === 'wedding' ? '🌸' : '🛍️'}
                             </div>
-                            
+
                             {/* Inactive / Maintenance Badge */}
                             {!isActive ? (
                               <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded">
@@ -2524,7 +2497,7 @@ function GenerateContent() {
                             {product.name}
                           </h4>
                           <p className="text-xs text-theme-text-muted mt-1.5 leading-relaxed">
-                            {product.description || (product.id === 'wedding' 
+                            {product.description || (product.id === 'wedding'
                               ? 'Undangan pernikahan digital premium dengan fitur interaktif.'
                               : 'Landing page e-commerce instan untuk katalog dagangan.')}
                           </p>
@@ -2561,22 +2534,22 @@ function GenerateContent() {
       {previewDesignKey && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme-bg/85 backdrop-blur-md animate-fadeIn">
           <div className="bg-theme-surface border border-theme-border rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col h-[85vh]">
-            
+
             {/* Modal Header */}
             <div className="p-4 border-b border-theme-border flex justify-between items-center bg-theme-surface/50">
               <div>
                 <h3 className="text-sm font-bold text-theme-text">
                   Contoh Tema: {
                     previewDesignKey === 'sage-green' ? 'Sage Green 🌿' :
-                    previewDesignKey === 'floral-pink' ? 'Floral Pink 🌸' :
-                    previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' :
-                    previewDesignKey === 'elegant-gold' ? 'Elegant Gold ✨' :
-                    previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' : 'Midnight Dark 👑'
+                      previewDesignKey === 'floral-pink' ? 'Floral Pink 🌸' :
+                        previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' :
+                          previewDesignKey === 'elegant-gold' ? 'Elegant Gold ✨' :
+                            previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' : 'Midnight Dark 👑'
                   }
                 </h3>
                 <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan landing page</p>
               </div>
-              <button 
+              <button
                 onClick={() => setPreviewDesignKey(null)}
                 className="p-2 text-theme-text-sec hover:text-theme-text bg-theme-bg/50 hover:bg-theme-bg rounded-xl transition-colors"
               >
@@ -2596,7 +2569,7 @@ function GenerateContent() {
                   const isTokoOnline = ['modern-clean', 'midnight-dark'].includes(previewDesignKey);
                   const isGold = previewDesignKey === 'elegant-gold';
                   const isMidnight = previewDesignKey === 'midnight-dark';
-                  
+
                   let mockData;
                   if (isBirthday) {
                     mockData = {
@@ -2646,7 +2619,7 @@ function GenerateContent() {
                         store: {
                           name: isMidnight ? 'Luxor Timepieces' : 'Serasi Gadget Store',
                           tagline: isMidnight ? 'Arloji Mewah & Berkelas Dunia' : 'Gadget Orisinal & Bergaransi Resmi',
-                          description: isMidnight 
+                          description: isMidnight
                             ? 'Kami menghadirkan koleksi jam tangan mewah original terkurasi untuk menunjang penampilan eksekutif Anda. Setiap transaksi bergaransi internasional 2 tahun.'
                             : 'Pusat belanja gadget terpercaya di Indonesia. Kami menyediakan smartphone, laptop, dan tablet original dengan cicilan 0% dan gratis ongkir se-Indonesia.',
                           logo_url: null,
@@ -2656,7 +2629,7 @@ function GenerateContent() {
                           {
                             name: isMidnight ? 'Submariner Gold Edition' : 'UltraBook Pro 14"',
                             price: isMidnight ? '245000000' : '15999000',
-                            description: isMidnight 
+                            description: isMidnight
                               ? 'Model premium dengan bezel emas 18 karat, dial hitam berkilau, dan ketahanan air hingga 300 meter. Sangat ikonik.'
                               : 'Dilengkapi prosesor M4 terbaru, RAM 16GB, storage 512GB SSD, layar Liquid Retina, dan daya tahan baterai hingga 18 jam.',
                             image_url: null
@@ -2664,7 +2637,7 @@ function GenerateContent() {
                           {
                             name: isMidnight ? 'Chronograph Carbon Black' : 'Smart Earbuds Pro 2',
                             price: isMidnight ? '98000000' : '2499000',
-                            description: isMidnight 
+                            description: isMidnight
                               ? 'Desain sporty tangguh dengan casing serat karbon ultra ringan, dial hitam matte, dan strap karet berkualitas tinggi.'
                               : 'Fitur Active Noise Cancelling (ANC) tingkat lanjut, audio spasial personal, pengisian daya cepat, dan tahan cipratan air IPX4.',
                             image_url: null
@@ -2677,7 +2650,7 @@ function GenerateContent() {
                           tokopedia_url: 'https://tokopedia.com',
                           address: 'Kuningan City Mall, Lantai Dasar No. 12, Jakarta Selatan'
                         },
-                        quote: isMidnight 
+                        quote: isMidnight
                           ? 'Waktu adalah kemewahan sejati. Hargai setiap detik perjalanan hidup Anda dengan arloji terbaik.'
                           : 'Teknologi terbaik untuk menunjang produktivitas dan kreativitas tanpa batas setiap hari.'
                       }
@@ -2690,47 +2663,47 @@ function GenerateContent() {
                         design_key: previewDesignKey
                       },
                       content: {
-                      groom: {
-                        name: 'Rian Adiputra, S.T.',
-                        nickname: 'Rian',
-                        father: 'Bpk. Ir. H. Ahmad Sudrajat',
-                        mother: 'Ibu Hj. Siti Aminah',
-                        image_url: '/groom-avatar.jpg'
-                      },
-                      bride: {
-                        name: 'Adinda Saraswati, M.B.A.',
-                        nickname: 'Dinda',
-                        father: 'Bpk. Prof. Dr. Budi Santoso',
-                        mother: 'Ibu Dr. Rini Kartika',
-                        image_url: '/bride-avatar.jpg'
-                      },
-                      story: [
-                        { year: '2021', title: 'Pertama Bertemu', desc: 'Kami diperkenalkan oleh seorang teman baik di sebuah acara sosial, di mana kami menemukan banyak kesamaan minat.' },
-                        { year: '2023', title: 'Menyatakan Komitmen', desc: 'Setelah dua tahun tumbuh bersama dalam persahabatan dan kecocokan, kami berkomitmen untuk melangkah ke arah masa depan bersama.' },
-                        { year: '2025', title: 'Pertunangan', desc: 'Di hadapan keluarga besar, Rian melamar Dinda untuk membangun keluarga bahagia dan abadi bersama.' }
-                      ],
-                      akad: {
-                        date: '2026-10-10',
-                        time: '09:00 - 11:00 WIB',
-                        location: 'Masjid Raya Pondok Indah',
-                        maps_url: 'https://maps.google.com'
-                      },
-                      resepsi: {
-                        date: '2026-10-10',
-                        time: '11:00 - 14:00 WIB',
-                        location: 'Hotel Mulia Senayan, Jakarta',
-                        maps_url: 'https://maps.google.com'
-                      },
-                      gift: {
-                        bank_name: 'Bank BCA',
-                        account_number: '1234567890',
-                        account_holder: 'Rian Adiputra'
-                      },
-                      quote: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir. (QS. Ar-Rum: 21)'
-                    }
-                  };
-                }
-                  
+                        groom: {
+                          name: 'Rian Adiputra, S.T.',
+                          nickname: 'Rian',
+                          father: 'Bpk. Ir. H. Ahmad Sudrajat',
+                          mother: 'Ibu Hj. Siti Aminah',
+                          image_url: '/groom-avatar.jpg'
+                        },
+                        bride: {
+                          name: 'Adinda Saraswati, M.B.A.',
+                          nickname: 'Dinda',
+                          father: 'Bpk. Prof. Dr. Budi Santoso',
+                          mother: 'Ibu Dr. Rini Kartika',
+                          image_url: '/bride-avatar.jpg'
+                        },
+                        story: [
+                          { year: '2021', title: 'Pertama Bertemu', desc: 'Kami diperkenalkan oleh seorang teman baik di sebuah acara sosial, di mana kami menemukan banyak kesamaan minat.' },
+                          { year: '2023', title: 'Menyatakan Komitmen', desc: 'Setelah dua tahun tumbuh bersama dalam persahabatan dan kecocokan, kami berkomitmen untuk melangkah ke arah masa depan bersama.' },
+                          { year: '2025', title: 'Pertunangan', desc: 'Di hadapan keluarga besar, Rian melamar Dinda untuk membangun keluarga bahagia dan abadi bersama.' }
+                        ],
+                        akad: {
+                          date: '2026-10-10',
+                          time: '09:00 - 11:00 WIB',
+                          location: 'Masjid Raya Pondok Indah',
+                          maps_url: 'https://maps.google.com'
+                        },
+                        resepsi: {
+                          date: '2026-10-10',
+                          time: '11:00 - 14:00 WIB',
+                          location: 'Hotel Mulia Senayan, Jakarta',
+                          maps_url: 'https://maps.google.com'
+                        },
+                        gift: {
+                          bank_name: 'Bank BCA',
+                          account_number: '1234567890',
+                          account_holder: 'Rian Adiputra'
+                        },
+                        quote: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir. (QS. Ar-Rum: 21)'
+                      }
+                    };
+                  }
+
                   // Wait a brief moment to ensure iframe listener is registered
                   setTimeout(() => {
                     if (iframe.contentWindow) {
