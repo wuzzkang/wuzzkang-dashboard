@@ -35,9 +35,10 @@ User isi form structured (dashboard)
 | `wedding` | Undangan Pernikahan | `sage-green`, `floral-pink` | Structured form |
 | `birthday` | Undangan Ulang Tahun | `cute-balloon`, `elegant-gold` | Structured form |
 | `toko-online` | Landing Page Toko Online | `modern-clean`, `midnight-dark` | Structured form + AI assist field |
+| `campaign` | Campaign Landing Page | `neon-conversion`, `clean-trust` | Structured form (high conversion) |
 | `store` | *(Legacy)* | *(n/a)* | AI prompt (deprecated, jangan pakai) |
 
-> **Catatan**: `store` adalah tipe lama yang menggunakan AI full-prompt. Ke depannya semua tipe baru menggunakan **structured form** seperti `toko-online`.
+> **Catatan**: `store` adalah tipe lama yang menggunakan AI full-prompt. Ke depannya semua tipe baru menggunakan **structured form** seperti `toko-online` dan `campaign`.
 
 ---
 
@@ -52,9 +53,12 @@ wuzzkang-lp/
     ├── birthday/
     │   ├── cute-balloon.js     ← design_key: cute-balloon
     │   └── elegant-gold.js     ← design_key: elegant-gold
-    └── toko-online/
-        ├── modern-clean.js     ← design_key: modern-clean
-        └── midnight-dark.js    ← design_key: midnight-dark
+    ├── toko-online/
+    │   ├── modern-clean.js     ← design_key: modern-clean
+    │   └── midnight-dark.js    ← design_key: midnight-dark
+    └── campaign/
+        ├── neon-conversion.js  ← design_key: neon-conversion
+        └── clean-trust.js      ← design_key: clean-trust
 ```
 
 Dan folder yang sama di-sync ke dashboard:
@@ -138,6 +142,51 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
       "address": "Alamat toko (opsional)"
     },
     "quote": "Slogan / sambutan toko (opsional)"
+  }
+}
+```
+
+**`campaign`:**
+```json
+{
+  "meta": {
+    "title": "Campaign: Nama Campaign ...",
+    "template_type": "campaign",
+    "design_key": "neon-conversion"
+  },
+  "content": {
+    "hero": {
+      "headline": "Headline konversi tinggi...",
+      "subheadline": "Subheadline penjelas...",
+      "cta_text": "Teks tombol aksi..."
+    },
+    "problems": {
+      "title": "Judul Bagian Masalah...",
+      "list": [
+        "Poin masalah 1...",
+        "Poin masalah 2..."
+      ]
+    },
+    "solutions": {
+      "title": "Judul Bagian Solusi...",
+      "intro": "Pengantar solusi...",
+      "benefits": [
+        { "title": "Nama Manfaat 1...", "desc": "Penjelasan..." }
+      ]
+    },
+    "social_proof": {
+      "testimonials": [
+        { "name": "Nama...", "role": "Role...", "content": "Isi testimoni..." }
+      ],
+      "guarantee": "Info garansi kepuasan..."
+    },
+    "closing": {
+      "urgency": "Urgensi penawaran khusus...",
+      "cta_text": "Teks tombol closing..."
+    },
+    "contact": {
+      "whatsapp": "628xxx"
+    }
   }
 }
 ```
@@ -424,7 +473,10 @@ File: `wuzzkang-dashboard/src/app/generate/page.js`
 4. Tambahkan payload assembly di fungsi `handleGenerate()`
 5. Tambahkan assembly di `useEffect` auto-update pageData (untuk editMode live preview)
 6. Tambahkan mock data di preview modal (onLoad iframe) untuk tombol "Lihat Contoh Desain"
-7. Tambahkan deteksi type baru di array seperti `isTokoOnline`
+7. Tambahkan pemetaan ikon dan deskripsi template secara dinamis di helper atas:
+   - Tambahkan case baru di `getProductIcon`
+   - Tambahkan deskripsi default di `getProductDefaultDescription`
+8. Tambahkan tombol tab filter category baru di modal JSX jika unit barunya berbeda dengan yang ada.
 
 ### Langkah Tambahan E — Tambahkan template type ke preview iframe handler
 
@@ -464,16 +516,16 @@ if (filterType === 'bisnis') {
 
 ### Langkah Tambahan G — Daftarkan produk di database Supabase
 
-Tabel `products` di Supabase perlu memiliki entri untuk `template_type` baru:
+Tabel `products` di Supabase perlu memiliki entri untuk `template_type` baru (Catatan: tabel `products` tidak memiliki kolom `description` di skema saat ini):
 
 ```sql
-INSERT INTO products (id, name, description, cost, is_active)
+INSERT INTO products (id, name, cost, is_active, unit)
 VALUES (
     'company-profile',
     'Company Profile',
-    'Landing page profesional untuk profil perusahaan',
     19000,
-    true
+    true,
+    'Campaign'
 );
 ```
 
