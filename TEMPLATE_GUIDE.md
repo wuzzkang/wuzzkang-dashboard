@@ -531,6 +531,43 @@ VALUES (
 
 ---
 
+## 🤖 Fitur Asisten AI & Mekanisme Quota/Billing
+
+Sistem Wuzzkang menyediakan asisten berbasis AI untuk copywriting teks dan pembuatan avatar gambar secara dinamis dengan pembatasan kuota dan penagihan biaya berbasis saldo wallet dompet.
+
+### 1. Konfigurasi Global & Override Per-User
+- **Tabel `system_settings`**: Menyimpan konfigurasi global sistem dalam format key-value JSONB:
+  - `daily_ai_limit` (default: `15`): Batas kuota gratis harian per user untuk seluruh generate AI.
+  - `ai_generate_cost` (default: `100`): Biaya berbayar per generate jika kuota gratis harian habis (dalam Rupiah).
+- **Tabel `profiles`**: Menyimpan kolom `daily_ai_limit` dan `ai_generate_cost` yang bernilai **nullable (default NULL)**.
+  - Jika nilainya `NULL`, sistem otomatis merujuk ke tabel `system_settings`.
+  - Jika nilainya diisi (not null), nilai tersebut akan menjadi override khusus (misal untuk akun VIP/developer).
+
+### 2. Mekanisme Quota di Redis
+- Setiap kali user melakukan generate AI (baik teks via `/api/generate/field` maupun gambar via `/api/generate-image`), sistem mengecek counter harian di Redis menggunakan key:
+  `wuzzkang:user:${userId}:ai_field_limit:${today}`
+- Jika counter harian `< daily_ai_limit`:
+  - Request dijalankan secara **GRATIS**.
+  - Counter harian Redis bertambah (`INCR`).
+- Jika counter harian `≥ daily_ai_limit`:
+  - Sistem memeriksa apakah saldo wallet user (`profiles.balance`) mencukupi tarif `ai_generate_cost`.
+  - Jika cukup, saldo dipotong secara langsung via `walletService.deductBalance` dan request dijalankan secara **BERBAYAR**.
+  - Jika saldo kurang, mengembalikan error `402 Payment Required`.
+
+### 3. Integrasi di Dashboard UI (`wuzzkang-dashboard`)
+- **Copywriting Teks**:
+  - Di-handle oleh helper `renderAITokoButton(...)` (untuk Toko Online) dan `renderAICampaignButton(...)` (untuk Campaign).
+  - Melakukan panggilan ke `/api/generate/field`.
+- **Avatar Gambar (Undangan)**:
+  - Di-handle oleh helper `renderAIAvatarButton(...)` (untuk Wedding/Birthday).
+  - Melakukan panggilan ke `/api/generate-image`.
+- **Interaksi & Quota Update**:
+  - Tombol-tombol AI akan otomatis mendeteksi sisa limit harian: `✨ AI Generate (Gratis: X)` atau `✨ AI Generate (Rp Y)`.
+  - Sebelum menagih (jika gratis = 0), dashboard memicu popup dialog `window.confirm` untuk mengonfirmasi pemotongan saldo.
+  - Setelah generate sukses, dashboard memanggil `await refreshProfile()` untuk menyelaraskan sisa kuota dan saldo user di UI secara real-time.
+
+---
+
 ## 🔧 Mekanisme Cache Busting
 
 Wuzzkang menggunakan strategi **version-based cache busting** untuk menghindari klien menggunakan template lama dari cache browser/GitHub Pages.

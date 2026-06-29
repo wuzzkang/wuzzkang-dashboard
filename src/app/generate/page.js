@@ -822,6 +822,16 @@ function GenerateContent() {
     const isBride = target === 'bride';
     const isCelebrant = target === 'celebrant';
 
+    const remainingFree = profile?.remainingFree ?? 0;
+    const cost = profile?.ai_generate_cost ?? 100;
+
+    if (remainingFree === 0) {
+      const confirmCharge = window.confirm(
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya Rp ${cost.toLocaleString('id-ID')} yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+      );
+      if (!confirmCharge) return;
+    }
+
     let defaultPrompt = 'A cute 3D Pixar-style avatar, clean minimalist background, smiling';
     if (isGroom) {
       defaultPrompt = 'A cute 3D Pixar-style groom avatar, clean minimalist background, wedding theme, smiling, handsome';
@@ -855,6 +865,7 @@ function GenerateContent() {
         if (isGroom) setGroomImage(result.url);
         if (isBride) setBrideImage(result.url);
         if (isCelebrant) setCelebrantImage(result.url);
+        await refreshProfile();
       } else {
         throw new Error(result.error || 'Gagal men-generate gambar.');
       }
@@ -874,6 +885,16 @@ function GenerateContent() {
 
   const handleAIAssist = async (fieldType, index = null) => {
     if (!session?.access_token) return;
+
+    const remainingFree = profile?.remainingFree ?? 0;
+    const cost = profile?.ai_generate_cost ?? 100;
+
+    if (remainingFree === 0) {
+      const confirmCharge = window.confirm(
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya Rp ${cost.toLocaleString('id-ID')} yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+      );
+      if (!confirmCharge) return;
+    }
 
     // Determine context data
     const context = {
@@ -901,23 +922,25 @@ function GenerateContent() {
         body: JSON.stringify({ fieldType, context }),
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data?.content) {
-          const content = result.data.content;
-          if (fieldType === 'store_description') setStoreDescription(content);
-          if (fieldType === 'store_quote') setTokoQuote(content);
-          if (fieldType === 'product_description') {
-            setTokoProducts(prev => {
-              const next = [...prev];
-              next[index].description = content;
-              return next;
-            });
-          }
+      const result = await response.json();
+      if (response.ok && result.success) {
+        const content = result.data.content;
+        if (fieldType === 'store_description') setStoreDescription(content);
+        if (fieldType === 'store_quote') setTokoQuote(content);
+        if (fieldType === 'product_description') {
+          setTokoProducts(prev => {
+            const next = [...prev];
+            next[index].description = content;
+            return next;
+          });
         }
+        await refreshProfile();
+      } else {
+        alert(result.error || 'Gagal men-generate copywriting dengan AI.');
       }
     } catch (err) {
       console.error('[Dashboard] Field assist failed:', err);
+      alert('Terjadi kesalahan jaringan saat memanggil AI.');
     } finally {
       if (fieldType === 'store_description') setIsGeneratingStoreDesc(false);
       if (fieldType === 'store_quote') setIsGeneratingStoreQuote(false);
@@ -1007,6 +1030,47 @@ function GenerateContent() {
       if (fieldType === 'campaign_testimonials') setIsGeneratingCampaignTestimonials(false);
       if (fieldType === 'campaign_urgency') setIsGeneratingCampaignUrgency(false);
     }
+  };
+
+  const renderAITokoButton = (fieldType, isLoading, index = null) => {
+    const remainingFree = profile?.remainingFree ?? 15;
+    const cost = profile?.ai_generate_cost ?? 100;
+    const isFree = remainingFree > 0;
+
+    let isDisabled = isLoading;
+    if (fieldType === 'store_description' || fieldType === 'store_quote') {
+      isDisabled = isDisabled || !storeName || !storeTagline;
+    } else if (fieldType === 'product_description') {
+      isDisabled = isDisabled || !storeName || !tokoProducts[index]?.name;
+    }
+
+    return (
+      <button
+        type="button"
+        disabled={isDisabled}
+        onClick={() => handleAIAssist(fieldType, index)}
+        className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
+      >
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `Rp ${cost}`})`}
+      </button>
+    );
+  };
+
+  const renderAIAvatarButton = (target, isLoading) => {
+    const remainingFree = profile?.remainingFree ?? 15;
+    const cost = profile?.ai_generate_cost ?? 100;
+    const isFree = remainingFree > 0;
+
+    return (
+      <button
+        type="button"
+        onClick={() => handleGenerateAIImage(target)}
+        disabled={isLoading}
+        className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors active:scale-95 cursor-pointer"
+      >
+        {isLoading ? 'Generating...' : `AI Avatar (${isFree ? `Gratis: ${remainingFree}` : `Rp ${cost}`})`}
+      </button>
+    );
   };
 
   const renderAICampaignButton = (fieldType, isLoading) => {
@@ -1601,14 +1665,7 @@ function GenerateContent() {
                                   onChange={(e) => handleUploadImage(e.target.files[0], 'groom')}
                                 />
                               </label>
-                              <button
-                                type="button"
-                                onClick={() => handleGenerateAIImage('groom')}
-                                disabled={isGeneratingGroomImage}
-                                className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors"
-                              >
-                                {isGeneratingGroomImage ? 'Generating...' : 'AI Avatar'}
-                              </button>
+                              {renderAIAvatarButton('groom', isGeneratingGroomImage)}
                             </div>
                           </div>
                         </div>
@@ -1669,14 +1726,7 @@ function GenerateContent() {
                                   onChange={(e) => handleUploadImage(e.target.files[0], 'bride')}
                                 />
                               </label>
-                              <button
-                                type="button"
-                                onClick={() => handleGenerateAIImage('bride')}
-                                disabled={isGeneratingBrideImage}
-                                className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors"
-                              >
-                                {isGeneratingBrideImage ? 'Generating...' : 'AI Avatar'}
-                              </button>
+                              {renderAIAvatarButton('bride', isGeneratingBrideImage)}
                             </div>
                           </div>
                         </div>
@@ -1992,14 +2042,7 @@ function GenerateContent() {
                                   onChange={(e) => handleUploadImage(e.target.files[0], 'celebrant')}
                                 />
                               </label>
-                              <button
-                                type="button"
-                                onClick={() => handleGenerateAIImage('celebrant')}
-                                disabled={isGeneratingCelebrantImage}
-                                className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors"
-                              >
-                                {isGeneratingCelebrantImage ? 'Generating...' : 'AI Avatar'}
-                              </button>
+                              {renderAIAvatarButton('celebrant', isGeneratingCelebrantImage)}
                             </div>
                           </div>
                         </div>
@@ -2145,14 +2188,7 @@ function GenerateContent() {
                         <div>
                           <div className="flex justify-between items-center mb-1">
                             <label className="block text-[8px] font-semibold text-theme-text-sec">Deskripsi Toko</label>
-                            <button
-                              type="button"
-                              disabled={isGeneratingStoreDesc || !storeName || !storeTagline}
-                              onClick={() => handleAIAssist('store_description')}
-                              className="text-[9px] font-bold text-theme-accent disabled:opacity-50 hover:underline flex items-center gap-0.5 active:scale-95"
-                            >
-                              {isGeneratingStoreDesc ? 'Generating...' : '✨ Auto-Fill Deskripsi'}
-                            </button>
+                            {renderAITokoButton('store_description', isGeneratingStoreDesc)}
                           </div>
                           <textarea
                             rows={3}
@@ -2266,14 +2302,7 @@ function GenerateContent() {
                               <div>
                                 <div className="flex justify-between items-center mb-1">
                                   <label className="block text-[8px] font-semibold text-theme-text-sec">Deskripsi Produk (Opsional)</label>
-                                  <button
-                                    type="button"
-                                    disabled={isGeneratingProductDesc[index] || !product.name || !product.price}
-                                    onClick={() => handleAIAssist('product_description', index)}
-                                    className="text-[9px] font-bold text-theme-accent disabled:opacity-50 hover:underline flex items-center gap-0.5 active:scale-95"
-                                  >
-                                    {isGeneratingProductDesc[index] ? 'Generating...' : '✨ AI Generate'}
-                                  </button>
+                                  {renderAITokoButton('product_description', isGeneratingProductDesc[index], index)}
                                 </div>
                                 <textarea
                                   rows={2}
@@ -2372,14 +2401,7 @@ function GenerateContent() {
                         <div>
                           <div className="flex justify-between items-center mb-1">
                             <label className="block text-[8px] font-semibold text-theme-text-sec">Quotes / Slogan Pembuka</label>
-                            <button
-                              type="button"
-                              disabled={isGeneratingStoreQuote || !storeName || !storeTagline}
-                              onClick={() => handleAIAssist('store_quote')}
-                              className="text-[9px] font-bold text-theme-accent disabled:opacity-50 hover:underline flex items-center gap-0.5 active:scale-95"
-                            >
-                              {isGeneratingStoreQuote ? 'Generating...' : '✨ AI Generate Slogan'}
-                            </button>
+                            {renderAITokoButton('store_quote', isGeneratingStoreQuote)}
                           </div>
                           <textarea
                             rows={2}
