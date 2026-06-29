@@ -602,7 +602,7 @@ function GenerateContent() {
     }
     return [
       { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko' },
-      { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 15000, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Toko' },
+      { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 15000, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Campaign' },
       { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan' },
       { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.', unit: 'Undangan' }
     ];
@@ -2848,6 +2848,13 @@ function GenerateContent() {
                   }`}
               >
                 E-Commerce / Toko
+              </button>
+              <button
+                onClick={() => setSelectedCategory('Campaign')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === 'Campaign' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
+                  }`}
+              >
+                Campaign & Promo
               </button>
             </div>
 
