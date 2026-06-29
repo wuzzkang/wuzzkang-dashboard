@@ -71,6 +71,16 @@
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
                     }
+                } else if (templateType === 'toko-online') {
+                    try {
+                        // Dynamically import the exact JS toko-online template module
+                        const module = await import(`./templates/toko-online/${designKey}.js`);
+                        
+                        // Execute the template renderer
+                        await module.render(pageData, 'Tamu');
+                    } catch (err) {
+                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
+                    }
                 } else if (templateType === 'birthday') {
                     try {
                         // Dynamically import the exact JS birthday template module

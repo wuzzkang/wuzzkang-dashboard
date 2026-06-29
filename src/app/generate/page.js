@@ -74,7 +74,7 @@ function GenerateContent() {
   const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
   const [slug, setSlug] = useState('');
-  const [templateType, setTemplateType] = useState('store');
+  const [templateType, setTemplateType] = useState('toko-online');
   const [products, setProducts] = useState([]);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -105,7 +105,7 @@ function GenerateContent() {
   const [giftHolder, setGiftHolder] = useState('');
 
   // Wedding modular additions
-  const [designKey, setDesignKey] = useState('sage-green');
+  const [designKey, setDesignKey] = useState('modern-clean');
   const [previewDesignKey, setPreviewDesignKey] = useState(null);
   const [groomImage, setGroomImage] = useState(DEFAULT_GROOM_AVATAR);
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
@@ -130,6 +130,28 @@ function GenerateContent() {
   
   const [isUploadingCelebrantImage, setIsUploadingCelebrantImage] = useState(false);
   const [isGeneratingCelebrantImage, setIsGeneratingCelebrantImage] = useState(false);
+
+  // Toko Online form states
+  const [storeName, setStoreName] = useState('');
+  const [storeTagline, setStoreTagline] = useState('');
+  const [storeDescription, setStoreDescription] = useState('');
+  const [storeLogoUrl, setStoreLogoUrl] = useState('');
+  const [storeBannerUrl, setStoreBannerUrl] = useState('');
+  const [tokoProducts, setTokoProducts] = useState([{ name: '', price: '', description: '', image_url: '' }]);
+  const [tokoWhatsapp, setTokoWhatsapp] = useState('');
+  const [tokoInstagram, setTokoInstagram] = useState('');
+  const [tokoShopee, setTokoShopee] = useState('');
+  const [tokoTokopedia, setTokoTokopedia] = useState('');
+  const [tokoAddress, setTokoAddress] = useState('');
+  const [tokoQuote, setTokoQuote] = useState('');
+
+  // Toko Online upload & AI loader states
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
+  const [isUploadingProductIndex, setIsUploadingProductIndex] = useState(null);
+  const [isGeneratingStoreDesc, setIsGeneratingStoreDesc] = useState(false);
+  const [isGeneratingStoreQuote, setIsGeneratingStoreQuote] = useState(false);
+  const [isGeneratingProductDesc, setIsGeneratingProductDesc] = useState({});
   
   // Adding story temp states
   const [newStoryTitle, setNewStoryTitle] = useState('');
@@ -258,6 +280,22 @@ function GenerateContent() {
               setBirthdayGiftHolder(content.gift?.account_holder || '');
               
               setDesignKey(pageConfig.meta?.design_key || 'cute-balloon');
+            } else if (pageConfig && pageConfig.meta?.template_type === 'toko-online') {
+              setTemplateType('toko-online');
+              const content = pageConfig.content || {};
+              setStoreName(content.store?.name || '');
+              setStoreTagline(content.store?.tagline || '');
+              setStoreDescription(content.store?.description || '');
+              setStoreLogoUrl(content.store?.logo_url || '');
+              setStoreBannerUrl(content.store?.banner_url || '');
+              setTokoProducts(content.products || [{ name: '', price: '', description: '', image_url: '' }]);
+              setTokoWhatsapp(content.contact?.whatsapp || '');
+              setTokoInstagram(content.contact?.instagram || '');
+              setTokoShopee(content.contact?.shopee_url || '');
+              setTokoTokopedia(content.contact?.tokopedia_url || '');
+              setTokoAddress(content.contact?.address || '');
+              setTokoQuote(content.quote || '');
+              setDesignKey(pageConfig.meta?.design_key || 'modern-clean');
             } else {
               setTemplateType('store');
             }
@@ -411,13 +449,12 @@ function GenerateContent() {
     fetchProducts();
   }, [session, draftId]);
 
-  // Fallback default mock products if API products is empty (e.g. table not created yet)
   const getDisplayProducts = () => {
     if (products && products.length > 0) {
       return products;
     }
     return [
-      { id: 'store', name: 'Toko Online / Bisnis', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.' },
+      { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.' },
       { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.' },
       { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.' }
     ];
@@ -509,6 +546,11 @@ function GenerateContent() {
       return !celebrantName || !celebrantNickname || !celebrantAge ||
              !birthdayDate || !birthdayTime || !birthdayLocation;
     }
+    if (templateType === 'toko-online') {
+      return !storeName || !storeTagline || !tokoWhatsapp ||
+             tokoProducts.length === 0 ||
+             tokoProducts.some(p => !p.name || !p.price);
+    }
     if (templateType === 'store') {
       return !prompt;
     }
@@ -522,11 +564,18 @@ function GenerateContent() {
     const isBride = target === 'bride';
     const isStory = target === 'story';
     const isCelebrant = target === 'celebrant';
+    const isLogo = target === 'logo';
+    const isBanner = target === 'banner';
+    const isProduct = target.startsWith('product-');
+    const productIndex = isProduct ? parseInt(target.split('-')[1]) : null;
 
     if (isGroom) setIsUploadingGroomImage(true);
     if (isBride) setIsUploadingBrideImage(true);
     if (isStory) setIsUploadingStoryImage(true);
     if (isCelebrant) setIsUploadingCelebrantImage(true);
+    if (isLogo) setIsUploadingLogo(true);
+    if (isBanner) setIsUploadingBanner(true);
+    if (isProduct) setIsUploadingProductIndex(productIndex);
 
     try {
       let fileToUpload = file;
@@ -561,6 +610,15 @@ function GenerateContent() {
       if (isBride) setBrideImage(publicUrl);
       if (isStory) setNewStoryImage(publicUrl);
       if (isCelebrant) setCelebrantImage(publicUrl);
+      if (isLogo) setStoreLogoUrl(publicUrl);
+      if (isBanner) setStoreBannerUrl(publicUrl);
+      if (isProduct) {
+        setTokoProducts(prev => {
+          const next = [...prev];
+          next[productIndex].image_url = publicUrl;
+          return next;
+        });
+      }
     } catch (err) {
       console.error('[Dashboard] File upload error:', err);
       setError('Gagal mengunggah foto: ' + err.message);
@@ -569,6 +627,9 @@ function GenerateContent() {
       if (isBride) setIsUploadingBrideImage(false);
       if (isStory) setIsUploadingStoryImage(false);
       if (isCelebrant) setIsUploadingCelebrantImage(false);
+      if (isLogo) setIsUploadingLogo(false);
+      if (isBanner) setIsUploadingBanner(false);
+      if (isProduct) setIsUploadingProductIndex(null);
     }
   };
 
@@ -627,6 +688,61 @@ function GenerateContent() {
     }
   };
 
+  const handleAIAssist = async (fieldType, index = null) => {
+    if (!session?.access_token) return;
+
+    // Determine context data
+    const context = {
+      storeName: storeName,
+      storeTagline: storeTagline,
+    };
+    if (index !== null) {
+      context.productName = tokoProducts[index].name;
+      context.productPrice = tokoProducts[index].price;
+    }
+
+    if (fieldType === 'store_description') setIsGeneratingStoreDesc(true);
+    if (fieldType === 'store_quote') setIsGeneratingStoreQuote(true);
+    if (fieldType === 'product_description') {
+      setIsGeneratingProductDesc(prev => ({ ...prev, [index]: true }));
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ fieldType, context }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data?.content) {
+          const content = result.data.content;
+          if (fieldType === 'store_description') setStoreDescription(content);
+          if (fieldType === 'store_quote') setTokoQuote(content);
+          if (fieldType === 'product_description') {
+            setTokoProducts(prev => {
+              const next = [...prev];
+              next[index].description = content;
+              return next;
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[Dashboard] Field assist failed:', err);
+    } finally {
+      if (fieldType === 'store_description') setIsGeneratingStoreDesc(false);
+      if (fieldType === 'store_quote') setIsGeneratingStoreQuote(false);
+      if (fieldType === 'product_description') {
+        setIsGeneratingProductDesc(prev => ({ ...prev, [index]: false }));
+      }
+    }
+  };
+
   // Handle generating preview from prompt
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -674,6 +790,32 @@ function GenerateContent() {
             account_number: birthdayGiftAccount,
             account_holder: birthdayGiftHolder || ''
           } : null
+        };
+      }
+      if (templateType === 'toko-online') {
+        payload.toko_online_details = {
+          design_key: designKey,
+          store: {
+            name: storeName,
+            tagline: storeTagline,
+            description: storeDescription || null,
+            logo_url: storeLogoUrl || null,
+            banner_url: storeBannerUrl || null
+          },
+          products: tokoProducts.map(p => ({
+            name: p.name,
+            price: p.price,
+            description: p.description || null,
+            image_url: p.image_url || null
+          })),
+          contact: {
+            whatsapp: tokoWhatsapp,
+            instagram: tokoInstagram || null,
+            shopee_url: tokoShopee || null,
+            tokopedia_url: tokoTokopedia || null,
+            address: tokoAddress || null
+          },
+          quote: tokoQuote || null
         };
       }
 
@@ -1627,26 +1769,356 @@ function GenerateContent() {
                       </div>
                     )}
 
-                      {/* Prompt input */}
+                    {/* Toko Online Fields */}
+                    {templateType === 'toko-online' && (
+                      <div className="space-y-5 border-t border-theme-border pt-4">
+                        {/* Desain Template Picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                            Pilih Desain Tema
+                          </label>
+                          <div className="flex gap-3 overflow-x-auto pb-2 pt-1 scrollbar-none snap-x snap-mandatory">
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('modern-clean')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'modern-clean' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                }`}
+                              >
+                                <span className="text-lg">🛍️</span>
+                                <span className="text-[10px] font-bold">Modern Clean</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('modern-clean')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('midnight-dark')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'midnight-dark' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                }`}
+                              >
+                                <span className="text-lg">👑</span>
+                                <span className="text-[10px] font-bold">Midnight Dark</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('midnight-dark')}
+                                className="text-[9px] font-semibold text-[#d4af37] hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Profil Toko */}
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Informasi Toko</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Nama Toko</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Nama Toko"
+                              value={storeName}
+                              onChange={(e) => setStoreName(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Tagline Toko</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Sepatu Original Termurah"
+                              value={storeTagline}
+                              onChange={(e) => setStoreTagline(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Deskripsi Toko dengan AI */}
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Deskripsi Toko</label>
+                            <button
+                              type="button"
+                              disabled={isGeneratingStoreDesc || !storeName || !storeTagline}
+                              onClick={() => handleAIAssist('store_description')}
+                              className="text-[9px] font-bold text-theme-accent disabled:opacity-50 hover:underline flex items-center gap-0.5 active:scale-95"
+                            >
+                              {isGeneratingStoreDesc ? 'Generating...' : '✨ Auto-Fill Deskripsi'}
+                            </button>
+                          </div>
+                          <textarea
+                            rows={3}
+                            placeholder="Deskripsi singkat toko Anda..."
+                            value={storeDescription}
+                            onChange={(e) => setStoreDescription(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                          />
+                        </div>
+
+                        {/* Logo & Banner Uploads */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Logo Toko (Opsional)</label>
+                            <div className="flex gap-2 items-center bg-theme-bg p-2 rounded-xl border border-theme-border">
+                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[10px]">
+                                {storeLogoUrl ? <img src={storeLogoUrl} className="w-full h-full object-cover" /> : '🛒'}
+                              </div>
+                              <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-2 rounded text-center cursor-pointer transition-all">
+                                {isUploadingLogo ? 'Uploading...' : 'Upload'}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleUploadImage(e.target.files[0], 'logo')}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Banner Hero (Opsional)</label>
+                            <div className="flex gap-2 items-center bg-theme-bg p-2 rounded-xl border border-theme-border">
+                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[10px]">
+                                {storeBannerUrl ? <img src={storeBannerUrl} className="w-full h-full object-cover" /> : '🖼️'}
+                              </div>
+                              <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-2 rounded text-center cursor-pointer transition-all">
+                                {isUploadingBanner ? 'Uploading...' : 'Upload'}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleUploadImage(e.target.files[0], 'banner')}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Katalog Produk */}
+                        <div className="flex justify-between items-center border-t border-theme-border pt-4">
+                          <span className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">Katalog Produk ({tokoProducts.length}/6)</span>
+                          {tokoProducts.length < 6 && (
+                            <button
+                              type="button"
+                              onClick={() => setTokoProducts(prev => [...prev, { name: '', price: '', description: '', image_url: '' }])}
+                              className="text-[9px] font-bold text-theme-accent hover:underline border border-theme-accent/30 bg-theme-accent/5 px-2.5 py-1 rounded-lg"
+                            >
+                              + Tambah Produk
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="space-y-4">
+                          {tokoProducts.map((product, index) => (
+                            <div key={index} className="bg-theme-bg/30 p-3.5 rounded-2xl border border-theme-border space-y-3 relative">
+                              <div className="flex justify-between items-center pb-1.5 border-b border-theme-border/50">
+                                <span className="text-[10px] font-bold text-theme-text-sec">Produk #{index + 1}</span>
+                                {tokoProducts.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setTokoProducts(prev => prev.filter((_, idx) => idx !== index))}
+                                    className="text-[9px] font-bold text-red-400 hover:text-red-500 flex items-center gap-0.5"
+                                  >
+                                    Hapus
+                                  </button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Nama Produk"
+                                  value={product.name}
+                                  onChange={(e) => {
+                                    setTokoProducts(prev => {
+                                      const next = [...prev];
+                                      next[index].name = e.target.value;
+                                      return next;
+                                    });
+                                  }}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Harga (e.g. 150000)"
+                                  value={product.price}
+                                  onChange={(e) => {
+                                    setTokoProducts(prev => {
+                                      const next = [...prev];
+                                      next[index].price = e.target.value.replace(/\D/g, '');
+                                      return next;
+                                    });
+                                  }}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                              </div>
+
+                              {/* Deskripsi Produk */}
+                              <div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec">Deskripsi Produk (Opsional)</label>
+                                  <button
+                                    type="button"
+                                    disabled={isGeneratingProductDesc[index] || !product.name || !product.price}
+                                    onClick={() => handleAIAssist('product_description', index)}
+                                    className="text-[9px] font-bold text-theme-accent disabled:opacity-50 hover:underline flex items-center gap-0.5 active:scale-95"
+                                  >
+                                    {isGeneratingProductDesc[index] ? 'Generating...' : '✨ AI Generate'}
+                                  </button>
+                                </div>
+                                <textarea
+                                  rows={2}
+                                  placeholder="Deskripsi spesifikasi/keunggulan produk..."
+                                  value={product.description || ''}
+                                  onChange={(e) => {
+                                    setTokoProducts(prev => {
+                                      const next = [...prev];
+                                      next[index].description = e.target.value;
+                                      return next;
+                                    });
+                                  }}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                                />
+                              </div>
+
+                              {/* Gambar Produk */}
+                              <div className="flex gap-2.5 items-center bg-theme-bg p-2 rounded-xl border border-theme-border">
+                                <div className="w-8 h-8 rounded-lg overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[10px]">
+                                  {product.image_url ? <img src={product.image_url} className="w-full h-full object-cover" /> : '📦'}
+                                </div>
+                                <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-all">
+                                  {isUploadingProductIndex === index ? 'Uploading...' : 'Upload Foto Produk'}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => handleUploadImage(e.target.files[0], `product-${index}`)}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Kontak & Sosmed */}
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Kontak & Media Sosial</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">WhatsApp Toko</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. 628123456789"
+                              value={tokoWhatsapp}
+                              onChange={(e) => setTokoWhatsapp(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Username Instagram</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. @tokosepatu"
+                              value={tokoInstagram}
+                              onChange={(e) => setTokoInstagram(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Link Toko Shopee (Opsional)</label>
+                            <input
+                              type="text"
+                              placeholder="https://shopee.co.id/toko"
+                              value={tokoShopee}
+                              onChange={(e) => setTokoShopee(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Link Tokopedia (Opsional)</label>
+                            <input
+                              type="text"
+                              placeholder="https://tokopedia.com/toko"
+                              value={tokoTokopedia}
+                              onChange={(e) => setTokoTokopedia(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Alamat Toko (Opsional)</label>
+                          <textarea
+                            rows={2}
+                            placeholder="Alamat fisik outlet/toko Anda..."
+                            value={tokoAddress}
+                            onChange={(e) => setTokoAddress(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                          />
+                        </div>
+
+                        {/* Slogan Toko / Quote */}
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Slogan / Sambutan Toko (Opsional)</div>
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Quotes / Slogan Pembuka</label>
+                            <button
+                              type="button"
+                              disabled={isGeneratingStoreQuote || !storeName || !storeTagline}
+                              onClick={() => handleAIAssist('store_quote')}
+                              className="text-[9px] font-bold text-theme-accent disabled:opacity-50 hover:underline flex items-center gap-0.5 active:scale-95"
+                            >
+                              {isGeneratingStoreQuote ? 'Generating...' : '✨ AI Generate Slogan'}
+                            </button>
+                          </div>
+                          <textarea
+                            rows={2}
+                            placeholder="Tulis kalimat sambutan atau slogan penarik minat..."
+                            value={tokoQuote}
+                            onChange={(e) => setTokoQuote(e.target.value)}
+                            className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Prompt input */}
+                    {templateType !== 'toko-online' && (
                       <div>
-                      <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
-                        {templateType === 'wedding' || templateType === 'birthday' ? 'Preferensi Kutipan / Doa (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
-                      </label>
-                      <textarea
-                        required={templateType === 'store'}
-                        rows={templateType === 'store' ? 5 : 3}
-                        placeholder={templateType === 'wedding' || templateType === 'birthday' ? "Tulis ucapan/doa atau kata-kata pembuka secara kustom... (kosongkan untuk teks default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        disabled={isGenerating || editMode}
-                        className={`block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed ${editMode ? 'opacity-70 cursor-not-allowed' : 'focus:border-theme-accent'}`}
-                      />
-                      {editMode && (
-                        <p className="text-[9px] text-theme-text-muted mt-1">
-                          Kolom preferensi AI ini dikunci pada mode edit halaman aktif.
-                        </p>
-                      )}
-                    </div>
+                        <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                          {templateType === 'wedding' || templateType === 'birthday' ? 'Preferensi Kutipan / Doa (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
+                        </label>
+                        <textarea
+                          required={templateType === 'store'}
+                          rows={templateType === 'store' ? 5 : 3}
+                          placeholder={templateType === 'wedding' || templateType === 'birthday' ? "Tulis ucapan/doa atau kata-kata pembuka secara kustom... (kosongkan untuk teks default)" : "Tuliskan produk Anda, keunggulan utama, target konsumen, dan nuansa yang diinginkan secara detail..."}
+                          value={prompt}
+                          onChange={(e) => setPrompt(e.target.value)}
+                          disabled={isGenerating || editMode}
+                          className={`block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed ${editMode ? 'opacity-70 cursor-not-allowed' : 'focus:border-theme-accent'}`}
+                        />
+                        {editMode && (
+                          <p className="text-[9px] text-theme-text-muted mt-1">
+                            Kolom preferensi AI ini dikunci pada mode edit halaman aktif.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </form>
                 </div>
               </div>
@@ -1781,7 +2253,7 @@ function GenerateContent() {
 
               {/* Viewport for preview */}
               <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
-                { (templateType === 'wedding' || templateType === 'birthday') ? (
+                { (templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online') ? (
                   <iframe
                     ref={iframeRef}
                     src="/preview/index.html"
@@ -1925,7 +2397,7 @@ function GenerateContent() {
                   .filter(p => {
                     if (selectedCategory === 'all') return true;
                     if (selectedCategory === 'wedding') return p.id === 'wedding';
-                    if (selectedCategory === 'store') return p.id === 'store';
+                    if (selectedCategory === 'store') return p.id === 'toko-online';
                     return true;
                   })
                   .map(product => {
@@ -1941,6 +2413,10 @@ function GenerateContent() {
                             setIsTemplateModalOpen(false);
                             // Clear page data when changing template types to refresh state
                             setPageData(null);
+                            // Reset designKey based on product type
+                            if (product.id === 'toko-online') setDesignKey('modern-clean');
+                            else if (product.id === 'wedding') setDesignKey('sage-green');
+                            else if (product.id === 'birthday') setDesignKey('cute-balloon');
                           }
                         }}
                         className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${
@@ -2029,10 +2505,12 @@ function GenerateContent() {
                   Contoh Tema: {
                     previewDesignKey === 'sage-green' ? 'Sage Green 🌿' :
                     previewDesignKey === 'floral-pink' ? 'Floral Pink 🌸' :
-                    previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' : 'Elegant Gold ✨'
+                    previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' :
+                    previewDesignKey === 'elegant-gold' ? 'Elegant Gold ✨' :
+                    previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' : 'Midnight Dark 👑'
                   }
                 </h3>
-                <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan undangan digital</p>
+                <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan landing page</p>
               </div>
               <button 
                 onClick={() => setPreviewDesignKey(null)}
@@ -2051,49 +2529,103 @@ function GenerateContent() {
                 onLoad={(e) => {
                   const iframe = e.target;
                   const isBirthday = ['cute-balloon', 'elegant-gold'].includes(previewDesignKey);
+                  const isTokoOnline = ['modern-clean', 'midnight-dark'].includes(previewDesignKey);
                   const isGold = previewDesignKey === 'elegant-gold';
-                  const mockData = isBirthday ? {
-                    meta: {
-                      title: `Contoh Undangan - Tema ${isGold ? 'Elegant Gold' : 'Cute Balloon'}`,
-                      template_type: 'birthday',
-                      design_key: previewDesignKey
-                    },
-                    content: {
-                      celebrant: isGold ? {
-                        name: 'Kayla Amanda',
-                        nickname: 'Kayla',
-                        age: 'Sweet 17',
-                        parent_name: 'Bpk. Hendra & Ibu Rini',
-                        image_url: DEFAULT_BRIDE_AVATAR,
-                        gender: 'female'
-                      } : {
-                        name: 'Rafa Al-Fatih',
-                        nickname: 'Rafa',
-                        age: '5',
-                        parent_name: 'Bpk. Hendra & Ibu Siska',
-                        image_url: DEFAULT_GROOM_AVATAR,
-                        gender: 'male'
+                  const isMidnight = previewDesignKey === 'midnight-dark';
+                  
+                  let mockData;
+                  if (isBirthday) {
+                    mockData = {
+                      meta: {
+                        title: `Contoh Undangan - Tema ${isGold ? 'Elegant Gold' : 'Cute Balloon'}`,
+                        template_type: 'birthday',
+                        design_key: previewDesignKey
                       },
-                      event: {
-                        date: '2026-08-15',
-                        time: '15:00 - 17:30 WIB',
-                        location: 'McDonalds Kemang, Jakarta',
-                        maps_url: 'https://maps.google.com'
+                      content: {
+                        celebrant: isGold ? {
+                          name: 'Kayla Amanda',
+                          nickname: 'Kayla',
+                          age: 'Sweet 17',
+                          parent_name: 'Bpk. Hendra & Ibu Rini',
+                          image_url: DEFAULT_BRIDE_AVATAR,
+                          gender: 'female'
+                        } : {
+                          name: 'Rafa Al-Fatih',
+                          nickname: 'Rafa',
+                          age: '5',
+                          parent_name: 'Bpk. Hendra & Ibu Siska',
+                          image_url: DEFAULT_GROOM_AVATAR,
+                          gender: 'male'
+                        },
+                        event: {
+                          date: '2026-08-15',
+                          time: '15:00 - 17:30 WIB',
+                          location: 'McDonalds Kemang, Jakarta',
+                          maps_url: 'https://maps.google.com'
+                        },
+                        gift: {
+                          bank_name: 'Bank BCA',
+                          account_number: '9876543210',
+                          account_holder: 'Hendra Wijaya'
+                        },
+                        quote: 'Puji syukur kepada Tuhan YME atas bertambahnya usia putra kami tercinta. Kehadiran dan doa dari teman-teman semua akan melengkapi kebahagiaan di hari istimewa Rafa!'
+                      }
+                    };
+                  } else if (isTokoOnline) {
+                    mockData = {
+                      meta: {
+                        title: `Toko Contoh - Tema ${isMidnight ? 'Midnight Dark' : 'Modern Clean'}`,
+                        template_type: 'toko-online',
+                        design_key: previewDesignKey
                       },
-                      gift: {
-                        bank_name: 'Bank BCA',
-                        account_number: '9876543210',
-                        account_holder: 'Hendra Wijaya'
+                      content: {
+                        store: {
+                          name: isMidnight ? 'Luxor Timepieces' : 'Serasi Gadget Store',
+                          tagline: isMidnight ? 'Arloji Mewah & Berkelas Dunia' : 'Gadget Orisinal & Bergaransi Resmi',
+                          description: isMidnight 
+                            ? 'Kami menghadirkan koleksi jam tangan mewah original terkurasi untuk menunjang penampilan eksekutif Anda. Setiap transaksi bergaransi internasional 2 tahun.'
+                            : 'Pusat belanja gadget terpercaya di Indonesia. Kami menyediakan smartphone, laptop, dan tablet original dengan cicilan 0% dan gratis ongkir se-Indonesia.',
+                          logo_url: null,
+                          banner_url: null
+                        },
+                        products: [
+                          {
+                            name: isMidnight ? 'Submariner Gold Edition' : 'UltraBook Pro 14"',
+                            price: isMidnight ? '245000000' : '15999000',
+                            description: isMidnight 
+                              ? 'Model premium dengan bezel emas 18 karat, dial hitam berkilau, dan ketahanan air hingga 300 meter. Sangat ikonik.'
+                              : 'Dilengkapi prosesor M4 terbaru, RAM 16GB, storage 512GB SSD, layar Liquid Retina, dan daya tahan baterai hingga 18 jam.',
+                            image_url: null
+                          },
+                          {
+                            name: isMidnight ? 'Chronograph Carbon Black' : 'Smart Earbuds Pro 2',
+                            price: isMidnight ? '98000000' : '2499000',
+                            description: isMidnight 
+                              ? 'Desain sporty tangguh dengan casing serat karbon ultra ringan, dial hitam matte, dan strap karet berkualitas tinggi.'
+                              : 'Fitur Active Noise Cancelling (ANC) tingkat lanjut, audio spasial personal, pengisian daya cepat, dan tahan cipratan air IPX4.',
+                            image_url: null
+                          }
+                        ],
+                        contact: {
+                          whatsapp: '6281234567890',
+                          instagram: isMidnight ? '@luxor.watches' : '@serasi.gadget',
+                          shopee_url: 'https://shopee.co.id',
+                          tokopedia_url: 'https://tokopedia.com',
+                          address: 'Kuningan City Mall, Lantai Dasar No. 12, Jakarta Selatan'
+                        },
+                        quote: isMidnight 
+                          ? 'Waktu adalah kemewahan sejati. Hargai setiap detik perjalanan hidup Anda dengan arloji terbaik.'
+                          : 'Teknologi terbaik untuk menunjang produktivitas dan kreativitas tanpa batas setiap hari.'
+                      }
+                    };
+                  } else {
+                    mockData = {
+                      meta: {
+                        title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : 'Floral Pink'}`,
+                        template_type: 'wedding',
+                        design_key: previewDesignKey
                       },
-                      quote: 'Puji syukur kepada Tuhan YME atas bertambahnya usia putra kami tercinta. Kehadiran dan doa dari teman-teman semua akan melengkapi kebahagiaan di hari istimewa Rafa!'
-                    }
-                  } : {
-                    meta: {
-                      title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : 'Floral Pink'}`,
-                      template_type: 'wedding',
-                      design_key: previewDesignKey
-                    },
-                    content: {
+                      content: {
                       groom: {
                         name: 'Rian Adiputra, S.T.',
                         nickname: 'Rian',
@@ -2133,6 +2665,7 @@ function GenerateContent() {
                       quote: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berfikir. (QS. Ar-Rum: 21)'
                     }
                   };
+                }
                   
                   // Wait a brief moment to ensure iframe listener is registered
                   setTimeout(() => {
