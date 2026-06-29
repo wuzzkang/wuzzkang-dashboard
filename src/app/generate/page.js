@@ -9,6 +9,28 @@ const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v
 const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
 import { supabase } from '@/lib/supabase';
 
+// Helper dinamis untuk ikon template
+const getProductIcon = (id) => {
+  switch (id) {
+    case 'wedding': return '🌸';
+    case 'birthday': return '🎂';
+    case 'toko-online': return '🛍️';
+    case 'campaign': return '⚡';
+    default: return '📄';
+  }
+};
+
+// Helper dinamis untuk deskripsi default template
+const getProductDefaultDescription = (id) => {
+  switch (id) {
+    case 'wedding': return 'Undangan pernikahan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.';
+    case 'birthday': return 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.';
+    case 'toko-online': return 'Landing page e-commerce instan untuk katalog dagangan.';
+    case 'campaign': return 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.';
+    default: return 'Rancang landing page instan sesuai kebutuhan Anda.';
+  }
+};
+
 const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1335,11 +1357,11 @@ function GenerateContent() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="h-7 w-7 rounded-lg bg-theme-accent/10 flex items-center justify-center text-theme-accent group-hover:scale-105 transition-transform text-sm">
-                            {templateType === 'wedding' ? '🌸' : templateType === 'birthday' ? '🎂' : '🛍️'}
+                            {getProductIcon(templateType)}
                           </div>
                           <div>
                             <p className="text-xs font-bold text-theme-text">
-                              {templateType === 'wedding' ? 'Undangan Pernikahan' : templateType === 'birthday' ? 'Undangan Ulang Tahun' : 'Toko Online / Bisnis'}
+                              {currentProduct ? currentProduct.name : 'Pilih Layanan'}
                             </p>
                             <p className="text-[9px] text-theme-text-sec">
                               {editMode ? 'Tipe produk dikunci pada mode edit' : 'Klik untuk mengganti tipe produk/template'}
@@ -2902,7 +2924,7 @@ function GenerateContent() {
                           <div className="flex justify-between items-start mb-4">
                             <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl shadow-sm ${isSelected ? 'bg-theme-accent/20 text-theme-accent' : 'bg-theme-card text-theme-text-sec'
                               }`}>
-                              {product.id === 'wedding' ? '🌸' : '🛍️'}
+                              {getProductIcon(product.id)}
                             </div>
 
                             {/* Inactive / Maintenance Badge */}
@@ -2923,9 +2945,7 @@ function GenerateContent() {
                             {product.name}
                           </h4>
                           <p className="text-xs text-theme-text-muted mt-1.5 leading-relaxed">
-                            {product.description || (product.id === 'wedding'
-                              ? 'Undangan pernikahan digital premium dengan fitur interaktif.'
-                              : 'Landing page e-commerce instan untuk katalog dagangan.')}
+                            {product.description || getProductDefaultDescription(product.id)}
                           </p>
                         </div>
 
