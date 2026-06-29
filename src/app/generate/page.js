@@ -873,7 +873,7 @@ function GenerateContent() {
       console.error('[Dashboard] AI avatar error, falling back to default:', err);
       if (isGroom) setGroomImage(DEFAULT_GROOM_AVATAR);
       if (isBride) setBrideImage(DEFAULT_BRIDE_AVATAR);
-      if (isCelebrant) setCelebrantImage(DEFAULT_GROOM_AVATAR);
+      if (isCelebrant) setCelebrantImage(celebrantGender === 'female' ? DEFAULT_BRIDE_AVATAR : DEFAULT_GROOM_AVATAR);
 
       alert(`Gagal men-generate foto AI: ${err.message || 'Error'}\n\nSistem otomatis menggunakan avatar default untuk Anda.`);
     } finally {
