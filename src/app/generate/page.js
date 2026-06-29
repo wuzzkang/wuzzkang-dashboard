@@ -2487,7 +2487,7 @@ function GenerateContent() {
                             ) : (
                               isSelected && (
                                 <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-theme-accent/20 border border-theme-accent/30 text-theme-accent rounded">
-                                  Aktif
+                                  Selected
                                 </span>
                               )
                             )}
