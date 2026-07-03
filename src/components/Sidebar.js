@@ -61,7 +61,7 @@ export default function Sidebar() {
           {/* Balance Pill */}
           <div className="px-3 py-1.5 rounded-lg text-xs font-bold border transition-theme"
             style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)', color: 'var(--theme-accent)' }}>
-            Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
+            {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
           </div>
           {/* Hamburger */}
           <button
@@ -109,7 +109,7 @@ export default function Sidebar() {
             <span>Saldo Anda</span>
           </div>
           <div className="text-xl font-bold transition-theme" style={{ color: 'var(--theme-text)', fontFamily: "'Sora', sans-serif" }}>
-            Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
+            {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
           </div>
           <button
             onClick={refreshProfile}

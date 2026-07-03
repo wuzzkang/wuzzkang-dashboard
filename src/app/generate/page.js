@@ -698,7 +698,7 @@ function GenerateContent() {
         setAppliedCoupon(result.data);
         const discountDesc = result.data.discount_type === 'percentage'
           ? `${result.data.discount_value}%`
-          : `Rp ${result.data.discount_value.toLocaleString('id-ID')}`;
+          : `${result.data.discount_value} Credit`;
         setCouponSuccess(`Kupon "${result.data.code}" berhasil diterapkan! Diskon ${discountDesc}.`);
       } else {
         setAppliedCoupon(null);
@@ -839,11 +839,11 @@ function GenerateContent() {
     const isCelebrant = target === 'celebrant';
 
     const remainingFree = profile?.remainingFree ?? 0;
-    const cost = profile?.ai_generate_cost ?? 100;
+    const cost = profile?.ai_generate_cost ?? 1;
 
     if (remainingFree === 0) {
       const confirmCharge = window.confirm(
-        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya Rp ${cost.toLocaleString('id-ID')} yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya ${cost} Credit yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
       );
       if (!confirmCharge) return;
     }
@@ -906,11 +906,11 @@ function GenerateContent() {
     if (!session?.access_token) return;
 
     const remainingFree = profile?.remainingFree ?? 0;
-    const cost = profile?.ai_generate_cost ?? 100;
+    const cost = profile?.ai_generate_cost ?? 1;
 
     if (remainingFree === 0) {
       const confirmCharge = window.confirm(
-        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya Rp ${cost.toLocaleString('id-ID')} yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya ${cost} Credit yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
       );
       if (!confirmCharge) return;
     }
@@ -978,11 +978,11 @@ function GenerateContent() {
     }
 
     const remainingFree = profile?.remainingFree ?? 0;
-    const cost = profile?.ai_generate_cost ?? 100;
+    const cost = profile?.ai_generate_cost ?? 1;
 
     if (remainingFree === 0) {
       const confirmCharge = window.confirm(
-        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya Rp ${cost.toLocaleString('id-ID')} yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya ${cost} Credit yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
       );
       if (!confirmCharge) return;
     }
@@ -1070,14 +1070,14 @@ function GenerateContent() {
         onClick={() => handleAIAssist(fieldType, index)}
         className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
       >
-        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `Rp ${cost}`})`}
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
       </button>
     );
   };
 
   const renderAIAvatarButton = (target, isLoading) => {
     const remainingFree = profile?.remainingFree ?? 15;
-    const cost = profile?.ai_generate_cost ?? 100;
+    const cost = profile?.ai_generate_cost ?? 1;
     const isFree = remainingFree > 0;
 
     return (
@@ -1087,14 +1087,14 @@ function GenerateContent() {
         disabled={isLoading}
         className="flex-1 bg-theme-accent/90 hover:bg-theme-accent text-theme-accent-text text-[9px] font-bold py-1 px-2 rounded transition-colors active:scale-95 cursor-pointer"
       >
-        {isLoading ? 'Generating...' : `AI Avatar (${isFree ? `Gratis: ${remainingFree}` : `Rp ${cost}`})`}
+        {isLoading ? 'Generating...' : `AI Avatar (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
       </button>
     );
   };
 
   const renderAICampaignButton = (fieldType, isLoading) => {
     const remainingFree = profile?.remainingFree ?? 15;
-    const cost = profile?.ai_generate_cost ?? 100;
+    const cost = profile?.ai_generate_cost ?? 1;
     const isFree = remainingFree > 0;
 
     return (
@@ -1104,7 +1104,7 @@ function GenerateContent() {
         onClick={() => handleAICampaignAssist(fieldType)}
         className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
       >
-        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `Rp ${cost}`})`}
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
       </button>
     );
   };
@@ -1287,7 +1287,7 @@ function GenerateContent() {
 
     // Check balance first based on finalCost
     if (finalCost > 0 && (profile?.balance ?? 0) < finalCost) {
-      setError(`Saldo Anda tidak mencukupi untuk mempublikasikan halaman. Biaya: Rp ${finalCost.toLocaleString('id-ID')}. Silakan top up saldo terlebih dahulu.`);
+      setError(`Saldo Anda tidak mencukupi untuk mempublikasikan halaman. Biaya: ${finalCost} Credit. Silakan top up credit terlebih dahulu.`);
       return;
     }
 
@@ -2899,20 +2899,20 @@ function GenerateContent() {
                       <span>
                         {appliedCoupon ? (
                           <>
-                            <span className="line-through text-theme-text-muted mr-1.5">Rp {currentCost.toLocaleString('id-ID')}</span>
+                            <span className="line-through text-theme-text-muted mr-1.5">{currentCost} Credit</span>
                             <span className="text-emerald-400">
-                              {finalCost === 0 ? 'Gratis' : `Rp ${finalCost.toLocaleString('id-ID')}`}
+                              {finalCost === 0 ? 'Gratis' : `${finalCost} Credit`}
                             </span>
                           </>
                         ) : (
-                          `Rp ${currentCost.toLocaleString('id-ID')}`
+                          `${currentCost} Credit`
                         )}
                       </span>
                     </div>
                     <div className="flex justify-between items-center border-t border-theme-border/50 pt-1.5">
                       <span>Saldo Anda:</span>
                       <span className={(profile?.balance ?? 0) < finalCost ? 'text-red-400' : 'text-emerald-400'}>
-                        Rp {(profile?.balance ?? 0).toLocaleString('id-ID')}
+                        {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
                       </span>
                     </div>
                   </div>
@@ -3003,7 +3003,7 @@ function GenerateContent() {
                   <span>
                     {finalCost === 0
                       ? 'Publikasikan Sekarang (Gratis)'
-                      : `Publikasikan Sekarang (Rp ${finalCost.toLocaleString('id-ID')})`}
+                      : `Publikasikan Sekarang (${finalCost} Credit)`}
                   </span>
                 </>
               )}
@@ -3135,7 +3135,7 @@ function GenerateContent() {
                         <div className="mt-6 pt-4 border-t border-theme-border flex justify-between items-center">
                           <span className="text-[10px] text-theme-text-muted uppercase tracking-wider font-semibold">Biaya Publikasi</span>
                           <span className="text-xs font-bold text-theme-text">
-                            Rp {product.cost?.toLocaleString('id-ID') || '10.000'}
+                            {product.cost?.toLocaleString('id-ID') || '100'} Credit
                           </span>
                         </div>
                       </div>

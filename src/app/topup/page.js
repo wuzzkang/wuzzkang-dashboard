@@ -132,7 +132,7 @@ export default function TopUpPage() {
       });
 
       if (response.ok) {
-        setSuccessMessage(`Berhasil simulasi pembayaran! Saldo Rp ${activeTransaction.amount.toLocaleString('id-ID')} telah ditambahkan.`);
+        setSuccessMessage(`Berhasil simulasi pembayaran! ${activeTransaction.amount.toLocaleString('id-ID')} Credit telah ditambahkan.`);
         setActiveTransaction(null);
         await refreshProfile(); // Refresh balance
       } else {
@@ -152,8 +152,8 @@ export default function TopUpPage() {
       {/* Main Content - Mobile-First */}
       <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
         <div className="mb-6">
-          <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Top Up Saldo</h1>
-          <p className="text-theme-text-sec text-xs mt-1">Tambah saldo Siluet untuk mendeploy website landing page Anda</p>
+          <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Top Up Credit</h1>
+          <p className="text-theme-text-sec text-xs mt-1">Tambah credit Siluet untuk mendeploy website landing page Anda</p>
         </div>
 
         <div className="space-y-6">
@@ -179,7 +179,7 @@ export default function TopUpPage() {
                   {/* Amount Selection */}
                   <div>
                     <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2.5">
-                      Pilih Nominal Saldo
+                      Pilih Nominal Top Up
                     </label>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       {presetAmounts.map((amt) => (
@@ -198,7 +198,7 @@ export default function TopUpPage() {
                       ))}
                     </div>
 
-                    <div className="relative flex items-center">
+                    <div className="relative flex items-center mb-3">
                       <span className="absolute left-3.5 text-theme-text-muted text-xs font-semibold">Rp</span>
                       <input
                         type="number"
@@ -211,6 +211,25 @@ export default function TopUpPage() {
                         className="block w-full pl-9 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
                       />
                     </div>
+
+                    {/* Dynamic conversion preview */}
+                    {(() => {
+                      const creditPrice = profile?.credit_price_idr ?? 100;
+                      return (
+                        <div className="mt-3 space-y-2">
+                          <div className="text-[10px] text-theme-text-sec font-semibold flex justify-between items-center bg-theme-bg/30 border border-theme-border/50 p-2.5 rounded-lg">
+                            <span>Rate Konversi:</span>
+                            <span className="text-theme-accent">1 Credit = Rp {creditPrice.toLocaleString('id-ID')}</span>
+                          </div>
+                          {amount >= 10000 && (
+                            <div className="text-xs font-bold text-emerald-400 flex justify-between items-center pt-1">
+                              <span>Credit yang didapat:</span>
+                              <span>{Math.round(amount / creditPrice)} Credit</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Channel Selection */}
@@ -279,7 +298,14 @@ export default function TopUpPage() {
                   <div className="flex justify-between items-center text-[10px] font-semibold text-theme-text-sec">
                     <span>Nominal Pembayaran:</span>
                     <span className="text-theme-text text-sm font-bold">
-                      Rp {activeTransaction.amount.toLocaleString('id-ID')}
+                      Rp {(activeTransaction.metadata?.cash_amount ?? (activeTransaction.amount * (profile?.credit_price_idr ?? 100))).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-[10px] font-semibold text-theme-text-sec border-t border-theme-border/40 pt-2">
+                    <span>Credit yang didapat:</span>
+                    <span className="text-emerald-400 text-xs font-bold">
+                      {activeTransaction.amount.toLocaleString('id-ID')} Credit
                     </span>
                   </div>
 
@@ -339,14 +365,14 @@ export default function TopUpPage() {
                   <li key={prod.id} className="flex justify-between items-center py-1.5 border-b border-theme-border animate-fadeIn">
                     <span>Publikasi ({prod.name})</span>
                     <span className="font-semibold text-theme-text">
-                      {prod.is_active ? `Rp ${prod.cost.toLocaleString('id-ID')} / ${prod.unit || 'Halaman'}` : 'Dinonaktifkan'}
+                      {prod.is_active ? `${prod.cost.toLocaleString('id-ID')} Credit / ${prod.unit || 'Halaman'}` : 'Dinonaktifkan'}
                     </span>
                   </li>
                 ))
               ) : (
                 <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
                   <span>Publikasi Website</span>
-                  <span className="font-semibold text-theme-text">Rp 10.000 / Halaman</span>
+                  <span className="font-semibold text-theme-text">100 Credit / Halaman</span>
                 </li>
               )}
               <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
