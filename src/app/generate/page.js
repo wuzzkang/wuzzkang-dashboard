@@ -788,22 +788,23 @@ function GenerateContent() {
         }
       }
 
-      const fileExt = fileToUpload.type === 'image/jpeg' ? 'jpg' : fileToUpload.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `uploads/${fileName}`;
+      console.log(`[Dashboard] Uploading file via backend API: ${fileToUpload.name}`);
+      const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': fileToUpload.type || 'application/octet-stream',
+          'x-file-name': fileToUpload.name || 'image.jpg'
+        },
+        body: fileToUpload
+      });
 
-      console.log(`[Dashboard] Uploading file to storage: ${fileName}`);
-      const { data, error } = await supabase.storage
-        .from('wuzzkang-bucket')
-        .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
+      const uploadResult = await uploadResponse.json();
+      if (!uploadResponse.ok || !uploadResult.success) {
+        throw new Error(uploadResult.error || 'Gagal mengunggah foto via API.');
+      }
 
-      if (error) throw error;
-
-      const { data: publicUrlData } = supabase.storage
-        .from('wuzzkang-bucket')
-        .getPublicUrl(filePath);
-
-      const publicUrl = publicUrlData.publicUrl;
+      const publicUrl = uploadResult.url;
 
       if (isGroom) setGroomImage(publicUrl);
       if (isBride) setBrideImage(publicUrl);
@@ -866,13 +867,16 @@ function GenerateContent() {
     setError('');
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate-image`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/process`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ prompt: userPrompt }),
+        body: JSON.stringify({
+          mode: 'generate_avatar',
+          params: { prompt: userPrompt }
+        }),
       });
 
       const result = await response.json();
