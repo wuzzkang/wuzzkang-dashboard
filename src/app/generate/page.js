@@ -1727,6 +1727,24 @@ function GenerateContent() {
                               </button>
                             </div>
                           </div>
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('classic-love')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'classic-love' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
+                              >
+                                <span className="text-lg">🌹</span>
+                                <span className="text-[10px] font-bold">Classic Love</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('classic-love')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
                         </div>
 
                         {/* Mempelai Pria */}
@@ -3271,12 +3289,13 @@ function GenerateContent() {
                   Contoh Tema: {
                     previewDesignKey === 'sage-green' ? 'Sage Green 🌿' :
                       previewDesignKey === 'floral-pink' ? 'Floral Pink 🌸' :
-                        previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' :
-                          previewDesignKey === 'elegant-gold' ? 'Elegant Gold ✨' :
-                            previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' :
-                              previewDesignKey === 'midnight-dark' ? 'Midnight Dark 👑' :
-                                previewDesignKey === 'neon-conversion' ? 'Neon Conversion ⚡' :
-                                  previewDesignKey === 'clean-trust' ? 'Clean Trust 🛡️' : 'Theme'
+                        previewDesignKey === 'classic-love' ? 'Classic Love 🌹' :
+                          previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' :
+                            previewDesignKey === 'elegant-gold' ? 'Elegant Gold ✨' :
+                              previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' :
+                                previewDesignKey === 'midnight-dark' ? 'Midnight Dark 👑' :
+                                  previewDesignKey === 'neon-conversion' ? 'Neon Conversion ⚡' :
+                                    previewDesignKey === 'clean-trust' ? 'Clean Trust 🛡️' : 'Theme'
                   }
                 </h3>
                 <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan landing page</p>
@@ -3454,7 +3473,7 @@ function GenerateContent() {
                   } else {
                     mockData = {
                       meta: {
-                        title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : 'Floral Pink'}`,
+                        title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : previewDesignKey === 'floral-pink' ? 'Floral Pink' : 'Classic Love'}`,
                         template_type: 'wedding',
                         design_key: previewDesignKey
                       },
