@@ -123,7 +123,7 @@ export default function DashboardPage() {
       return matchesSearch && (templateType === 'wedding' || templateType === 'birthday');
     }
     if (filterType === 'bisnis') {
-      return matchesSearch && (templateType === 'store' || templateType === 'toko-online');
+      return matchesSearch && (templateType === 'store' || templateType === 'toko-online' || templateType === 'campaign');
     }
     return matchesSearch && templateType === filterType;
   });
@@ -276,7 +276,7 @@ export default function DashboardPage() {
                               <span>Lihat</span>
                               <ExternalLink className="h-3.5 w-3.5" />
                             </a>
-                            {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online') && (
+                            {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign') && (
                               (project.edit_count || 0) >= 3 ? (
                                 <button
                                   disabled

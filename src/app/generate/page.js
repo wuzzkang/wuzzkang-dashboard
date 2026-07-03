@@ -2488,7 +2488,6 @@ function GenerateContent() {
                           </label>
                           <textarea
                             rows={3}
-                            required
                             placeholder="Jelaskan produk/penawaran, target audiens, dan nilai jual utama Anda secara detail sebagai acuan untuk AI Copywriter..."
                             value={campaignBrief}
                             onChange={(e) => setCampaignBrief(e.target.value)}
