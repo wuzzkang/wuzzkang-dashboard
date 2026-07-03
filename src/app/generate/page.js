@@ -880,14 +880,49 @@ function GenerateContent() {
       });
 
       const result = await response.json();
-      if (response.ok && result.success) {
-        if (isGroom) setGroomImage(result.url);
-        if (isBride) setBrideImage(result.url);
-        if (isCelebrant) setCelebrantImage(result.url);
-        await refreshProfile();
-      } else {
-        throw new Error(result.error || 'Gagal men-generate gambar.');
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Gagal mengirim tugas generate ke antrean.');
       }
+
+      const jobId = result.jobId;
+      let attempts = 0;
+      let finalUrl = null;
+
+      // Poll the job status endpoint every 5 seconds
+      while (attempts < 60) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/status`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!statusRes.ok) {
+          if (statusRes.status === 404) {
+            throw new Error('Pekerjaan generate tidak ditemukan di antrean.');
+          }
+          throw new Error('Gagal memeriksa status pekerjaan generate gambar.');
+        }
+
+        const jobData = await statusRes.json();
+        if (jobData.state === 'completed') {
+          finalUrl = jobData.result?.url;
+          break;
+        } else if (jobData.state === 'failed') {
+          throw new Error(jobData.failedReason || 'Gagal memproses gambar AI di antrean.');
+        }
+        attempts++;
+      }
+
+      if (!finalUrl) {
+        throw new Error('Waktu tunggu pembuatan gambar AI habis (timeout).');
+      }
+
+      if (isGroom) setGroomImage(finalUrl);
+      if (isBride) setBrideImage(finalUrl);
+      if (isCelebrant) setCelebrantImage(finalUrl);
+      await refreshProfile();
     } catch (err) {
       console.error('[Dashboard] AI avatar error, falling back to default:', err);
       if (isGroom) setGroomImage(DEFAULT_GROOM_AVATAR);
