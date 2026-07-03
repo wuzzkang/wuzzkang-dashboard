@@ -10,8 +10,8 @@ export default function TopUpPage() {
   const { user, session, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
 
-  // Input states
-  const [amount, setAmount] = useState(50000);
+  // Input states (Credits)
+  const [amount, setAmount] = useState(500);
   const [channel, setChannel] = useState('BCA');
 
   // App states
@@ -60,7 +60,7 @@ export default function TopUpPage() {
     );
   }
 
-  const presetAmounts = [20000, 50000, 100000, 250000];
+  const presetAmounts = [100, 250, 500, 1000];
   const paymentChannels = [
     { code: 'BCA', name: 'BCA Virtual Account' },
     { code: 'MANDIRI', name: 'Mandiri Virtual Account' },
@@ -70,8 +70,11 @@ export default function TopUpPage() {
 
   const handleCreatePayment = async (e) => {
     e.preventDefault();
-    if (!amount || amount < 10000) {
-      setError('Minimal top up adalah Rp 10.000');
+    const creditPrice = profile?.credit_price_idr ?? 100;
+    const minCredits = Math.ceil(10000 / creditPrice);
+
+    if (!amount || amount < minCredits) {
+      setError(`Minimal top up adalah ${minCredits} Credit (Rp 10.000)`);
       return;
     }
 
@@ -193,41 +196,44 @@ export default function TopUpPage() {
                               : 'bg-theme-bg border-theme-border text-theme-text-sec hover:border-theme-text-muted'
                           }`}
                         >
-                          Rp {amt.toLocaleString('id-ID')}
+                          {amt.toLocaleString('id-ID')} Credit
                         </button>
                       ))}
                     </div>
 
-                    <div className="relative flex items-center mb-3">
-                      <span className="absolute left-3.5 text-theme-text-muted text-xs font-semibold">Rp</span>
-                      <input
-                        type="number"
-                        required
-                        min={10000}
-                        placeholder="Masukkan nominal lain..."
-                        value={amount || ''}
-                        onChange={(e) => setAmount(Number(e.target.value))}
-                        disabled={isSubmitting}
-                        className="block w-full pl-9 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-                      />
-                    </div>
-
-                    {/* Dynamic conversion preview */}
                     {(() => {
                       const creditPrice = profile?.credit_price_idr ?? 100;
+                      const minCredits = Math.ceil(10000 / creditPrice);
                       return (
-                        <div className="mt-3 space-y-2">
-                          <div className="text-[10px] text-theme-text-sec font-semibold flex justify-between items-center bg-theme-bg/30 border border-theme-border/50 p-2.5 rounded-lg">
-                            <span>Rate Konversi:</span>
-                            <span className="text-theme-accent">1 Credit = Rp {creditPrice.toLocaleString('id-ID')}</span>
+                        <>
+                          <div className="relative flex items-center mb-3">
+                            <input
+                              type="number"
+                              required
+                              min={minCredits}
+                              placeholder="Masukkan jumlah credit..."
+                              value={amount || ''}
+                              onChange={(e) => setAmount(Number(e.target.value))}
+                              disabled={isSubmitting}
+                              className="block w-full pl-3.5 pr-14 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                            />
+                            <span className="absolute right-3.5 text-theme-text-muted text-[10px] font-bold uppercase">Credit</span>
                           </div>
-                          {amount >= 10000 && (
-                            <div className="text-xs font-bold text-emerald-400 flex justify-between items-center pt-1">
-                              <span>Credit yang didapat:</span>
-                              <span>{Math.round(amount / creditPrice)} Credit</span>
+
+                          {/* Dynamic conversion preview */}
+                          <div className="mt-3 space-y-2">
+                            <div className="text-[10px] text-theme-text-sec font-semibold flex justify-between items-center bg-theme-bg/30 border border-theme-border/50 p-2.5 rounded-lg">
+                              <span>Rate Konversi:</span>
+                              <span className="text-theme-accent">1 Credit = Rp {creditPrice.toLocaleString('id-ID')}</span>
                             </div>
-                          )}
-                        </div>
+                            {amount >= minCredits && (
+                              <div className="text-xs font-bold text-emerald-400 flex justify-between items-center pt-1 animate-fadeIn">
+                                <span>Total Biaya:</span>
+                                <span>Rp {(amount * creditPrice).toLocaleString('id-ID')}</span>
+                              </div>
+                            )}
+                          </div>
+                        </>
                       );
                     })()}
                   </div>
