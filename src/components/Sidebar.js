@@ -36,6 +36,7 @@ export default function Sidebar() {
   const navItems = [
     { name: 'Landing Pages', href: '/', icon: LayoutDashboard },
     { name: 'Buat Halaman', href: '/generate', icon: PlusCircle },
+    { name: 'Profil & Tracking', href: '/profile', icon: User },
     { name: 'Top Up', href: '/topup', icon: CreditCard },
   ];
 

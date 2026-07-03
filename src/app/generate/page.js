@@ -253,12 +253,34 @@ function GenerateContent() {
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
 
+  // Tracking pixel states (loaded from user profile, read-only in this view)
+  const [trackingConfig, setTrackingConfig] = useState(null);
+
   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  // Fetch tracking config from user profile
+  useEffect(() => {
+    const fetchTrackingConfig = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const result = await res.json();
+          setTrackingConfig(result.data?.tracking_config ?? null);
+        }
+      } catch (e) {
+        // Non-critical: silently ignore
+      }
+    };
+    fetchTrackingConfig();
+  }, [session]);
 
   // Load existing draft if ID in query params
   useEffect(() => {
@@ -3063,6 +3085,29 @@ function GenerateContent() {
             </div>
           )}
         </div>
+
+        {/* Tracking Pixel Banner — read-only info, user edits in /profile */}
+        {!editMode && (() => {
+          const hasFb  = !!trackingConfig?.facebook_pixel_id;
+          const hasGa  = !!trackingConfig?.google_analytics_id;
+          const hasAds = !!trackingConfig?.google_ads_id;
+          const hasTt  = !!trackingConfig?.tiktok_pixel_id;
+          const anyActive = hasFb || hasGa || hasAds || hasTt;
+          return (
+            <div className="fixed bottom-[72px] left-0 right-0 max-w-md mx-auto px-4 z-39">
+              <div className="bg-theme-surface/90 backdrop-blur-sm border border-theme-border rounded-xl px-3 py-2 flex items-center justify-between text-xs shadow-lg">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-theme-text-muted font-medium mr-0.5">Pixel:</span>
+                  <span className={hasFb  ? 'text-green-400' : 'text-theme-text-muted/40'} title="Facebook Pixel">FB {hasFb  ? '✓' : '○'}</span>
+                  <span className={hasGa  ? 'text-green-400' : 'text-theme-text-muted/40'} title="Google Analytics">GA {hasGa  ? '✓' : '○'}</span>
+                  <span className={hasAds ? 'text-green-400' : 'text-theme-text-muted/40'} title="Google Ads">Ads {hasAds ? '✓' : '○'}</span>
+                  <span className={hasTt  ? 'text-green-400' : 'text-theme-text-muted/40'} title="TikTok Pixel">TT {hasTt  ? '✓' : '○'}</span>
+                </div>
+                <a href="/profile#tracking" className="text-theme-accent hover:underline font-semibold whitespace-nowrap ml-2">Edit →</a>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Fixed Sticky Action Bar at the Bottom */}
         <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 backdrop-blur-md border-t border-theme-border p-4 z-40 flex flex-col gap-2 shadow-2xl transition-theme">
