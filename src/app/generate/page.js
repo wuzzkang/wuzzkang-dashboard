@@ -31,7 +31,12 @@ const getProductDefaultDescription = (id) => {
   }
 };
 
-const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
+const compressImage = (file) => {
+  const maxW = parseInt(process.env.NEXT_PUBLIC_IMAGE_MAX_WIDTH, 10) || 800;
+  const maxH = parseInt(process.env.NEXT_PUBLIC_IMAGE_MAX_HEIGHT, 10) || 800;
+  const startQuality = parseFloat(process.env.NEXT_PUBLIC_IMAGE_QUALITY) || 0.8;
+  const maxKB = parseInt(process.env.NEXT_PUBLIC_MAX_IMAGE_SIZE_KB, 10) || 300;
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -44,14 +49,14 @@ const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => 
         let height = img.height;
 
         if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
+          if (width > maxW) {
+            height = Math.round((height * maxW) / width);
+            width = maxW;
           }
         } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
+          if (height > maxH) {
+            width = Math.round((width * maxH) / height);
+            height = maxH;
           }
         }
 
@@ -60,21 +65,31 @@ const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => 
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-                type: 'image/jpeg',
-                lastModified: Date.now(),
-              });
-              resolve(compressedFile);
-            } else {
-              reject(new Error('Canvas to Blob failed'));
-            }
-          },
-          'image/jpeg',
-          quality
-        );
+        const attemptBlob = (q) => {
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const sizeKB = blob.size / 1024;
+                console.log(`[compressImage] Quality: ${q.toFixed(2)} resulted in size: ${sizeKB.toFixed(1)} KB`);
+                if (sizeKB <= maxKB || q <= 0.3) {
+                  const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                    type: 'image/jpeg',
+                    lastModified: Date.now(),
+                  });
+                  resolve(compressedFile);
+                } else {
+                  attemptBlob(q - 0.1);
+                }
+              } else {
+                reject(new Error('Canvas to Blob failed'));
+              }
+            },
+            'image/jpeg',
+            q
+          );
+        };
+
+        attemptBlob(startQuality);
       };
       img.onerror = (err) => reject(err);
     };
