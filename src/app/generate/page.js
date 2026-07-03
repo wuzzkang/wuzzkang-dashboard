@@ -977,21 +977,55 @@ function GenerateContent() {
       });
 
       const result = await response.json();
-      if (response.ok && result.success) {
-        const content = result.data.content;
-        if (fieldType === 'store_description') setStoreDescription(content);
-        if (fieldType === 'store_quote') setTokoQuote(content);
-        if (fieldType === 'product_description') {
-          setTokoProducts(prev => {
-            const next = [...prev];
-            next[index].description = content;
-            return next;
-          });
-        }
-        await refreshProfile();
-      } else {
-        alert(result.error || 'Gagal men-generate copywriting dengan AI.');
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Gagal mengirim tugas copywriting ke antrean.');
       }
+
+      const jobId = result.jobId;
+      let attempts = 0;
+      let finalContent = null;
+
+      // Poll the job status endpoint every 5 seconds
+      while (attempts < 60) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/status`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!statusRes.ok) {
+          if (statusRes.status === 404) {
+            throw new Error('Pekerjaan generate tidak ditemukan di antrean.');
+          }
+          throw new Error('Gagal memeriksa status pekerjaan copywriting.');
+        }
+
+        const jobData = await statusRes.json();
+        if (jobData.state === 'completed') {
+          finalContent = jobData.result?.content;
+          break;
+        } else if (jobData.state === 'failed') {
+          throw new Error(jobData.failedReason || 'Gagal memproses copywriting AI di antrean.');
+        }
+        attempts++;
+      }
+
+      if (!finalContent) {
+        throw new Error('Waktu tunggu pembuatan copywriting AI habis (timeout).');
+      }
+
+      if (fieldType === 'store_description') setStoreDescription(finalContent);
+      if (fieldType === 'store_quote') setTokoQuote(finalContent);
+      if (fieldType === 'product_description') {
+        setTokoProducts(prev => {
+          const next = [...prev];
+          next[index].description = finalContent;
+          return next;
+        });
+      }
+      await refreshProfile();
     } catch (err) {
       console.error('[Dashboard] Field assist failed:', err);
       alert('Terjadi kesalahan jaringan saat memanggil AI.');
@@ -1044,36 +1078,68 @@ function GenerateContent() {
       });
 
       const result = await response.json();
-
-      if (response.ok && result.success) {
-        const content = result.data.content;
-
-        if (fieldType === 'campaign_hero') {
-          setCampaignHeadline(content.headline || '');
-          setCampaignSubheadline(content.subheadline || '');
-          if (content.cta_text) setCampaignCtaText(content.cta_text);
-        }
-        if (fieldType === 'campaign_problems') {
-          setCampaignProblemsTitle(content.title || 'Hambatan Utama Anda');
-          setCampaignProblemsList(content.list || ['', '', '']);
-        }
-        if (fieldType === 'campaign_benefits') {
-          setCampaignSolutionsTitle(content.title || 'Solusi Kami');
-          setCampaignSolutionsIntro(content.intro || '');
-          setCampaignBenefits(content.benefits || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
-        }
-        if (fieldType === 'campaign_testimonials') {
-          setCampaignTestimonials(content.testimonials || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
-        }
-        if (fieldType === 'campaign_urgency') {
-          setCampaignUrgency(content.urgency || '');
-          if (content.cta_text) setCampaignClosingCta(content.cta_text);
-        }
-
-        await refreshProfile();
-      } else {
-        alert(result.error || 'Gagal men-generate copywriting dengan AI.');
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Gagal mengirim tugas copywriting ke antrean.');
       }
+
+      const jobId = result.jobId;
+      let attempts = 0;
+      let finalContent = null;
+
+      // Poll the job status endpoint every 5 seconds
+      while (attempts < 60) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/status`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!statusRes.ok) {
+          if (statusRes.status === 404) {
+            throw new Error('Pekerjaan generate tidak ditemukan di antrean.');
+          }
+          throw new Error('Gagal memeriksa status pekerjaan copywriting.');
+        }
+
+        const jobData = await statusRes.json();
+        if (jobData.state === 'completed') {
+          finalContent = jobData.result?.content;
+          break;
+        } else if (jobData.state === 'failed') {
+          throw new Error(jobData.failedReason || 'Gagal memproses copywriting AI di antrean.');
+        }
+        attempts++;
+      }
+
+      if (!finalContent) {
+        throw new Error('Waktu tunggu pembuatan copywriting AI habis (timeout).');
+      }
+
+      if (fieldType === 'campaign_hero') {
+        setCampaignHeadline(finalContent.headline || '');
+        setCampaignSubheadline(finalContent.subheadline || '');
+        if (finalContent.cta_text) setCampaignCtaText(finalContent.cta_text);
+      }
+      if (fieldType === 'campaign_problems') {
+        setCampaignProblemsTitle(finalContent.title || 'Hambatan Utama Anda');
+        setCampaignProblemsList(finalContent.list || ['', '', '']);
+      }
+      if (fieldType === 'campaign_benefits') {
+        setCampaignSolutionsTitle(finalContent.title || 'Solusi Kami');
+        setCampaignSolutionsIntro(finalContent.intro || '');
+        setCampaignBenefits(finalContent.benefits || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+      }
+      if (fieldType === 'campaign_testimonials') {
+        setCampaignTestimonials(finalContent.testimonials || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
+      }
+      if (fieldType === 'campaign_urgency') {
+        setCampaignUrgency(finalContent.urgency || '');
+        if (finalContent.cta_text) setCampaignClosingCta(finalContent.cta_text);
+      }
+
+      await refreshProfile();
     } catch (err) {
       console.error('[Dashboard] Campaign AI Assist error:', err);
       alert('Terjadi kesalahan jaringan saat memanggil AI.');
