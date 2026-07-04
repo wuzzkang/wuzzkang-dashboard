@@ -241,6 +241,8 @@ function GenerateContent() {
   const [error, setError] = useState('');
   const [successUrl, setSuccessUrl] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [aiProgressStatus, setAiProgressStatus] = useState('');
+  const [aiProgressDetail, setAiProgressDetail] = useState('');
 
   // Preview mode (desktop vs mobile)
   const [previewDevice, setPreviewDevice] = useState('mobile');
@@ -1232,6 +1234,57 @@ function GenerateContent() {
     );
   };
 
+  // Helper untuk memetakan technical_status ke teks bahasa Indonesia yang ramah
+  const getFriendlyProgressMessage = (status, techStatus) => {
+    if (status === 'queued') return 'Menunggu dalam antrean AI...';
+    switch (techStatus) {
+      case 'uploading_assets': return 'Mengunduh dan menyiapkan foto mempelai...';
+      case 'building_prompt': return 'Menyusun naskah undangan peradaban...';
+      case 'calling_provider': return 'Menganalisis konten menggunakan model kecerdasan buatan...';
+      case 'saving_result': return 'Menyimpan konfigurasi undangan digital Anda...';
+      case 'retrying': return 'Mengulangi pemrosesan (jaringan sibuk)...';
+      default: return 'Sedang memproses konsep kreatif...';
+    }
+  };
+
+  // Polling status tugas AI asinkron
+  const pollTaskStatus = (taskId) => {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/ai/task/${taskId}`, {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+
+          if (!response.ok) {
+            clearInterval(interval);
+            return reject(new Error('Gagal memeriksa status tugas AI.'));
+          }
+
+          const result = await response.json();
+          if (result.success && result.data) {
+            const task = result.data;
+            setAiProgressStatus(task.status);
+            setAiProgressDetail(getFriendlyProgressMessage(task.status, task.technical_status));
+
+            if (task.status === 'completed') {
+              clearInterval(interval);
+              resolve(task.result_url);
+            } else if (task.status === 'failed') {
+              clearInterval(interval);
+              reject(new Error(task.error_message || 'Pemrosesan AI gagal secara internal.'));
+            }
+          }
+        } catch (err) {
+          clearInterval(interval);
+          reject(err);
+        }
+      }, 3000); // Poll every 3 seconds
+    });
+  };
+
   // Handle generating preview from prompt
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -1240,132 +1293,258 @@ function GenerateContent() {
     setError('');
     setIsGenerating(true);
     setPageData(null);
+    setAiProgressStatus('');
+    setAiProgressDetail('');
 
     try {
-      const payload = { name, prompt: prompt || '', template_type: templateType };
-      if (projectId) {
-        payload.projectId = projectId;
-      }
       if (templateType === 'wedding') {
-        payload.wedding_details = {
-          design_key: designKey,
-          groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage || null },
-          bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage || null },
-          story: storyList.length > 0 ? storyList : null,
-          akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
-          resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
-          gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null
+        // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
+        setAiProgressStatus('queued');
+        setAiProgressDetail('Menyiapkan payload undangan...');
+
+        // Generate random idempotency key
+        const idempotencyKey = crypto.randomUUID 
+          ? crypto.randomUUID() 
+          : 'idemp-' + Math.random().toString(36).substring(2, 15) + '-' + Date.now().toString(36);
+
+        // Prep assets
+        const inputAssets = [];
+        if (groomImage && groomImage !== DEFAULT_GROOM_AVATAR) {
+          inputAssets.push({ url: groomImage, role: 'groom' });
+        }
+        if (brideImage && brideImage !== DEFAULT_BRIDE_AVATAR) {
+          inputAssets.push({ url: brideImage, role: 'bride' });
+        }
+        // Backend validation requires at least 1 input asset
+        if (inputAssets.length === 0) {
+          inputAssets.push({ url: DEFAULT_GROOM_AVATAR, role: 'groom' });
+        }
+
+        const executePayload = {
+          idempotencyKey,
+          projectId: projectId || null,
+          templateType: 'wedding',
+          styleKey: designKey === 'sage-green' || designKey === 'Sage Green' ? 'prewedding' : (designKey === 'floral-pink' ? 'artistic' : 'prewedding'),
+          inputAssets,
+          inputContext: {
+            groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother },
+            bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother },
+            quote: prompt || '',
+            theme: designKey,
+          },
+          async: true
         };
-      }
-      if (templateType === 'birthday') {
-        payload.birthday_details = {
-          design_key: designKey,
-          celebrant: {
-            name: celebrantName,
-            nickname: celebrantNickname,
-            age: celebrantAge,
-            parent_name: celebrantParents || null,
-            image_url: celebrantImage || null,
-            gender: celebrantGender
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/ai/execute`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
           },
-          event: {
-            date: birthdayDate,
-            time: birthdayTime,
-            location: birthdayLocation,
-            maps_url: birthdayMaps || null
+          body: JSON.stringify(executePayload),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Gagal mengirimkan tugas ke platform AI.');
+        }
+
+        const { taskId } = result.data;
+        console.log(`[AI Platform] Task submitted successfully. Task ID: ${taskId}`);
+
+        // Start polling until completion
+        const resultJsonUrl = await pollTaskStatus(taskId);
+        console.log(`[AI Platform] Task completed. Loading results from: ${resultJsonUrl}`);
+
+        // Fetch the generated copywriting JSON config from storage
+        const configResponse = await fetch(resultJsonUrl);
+        if (!configResponse.ok) {
+          throw new Error('Gagal memuat konfigurasi teks hasil pemrosesan AI.');
+        }
+        const aiConfig = await configResponse.json();
+
+        // Merge AI config results with original form values to match expected template schema
+        const compiledPageData = {
+          meta: {
+            title: `Undangan Pernikahan ${groomNickname} & ${brideNickname}`,
+            theme: designKey,
+            template_type: 'wedding',
+            design_key: designKey,
           },
-          gift: birthdayGiftBank && birthdayGiftAccount ? {
-            bank_name: birthdayGiftBank,
-            account_number: birthdayGiftAccount,
-            account_holder: birthdayGiftHolder || ''
-          } : null
-        };
-      }
-      if (templateType === 'toko-online') {
-        payload.toko_online_details = {
-          design_key: designKey,
-          store: {
-            name: storeName,
-            tagline: storeTagline,
-            description: storeDescription || null,
-            logo_url: storeLogoUrl || null,
-            banner_url: storeBannerUrl || null
-          },
-          products: tokoProducts.map(p => ({
-            name: p.name,
-            price: p.price,
-            description: p.description || null,
-            image_url: p.image_url || null
-          })),
-          contact: {
-            whatsapp: tokoWhatsapp,
-            instagram: tokoInstagram || null,
-            shopee_url: tokoShopee || null,
-            tokopedia_url: tokoTokopedia || null,
-            address: tokoAddress || null
-          },
-          quote: tokoQuote || null
-        };
-      }
-      if (templateType === 'campaign') {
-        payload.campaign_details = {
-          design_key: designKey,
-          brief: campaignBrief || null,
-          hero: {
-            headline: campaignHeadline,
-            subheadline: campaignSubheadline,
-            cta_text: campaignCtaText
-          },
-          problems: {
-            title: campaignProblemsTitle,
-            list: campaignProblemsList.filter(Boolean)
-          },
-          solutions: {
-            title: campaignSolutionsTitle,
-            intro: campaignSolutionsIntro,
-            benefits: campaignBenefits
-          },
-          social_proof: {
-            testimonials: campaignTestimonials,
-            guarantee: campaignGuarantee || null
-          },
-          closing: {
-            urgency: campaignUrgency,
-            cta_text: campaignClosingCta
-          },
-          contact: {
-            whatsapp: campaignWhatsapp
+          content: {
+            design_key: designKey,
+            groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage },
+            bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage },
+            story: storyList.length > 0 ? storyList : null,
+            akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
+            resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
+            gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
+            // AI generated copywriting elements
+            banner_tagline: aiConfig.banner_tagline,
+            invitation_intro: aiConfig.invitation_intro,
+            closing_message: aiConfig.closing_message,
+            style_palette: aiConfig.style_palette,
+            scene_description: aiConfig.scene_description,
+            quote: aiConfig.invitation_intro || 'Semoga menjadi keluarga sakinah mawaddah warahmah.',
           }
         };
-      }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+        // Create or update project record in DB with completed pageData
+        // (Persist generated project so dashboard preview and publish routes work)
+        const saveEndpoint = projectId 
+          ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
+          : `${process.env.NEXT_PUBLIC_API_URL}/projects/draft`;
+        
+        const savePayload = projectId 
+          ? { pageData: compiledPageData }
+          : { name, template_type: 'wedding', pageData: compiledPageData };
 
-      const result = await response.json();
+        const saveResponse = await fetch(saveEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(savePayload),
+        });
 
-      if (response.ok && result.success) {
-        setProjectId(result.data.projectId);
-        setPageData(result.data.pageData);
+        const saveResult = await saveResponse.json();
+        if (saveResponse.ok && saveResult.success) {
+          if (!projectId) {
+            setProjectId(saveResult.data.id || saveResult.data.projectId);
+          }
+          setPageData(compiledPageData);
+          
+          // Suggest slug based on name
+          const suggestedSlug = name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+          setSlug(suggestedSlug);
+          setActiveTab('preview');
+        } else {
+          throw new Error(saveResult.error || 'Gagal menyimpan draf proyek hasil AI.');
+        }
 
-        // Suggest slug based on name
-        const suggestedSlug = name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
-        setSlug(suggestedSlug);
-        setActiveTab('preview');
       } else {
-        setError(result.error ? Object.values(result.error).flat().join(', ') : 'Gagal menghasilkan landing page.');
+        // --- LEGACY SYNCHRONOUS WORKFLOW FOR OTHER TEMPLATE TYPES ---
+        const payload = { name, prompt: prompt || '', template_type: templateType };
+        if (projectId) {
+          payload.projectId = projectId;
+        }
+        if (templateType === 'birthday') {
+          payload.birthday_details = {
+            design_key: designKey,
+            celebrant: {
+              name: celebrantName,
+              nickname: celebrantNickname,
+              age: celebrantAge,
+              parent_name: celebrantParents || null,
+              image_url: celebrantImage || null,
+              gender: celebrantGender
+            },
+            event: {
+              date: birthdayDate,
+              time: birthdayTime,
+              location: birthdayLocation,
+              maps_url: birthdayMaps || null
+            },
+            gift: birthdayGiftBank && birthdayGiftAccount ? {
+              bank_name: birthdayGiftBank,
+              account_number: birthdayGiftAccount,
+              account_holder: birthdayGiftHolder || ''
+            } : null
+          };
+        }
+        if (templateType === 'toko-online') {
+          payload.toko_online_details = {
+            design_key: designKey,
+            store: {
+              name: storeName,
+              tagline: storeTagline,
+              description: storeDescription || null,
+              logo_url: storeLogoUrl || null,
+              banner_url: storeBannerUrl || null
+            },
+            products: tokoProducts.map(p => ({
+              name: p.name,
+              price: p.price,
+              description: p.description || null,
+              image_url: p.image_url || null
+            })),
+            contact: {
+              whatsapp: tokoWhatsapp,
+              instagram: tokoInstagram || null,
+              shopee_url: tokoShopee || null,
+              tokopedia_url: tokoTokopedia || null,
+              address: tokoAddress || null
+            },
+            quote: tokoQuote || null
+          };
+        }
+        if (templateType === 'campaign') {
+          payload.campaign_details = {
+            design_key: designKey,
+            brief: campaignBrief || null,
+            hero: {
+              headline: campaignHeadline,
+              subheadline: campaignSubheadline,
+              cta_text: campaignCtaText
+            },
+            problems: {
+              title: campaignProblemsTitle,
+              list: campaignProblemsList.filter(Boolean)
+            },
+            solutions: {
+              title: campaignSolutionsTitle,
+              intro: campaignSolutionsIntro,
+              benefits: campaignBenefits
+            },
+            social_proof: {
+              testimonials: campaignTestimonials,
+              guarantee: campaignGuarantee || null
+            },
+            closing: {
+              urgency: campaignUrgency,
+              cta_text: campaignClosingCta
+            },
+            contact: {
+              whatsapp: campaignWhatsapp
+            }
+          };
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          setProjectId(result.data.projectId);
+          setPageData(result.data.pageData);
+
+          // Suggest slug based on name
+          const suggestedSlug = name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+          setSlug(suggestedSlug);
+          setActiveTab('preview');
+        } else {
+          setError(result.error ? Object.values(result.error).flat().join(', ') : 'Gagal menghasilkan landing page.');
+        }
       }
+
+      await refreshProfile();
     } catch (err) {
-      setError('Terjadi kesalahan jaringan.');
+      setError(err.message || 'Terjadi kesalahan jaringan.');
     } finally {
       setIsGenerating(false);
     }
@@ -3062,6 +3241,34 @@ function GenerateContent() {
 
               {/* Viewport for preview */}
               <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
+                {isGenerating && templateType === 'wedding' && (
+                  <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+                    <div className="relative mb-6">
+                      <div className="absolute -inset-2 rounded-full bg-theme-accent/20 animate-ping"></div>
+                      <div className="h-16 w-16 rounded-full border-4 border-theme-accent/10 border-t-theme-accent animate-spin relative flex items-center justify-center bg-slate-900 shadow-xl">
+                        <span className="text-xl">✨</span>
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-base font-bold text-white mb-1.5">
+                      Merancang Undangan Premium Anda
+                    </h3>
+                    
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-accent/10 border border-theme-accent/20 text-[10px] text-theme-accent font-bold mb-4 uppercase tracking-wider">
+                      <span className="h-1.5 w-1.5 rounded-full bg-theme-accent animate-pulse"></span>
+                      {aiProgressStatus || 'queued'}
+                    </div>
+                    
+                    <p className="text-xs text-theme-text-muted max-w-[240px] leading-relaxed min-h-[36px] flex items-center justify-center">
+                      {aiProgressDetail || 'Menghubungkan ke server AI...'}
+                    </p>
+                    
+                    <div className="w-40 bg-white/5 border border-white/10 h-2 rounded-full mt-5 overflow-hidden p-0.5">
+                      <div className="bg-gradient-to-r from-theme-accent to-pink-500 h-full rounded-full animate-[loading_1.5s_infinite_ease-in-out]" style={{ width: '45%' }}></div>
+                    </div>
+                  </div>
+                )}
+
                 {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign') ? (
                   <iframe
                     ref={iframeRef}
