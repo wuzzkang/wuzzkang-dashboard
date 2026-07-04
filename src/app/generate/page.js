@@ -1274,10 +1274,10 @@ function GenerateContent() {
 
             if (task.status === 'completed') {
               clearInterval(interval);
-              resolve(task.result_url);
+              resolve(task.resultUrl);  // API returns camelCase 'resultUrl'
             } else if (task.status === 'failed') {
               clearInterval(interval);
-              reject(new Error(task.error_message || 'Pemrosesan AI gagal secara internal.'));
+              reject(new Error(task.errorMessage || 'Pemrosesan AI gagal secara internal.'));  // API returns camelCase 'errorMessage'
             }
           }
         } catch (err) {
@@ -1411,11 +1411,14 @@ function GenerateContent() {
         console.log(`[AI Platform] Task completed. Loading results from: ${resultJsonUrl}`);
 
         // Fetch the generated copywriting JSON config from storage
+        console.log('[AI Platform] Fetching result JSON from:', resultJsonUrl);
         const configResponse = await fetch(resultJsonUrl);
+        console.log('[AI Platform] Result JSON fetch status:', configResponse.status, configResponse.ok);
         if (!configResponse.ok) {
           throw new Error('Gagal memuat konfigurasi teks hasil pemrosesan AI.');
         }
         const aiConfig = await configResponse.json();
+        console.log('[AI Platform] aiConfig received:', Object.keys(aiConfig || {}));
 
         let compiledPageData;
 
@@ -1508,7 +1511,18 @@ function GenerateContent() {
         
         const savePayload = projectId 
           ? { pageData: compiledPageData }
-          : { name, template_type: 'wedding', pageData: compiledPageData };
+          : { name, template_type: templateType, pageData: compiledPageData };
+
+        // Set pageData and switch to preview FIRST so user sees result
+        // regardless of whether save to DB succeeds (defensive UX)
+        console.log('[AI Platform] Setting pageData and switching to preview tab...');
+        setPageData(compiledPageData);
+        const suggestedSlug = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+        setSlug(suggestedSlug);
+        setActiveTab('preview');
 
         const saveResponse = await fetch(saveEndpoint, {
           method: 'POST',
@@ -1524,17 +1538,10 @@ function GenerateContent() {
           if (!projectId) {
             setProjectId(saveResult.data.id || saveResult.data.projectId);
           }
-          setPageData(compiledPageData);
-          
-          // Suggest slug based on name
-          const suggestedSlug = name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '');
-          setSlug(suggestedSlug);
-          setActiveTab('preview');
         } else {
-          throw new Error(saveResult.error || 'Gagal menyimpan draf proyek hasil AI.');
+          // Save failed — log warning but don't throw so user can still see & publish the preview
+          console.warn('[AI Platform] Failed to persist project draft to DB:', saveResult.error);
+          setError('Peringatan: Hasil preview berhasil dibuat namun gagal disimpan ke database. Coba kembali nanti.');
         }
 
       } else {
@@ -1654,6 +1661,7 @@ function GenerateContent() {
 
       await refreshProfile();
     } catch (err) {
+      console.error('[handleGenerate] ERROR caught:', err?.message, err);
       setError(err.message || 'Terjadi kesalahan jaringan.');
     } finally {
       setIsGenerating(false);
