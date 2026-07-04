@@ -147,6 +147,8 @@ function GenerateContent() {
   const [groomImage, setGroomImage] = useState(DEFAULT_GROOM_AVATAR);
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
   const [storyList, setStoryList] = useState([]);
+  const [generatePrewedding, setGeneratePrewedding] = useState(false);
+  const [preweddingPhotoUrl, setPreweddingPhotoUrl] = useState('');
 
   // Birthday modular additions
   const [celebrantName, setCelebrantName] = useState('');
@@ -351,6 +353,7 @@ function GenerateContent() {
               setGroomImage(content.groom?.image_url || DEFAULT_GROOM_AVATAR);
               setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
               setStoryList(content.story || []);
+              setPreweddingPhotoUrl(content.prewedding_photo_url || '');
             } else if (pageConfig && pageConfig.meta?.template_type === 'birthday') {
               setTemplateType('birthday');
               const content = pageConfig.content || {};
@@ -1297,6 +1300,37 @@ function GenerateContent() {
     setAiProgressDetail('');
 
     try {
+      let activePreweddingPhotoUrl = preweddingPhotoUrl;
+
+      if (templateType === 'wedding' && generatePrewedding) {
+        setAiProgressStatus('queued');
+        setAiProgressDetail('Sedang membuat foto prewedding AI dari foto mempelai...');
+        try {
+          const preResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/prewedding`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              groomImageUrl: groomImage,
+              brideImageUrl: brideImage,
+              style: designKey === 'sage-green' || designKey === 'Sage Green' ? 'elegant romantic outdoor' : 'artistic creative studio'
+            }),
+          });
+          const preResult = await preResponse.json();
+          if (preResponse.ok && preResult.success) {
+            activePreweddingPhotoUrl = preResult.preweddingPhotoUrl;
+            setPreweddingPhotoUrl(activePreweddingPhotoUrl);
+            console.log(`[AI Platform] Prewedding photo generated successfully: ${activePreweddingPhotoUrl}`);
+          } else {
+            console.warn('[AI Platform] Prewedding photo generation returned error:', preResult.error);
+          }
+        } catch (err) {
+          console.error('[AI Platform] Prewedding photo generation API error:', err);
+        }
+      }
+
       if (templateType === 'wedding' || templateType === 'campaign') {
         // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
         setAiProgressStatus('queued');
@@ -1398,6 +1432,7 @@ function GenerateContent() {
               design_key: designKey,
               groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage },
               bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage },
+              prewedding_photo_url: activePreweddingPhotoUrl || null,
               story: storyList.length > 0 ? storyList : null,
               akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
               resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
@@ -2143,6 +2178,31 @@ function GenerateContent() {
                               {renderAIAvatarButton('bride', isGeneratingBrideImage)}
                             </div>
                           </div>
+                        </div>
+
+                        {/* Option: Generate Prewedding Photo */}
+                        <div className="flex flex-col gap-2 bg-theme-bg/50 p-3 rounded-xl border border-theme-border mt-1">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="generatePrewedding"
+                              checked={generatePrewedding}
+                              onChange={(e) => setGeneratePrewedding(e.target.checked)}
+                              className="w-4 h-4 rounded border-theme-border text-theme-accent focus:ring-theme-accent bg-theme-surface cursor-pointer"
+                            />
+                            <label htmlFor="generatePrewedding" className="text-[10px] text-theme-text font-semibold cursor-pointer select-none">
+                              Generate Foto Prewedding Romantis dengan AI
+                            </label>
+                          </div>
+                          
+                          {preweddingPhotoUrl && (
+                            <div className="mt-2 flex flex-col gap-1.5 border-t border-theme-border pt-2.5">
+                              <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Prewedding AI Saat Ini</div>
+                              <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding AI" />
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Kisah Cinta (Story) Builder */}
