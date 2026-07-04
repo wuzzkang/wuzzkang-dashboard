@@ -1297,43 +1297,62 @@ function GenerateContent() {
     setAiProgressDetail('');
 
     try {
-      if (templateType === 'wedding') {
+      if (templateType === 'wedding' || templateType === 'campaign') {
         // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
         setAiProgressStatus('queued');
-        setAiProgressDetail('Menyiapkan payload undangan...');
+        setAiProgressDetail(templateType === 'wedding' ? 'Menyiapkan payload undangan...' : 'Menyiapkan payload campaign...');
 
         // Generate random idempotency key
         const idempotencyKey = crypto.randomUUID 
           ? crypto.randomUUID() 
           : 'idemp-' + Math.random().toString(36).substring(2, 15) + '-' + Date.now().toString(36);
 
-        // Prep assets
-        const inputAssets = [];
-        if (groomImage && groomImage !== DEFAULT_GROOM_AVATAR) {
-          inputAssets.push({ url: groomImage, role: 'groom' });
-        }
-        if (brideImage && brideImage !== DEFAULT_BRIDE_AVATAR) {
-          inputAssets.push({ url: brideImage, role: 'bride' });
-        }
-        // Backend validation requires at least 1 input asset
-        if (inputAssets.length === 0) {
-          inputAssets.push({ url: DEFAULT_GROOM_AVATAR, role: 'groom' });
-        }
+        let executePayload;
 
-        const executePayload = {
-          idempotencyKey,
-          projectId: projectId || null,
-          templateType: 'wedding',
-          styleKey: designKey === 'sage-green' || designKey === 'Sage Green' ? 'prewedding' : (designKey === 'floral-pink' ? 'artistic' : 'prewedding'),
-          inputAssets,
-          inputContext: {
-            groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother },
-            bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother },
-            quote: prompt || '',
-            theme: designKey,
-          },
-          async: true
-        };
+        if (templateType === 'wedding') {
+          // Prep assets
+          const inputAssets = [];
+          if (groomImage && groomImage !== DEFAULT_GROOM_AVATAR) {
+            inputAssets.push({ url: groomImage, role: 'groom' });
+          }
+          if (brideImage && brideImage !== DEFAULT_BRIDE_AVATAR) {
+            inputAssets.push({ url: brideImage, role: 'bride' });
+          }
+          // Backend validation requires at least 1 input asset
+          if (inputAssets.length === 0) {
+            inputAssets.push({ url: DEFAULT_GROOM_AVATAR, role: 'groom' });
+          }
+
+          executePayload = {
+            idempotencyKey,
+            projectId: projectId || null,
+            templateType: 'wedding',
+            styleKey: designKey === 'sage-green' || designKey === 'Sage Green' ? 'prewedding' : (designKey === 'floral-pink' ? 'artistic' : 'prewedding'),
+            inputAssets,
+            inputContext: {
+              groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother },
+              bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother },
+              quote: prompt || '',
+              theme: designKey,
+            },
+            async: true
+          };
+        } else {
+          // campaign template payload
+          executePayload = {
+            idempotencyKey,
+            projectId: projectId || null,
+            templateType: 'campaign',
+            styleKey: 'persuasive', // maps to campaign tone style
+            inputAssets: [],
+            inputContext: {
+              campaignName: name,
+              campaignBrief: campaignBrief || '',
+              targetAudience: '', // empty default, can be populated if form field added later
+            },
+            async: true
+          };
+        }
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/ai/execute`, {
           method: 'POST',
@@ -1364,31 +1383,87 @@ function GenerateContent() {
         }
         const aiConfig = await configResponse.json();
 
-        // Merge AI config results with original form values to match expected template schema
-        const compiledPageData = {
-          meta: {
-            title: `Undangan Pernikahan ${groomNickname} & ${brideNickname}`,
-            theme: designKey,
-            template_type: 'wedding',
-            design_key: designKey,
-          },
-          content: {
-            design_key: designKey,
-            groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage },
-            bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage },
-            story: storyList.length > 0 ? storyList : null,
-            akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
-            resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
-            gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
-            // AI generated copywriting elements
-            banner_tagline: aiConfig.banner_tagline,
-            invitation_intro: aiConfig.invitation_intro,
-            closing_message: aiConfig.closing_message,
-            style_palette: aiConfig.style_palette,
-            scene_description: aiConfig.scene_description,
-            quote: aiConfig.invitation_intro || 'Semoga menjadi keluarga sakinah mawaddah warahmah.',
-          }
-        };
+        let compiledPageData;
+
+        if (templateType === 'wedding') {
+          // Merge AI config results with original form values to match expected template schema
+          compiledPageData = {
+            meta: {
+              title: `Undangan Pernikahan ${groomNickname} & ${brideNickname}`,
+              theme: designKey,
+              template_type: 'wedding',
+              design_key: designKey,
+            },
+            content: {
+              design_key: designKey,
+              groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage },
+              bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage },
+              story: storyList.length > 0 ? storyList : null,
+              akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
+              resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
+              gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
+              // AI generated copywriting elements
+              banner_tagline: aiConfig.banner_tagline,
+              invitation_intro: aiConfig.invitation_intro,
+              closing_message: aiConfig.closing_message,
+              style_palette: aiConfig.style_palette,
+              scene_description: aiConfig.scene_description,
+              quote: aiConfig.invitation_intro || 'Semoga menjadi keluarga sakinah mawaddah warahmah.',
+            }
+          };
+        } else {
+          // campaign template output compiled
+          compiledPageData = {
+            meta: {
+              title: name,
+              theme: designKey,
+              template_type: 'campaign',
+              design_key: designKey,
+            },
+            content: {
+              design_key: designKey,
+              brief: campaignBrief || null,
+              hero: {
+                headline: aiConfig.hero?.headline || '',
+                subheadline: aiConfig.hero?.subheadline || '',
+                cta_text: aiConfig.hero?.cta_text || 'Dapatkan Sekarang!'
+              },
+              problems: {
+                title: aiConfig.problems?.title || 'Hambatan Utama Anda',
+                list: (aiConfig.problems?.list || []).filter(Boolean)
+              },
+              solutions: {
+                title: aiConfig.benefits?.title || 'Solusi Kami',
+                intro: aiConfig.benefits?.intro || '',
+                benefits: aiConfig.benefits?.benefits || []
+              },
+              social_proof: {
+                testimonials: aiConfig.testimonials?.testimonials || [],
+                guarantee: campaignGuarantee || null
+              },
+              closing: {
+                urgency: aiConfig.urgency?.urgency || '',
+                cta_text: aiConfig.urgency?.cta_text || 'Dapatkan Sekarang!'
+              },
+              contact: {
+                whatsapp: campaignWhatsapp || ''
+              }
+            }
+          };
+
+          // Also populate React state variables to reflect the generated values in form inputs instantly
+          setCampaignHeadline(aiConfig.hero?.headline || '');
+          setCampaignSubheadline(aiConfig.hero?.subheadline || '');
+          setCampaignCtaText(aiConfig.hero?.cta_text || 'Dapatkan Sekarang!');
+          setCampaignProblemsTitle(aiConfig.problems?.title || 'Hambatan Utama Anda');
+          setCampaignProblemsList(aiConfig.problems?.list || ['', '', '']);
+          setCampaignSolutionsTitle(aiConfig.benefits?.title || 'Solusi Kami');
+          setCampaignSolutionsIntro(aiConfig.benefits?.intro || '');
+          setCampaignBenefits(aiConfig.benefits?.benefits || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+          setCampaignTestimonials(aiConfig.testimonials?.testimonials || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
+          setCampaignUrgency(aiConfig.urgency?.urgency || '');
+          setCampaignClosingCta(aiConfig.urgency?.cta_text || 'Dapatkan Sekarang!');
+        }
 
         // Create or update project record in DB with completed pageData
         // (Persist generated project so dashboard preview and publish routes work)
