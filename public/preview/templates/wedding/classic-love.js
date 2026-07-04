@@ -209,6 +209,18 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
     const groomImage   = groom.image_url || defaultGroom;
     const brideImage   = bride.image_url || defaultBride;
 
+    // Dynamic prewedding cover background
+    const coverStyle = content.prewedding_photo_url
+        ? `background-image: linear-gradient(rgba(74,55,40,0.5), rgba(74,55,40,0.85)), url('${content.prewedding_photo_url}'); background-size: cover; background-position: center;`
+        : `background-color:${bgCream};`;
+
+    const heroStyle = content.prewedding_photo_url
+        ? `background-image: linear-gradient(rgba(251,248,244,0.9), rgba(251,248,244,0.95)), url('${content.prewedding_photo_url}'); background-size: cover; background-position: center;`
+        : `background-color:${bgCream};`;
+
+    const coverTextMutedColor = content.prewedding_photo_url ? 'rgba(255,255,255,0.8)' : textMuted;
+    const coverTitleColor = content.prewedding_photo_url ? '#ffffff' : primary;
+
     // ── Love Story HTML ───────────────────────────────────────────────────────
     let storyHtml = '';
     if (stories && stories.length > 0) {
@@ -259,20 +271,20 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
     // ── Main HTML ─────────────────────────────────────────────────────────────
     appEl.innerHTML = `
         <!-- WELCOME COVER -->
-        <div id="invitation-cover" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-4" style="background-color:${bgCream}; overflow:hidden">
+        <div id="invitation-cover" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-4" style="${coverStyle} overflow:hidden">
             <!-- Corner florals -->
-            <div class="cl-corner cl-corner-tl">${floralSvgTL}</div>
-            <div class="cl-corner cl-corner-tr">${floralSvgTR}</div>
-            <div class="cl-corner cl-corner-bl">${floralSvgBL}</div>
-            <div class="cl-corner cl-corner-br">${floralSvgBR}</div>
+            <div class="cl-corner cl-corner-tl" style="${content.prewedding_photo_url ? 'opacity: 0.3' : ''}">${floralSvgTL}</div>
+            <div class="cl-corner cl-corner-tr" style="${content.prewedding_photo_url ? 'opacity: 0.3' : ''}">${floralSvgTR}</div>
+            <div class="cl-corner cl-corner-bl" style="${content.prewedding_photo_url ? 'opacity: 0.3' : ''}">${floralSvgBL}</div>
+            <div class="cl-corner cl-corner-br" style="${content.prewedding_photo_url ? 'opacity: 0.3' : ''}">${floralSvgBR}</div>
 
             <div class="relative z-10 flex flex-col items-center max-w-xs">
-                <p class="cl-sans text-[10px] uppercase tracking-widest font-semibold mb-4" style="color:${textMuted}">The Wedding Of</p>
-                <h1 class="cl-cursive" style="font-size:3.6rem;line-height:1.1;color:${primary}">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>
+                <p class="cl-sans text-[10px] uppercase tracking-widest font-semibold mb-4" style="color:${coverTextMutedColor}">The Wedding Of</p>
+                <h1 class="cl-cursive" style="font-size:3.6rem;line-height:1.1;color:${coverTitleColor}">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>
                 <div class="cl-divider my-5" style="width:100%">💍</div>
-                <div class="cl-card px-6 py-4 mb-8 w-full" style="background:${bgCard}77;backdrop-filter:blur(6px)">
-                    <p class="cl-sans text-[10px] uppercase tracking-widest font-semibold mb-1" style="color:${textMuted}">Kepada Yth.</p>
-                    <p class="cl-serif text-base font-semibold" style="color:${textDark}">${guestName}</p>
+                <div class="cl-card px-6 py-4 mb-8 w-full" style="background:${content.prewedding_photo_url ? 'rgba(255,255,255,0.15)' : bgCard + '77'};backdrop-filter:blur(6px);border-color:${content.prewedding_photo_url ? 'rgba(255,255,255,0.25)' : ''}">
+                    <p class="cl-sans text-[10px] uppercase tracking-widest font-semibold mb-1" style="color:${content.prewedding_photo_url ? '#ffffff' : textMuted}">Kepada Yth.</p>
+                    <p class="cl-serif text-base font-semibold" style="color:${content.prewedding_photo_url ? '#ffffff' : textDark}">${guestName}</p>
                 </div>
                 <button id="cl-open-btn" class="btn-cl rounded-full px-8 py-3.5 cl-sans text-xs font-semibold tracking-wider flex items-center gap-2 shadow-lg">
                     💌 Buka Undangan
@@ -293,7 +305,7 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
         <main id="main-content" class="w-full opacity-0 transition-opacity duration-700">
 
             <!-- HERO -->
-            <section class="relative min-h-screen flex flex-col items-center justify-center text-center px-4 py-20 overflow-hidden" style="background-color:${bgCream}">
+            <section class="relative min-h-screen flex flex-col items-center justify-center text-center px-4 py-20 overflow-hidden" style="${heroStyle}">
                 <div class="cl-corner cl-corner-tl">${floralSvgTL}</div>
                 <div class="cl-corner cl-corner-tr">${floralSvgTR}</div>
 

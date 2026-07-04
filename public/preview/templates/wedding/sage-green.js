@@ -110,6 +110,7 @@ export async function render(pageConfig, guestName) {
 
     const groomImage = groom.image_url || defaultGroomAvatar;
     const brideImage = bride.image_url || defaultBrideAvatar;
+    const coverImage = content.prewedding_photo_url || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200';
 
     // Love Story timeline render helper
     let storyHtml = '';
@@ -183,7 +184,7 @@ export async function render(pageConfig, guestName) {
     // Render components to page
     appEl.innerHTML = `
         <!-- Welcome Overlay Cover -->
-        <div id="invitation-cover" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-4 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(47,62,51,0.5), rgba(47,62,51,0.85)), url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200');">
+        <div id="invitation-cover" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-4 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(47,62,51,0.5), rgba(47,62,51,0.85)), url('${coverImage}');">
             <div class="max-w-2xl mx-auto text-white flex flex-col items-center">
                 <span class="sage-serif uppercase tracking-[0.3em] text-xs font-semibold text-white/80 mb-4">Undangan Pernikahan</span>
                 <h1 class="sage-cursive text-7xl md:text-8xl text-white my-4 drop-shadow-md">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>
@@ -214,7 +215,7 @@ export async function render(pageConfig, guestName) {
         <!-- Main Content -->
         <main class="w-full flex-grow opacity-0 transition-opacity duration-1000" id="main-content">
             <!-- Hero / Cover Page -->
-            <section class="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(244,247,244,0.9), rgba(244,247,244,0.95)), url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800');">
+            <section class="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(244,247,244,0.9), rgba(244,247,244,0.95)), url('${coverImage}');">
                 <div class="max-w-2xl mx-auto z-10 py-16">
                     <span class="sage-serif uppercase tracking-[0.25em] text-xs font-semibold text-wedding-primary mb-4 block">Walimatul 'Ursy</span>
                     <h1 class="sage-cursive text-7xl md:text-8xl text-wedding-primary my-6">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>

@@ -149,6 +149,10 @@ function GenerateContent() {
   const [storyList, setStoryList] = useState([]);
   const [generatePrewedding, setGeneratePrewedding] = useState(false);
   const [preweddingPhotoUrl, setPreweddingPhotoUrl] = useState('');
+  const [isGeneratingPrewedding, setIsGeneratingPrewedding] = useState(false);
+  const [preweddingGenerateCount, setPreweddingGenerateCount] = useState(0);
+  const [maxProjectEdits, setMaxProjectEdits] = useState(3);
+  const [maxPreweddingGenerations, setMaxPreweddingGenerations] = useState(3);
 
   // Birthday modular additions
   const [celebrantName, setCelebrantName] = useState('');
@@ -278,6 +282,10 @@ function GenerateContent() {
         if (res.ok) {
           const result = await res.json();
           setTrackingConfig(result.data?.tracking_config ?? null);
+          if (result.systemSettings) {
+            setMaxProjectEdits(result.systemSettings.max_project_edits || 3);
+            setMaxPreweddingGenerations(result.systemSettings.max_prewedding_generations || 3);
+          }
         }
       } catch (e) {
         // Non-critical: silently ignore
@@ -353,9 +361,13 @@ function GenerateContent() {
               setGroomImage(content.groom?.image_url || DEFAULT_GROOM_AVATAR);
               setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
               setStoryList(content.story || []);
-              setPreweddingPhotoUrl(content.prewedding_photo_url || '');
+              const activePhoto = content.prewedding_photo_url || content.last_generated_prewedding_url || '';
+              setPreweddingPhotoUrl(activePhoto);
+              setPreweddingGenerateCount(content.prewedding_generate_count || 0);
               if (content.prewedding_photo_url) {
                 setGeneratePrewedding(true);
+              } else {
+                setGeneratePrewedding(false);
               }
             } else if (pageConfig && pageConfig.meta?.template_type === 'birthday') {
               setTemplateType('birthday');
@@ -521,8 +533,11 @@ function GenerateContent() {
         resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
         gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
         quote: pageData?.content?.quote || '',
-        // Preserve prewedding photo URL and AI generated content
-        prewedding_photo_url: preweddingPhotoUrl || pageData?.content?.prewedding_photo_url || null,
+        // Reset prewedding photo to null if user unchecks the option, otherwise use generated/saved URL
+        prewedding_photo_url: generatePrewedding ? (preweddingPhotoUrl || pageData?.content?.prewedding_photo_url || null) : null,
+        // Always preserve the last generated/saved URL in a backup property to enable checklist recovery later
+        last_generated_prewedding_url: preweddingPhotoUrl || pageData?.content?.last_generated_prewedding_url || pageData?.content?.prewedding_photo_url || null,
+        prewedding_generate_count: preweddingGenerateCount,
         banner_tagline: pageData?.content?.banner_tagline || null,
         invitation_intro: pageData?.content?.invitation_intro || null,
         closing_message: pageData?.content?.closing_message || null,
@@ -612,7 +627,10 @@ function GenerateContent() {
     campaignGuarantee,
     campaignUrgency,
     campaignClosingCta,
-    campaignWhatsapp
+    campaignWhatsapp,
+    preweddingPhotoUrl,
+    generatePrewedding,
+    preweddingGenerateCount
   ]);
 
   // Synchronize state with live preview iframe
@@ -1298,6 +1316,66 @@ function GenerateContent() {
     });
   };
 
+  // Helper to generate prewedding photo independently (e.g. during editMode)
+  const handleGeneratePreweddingOnly = async () => {
+    console.log('[AI Platform] handleGeneratePreweddingOnly triggered. Count:', preweddingGenerateCount);
+    
+    if (preweddingGenerateCount >= maxPreweddingGenerations) {
+      const errMsg = `Batas maksimal generate foto prewedding (${maxPreweddingGenerations}x) telah tercapai.`;
+      setError(errMsg);
+      alert(errMsg);
+      return;
+    }
+
+    if (!groomImage || !brideImage || groomImage === DEFAULT_GROOM_AVATAR || brideImage === DEFAULT_BRIDE_AVATAR) {
+      const errMsg = 'Mohon unggah foto Pria dan Wanita Anda terlebih dahulu sebelum membuat foto prewedding romantis.';
+      setError(errMsg);
+      alert(errMsg); // Visual browser modal alert for immediate feedback
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top error banner
+      return;
+    }
+
+    setError('');
+    setIsGeneratingPrewedding(true);
+
+    try {
+      console.log('[AI Platform] Sending API request to generate prewedding photo...');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/prewedding`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          groomImageUrl: groomImage,
+          brideImageUrl: brideImage,
+          style: designKey === 'sage-green' || designKey === 'Sage Green' ? 'elegant romantic outdoor' : 'artistic creative studio'
+        }),
+      });
+
+      const result = await response.json();
+      console.log('[AI Platform] Prewedding generation response received:', result);
+      
+      if (response.ok && result.success) {
+        const newCount = preweddingGenerateCount + 1;
+        setPreweddingGenerateCount(newCount);
+        setPreweddingPhotoUrl(result.preweddingPhotoUrl);
+        console.log(`[AI Platform] Prewedding photo generated successfully via button (New Count: ${newCount}): ${result.preweddingPhotoUrl}`);
+      } else {
+        const errMsg = result.error || 'Gagal generate foto prewedding AI. Silakan coba kembali.';
+        setError(errMsg);
+        alert(errMsg);
+      }
+    } catch (err) {
+      console.error('[AI Platform] Local prewedding generation error:', err);
+      const errMsg = 'Terjadi kesalahan jaringan saat generate foto prewedding.';
+      setError(errMsg);
+      alert(errMsg);
+    } finally {
+      setIsGeneratingPrewedding(false);
+    }
+  };
+
   // Handle generating preview from prompt
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -1332,6 +1410,7 @@ function GenerateContent() {
           if (preResponse.ok && preResult.success) {
             activePreweddingPhotoUrl = preResult.preweddingPhotoUrl;
             setPreweddingPhotoUrl(activePreweddingPhotoUrl);
+            setPreweddingGenerateCount(prev => prev + 1);
             console.log(`[AI Platform] Prewedding photo generated successfully: ${activePreweddingPhotoUrl}`);
           } else {
             console.warn('[AI Platform] Prewedding photo generation returned error:', preResult.error);
@@ -2212,13 +2291,59 @@ function GenerateContent() {
                               Generate Foto Prewedding Romantis dengan AI
                             </label>
                           </div>
-                          
-                          {preweddingPhotoUrl && (
-                            <div className="mt-2 flex flex-col gap-1.5 border-t border-theme-border pt-2.5">
-                              <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Prewedding AI Saat Ini</div>
-                              <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding AI" />
-                              </div>
+                          {generatePrewedding && (
+                            <div className="mt-1.5 border-t border-theme-border pt-2 flex flex-col gap-2">
+                              {isGeneratingPrewedding ? (
+                                <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
+                                  <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
+                                  <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Sedang memproses foto romantis...</span>
+                                </div>
+                              ) : preweddingPhotoUrl ? (
+                                <>
+                                  <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Prewedding AI Saat Ini</div>
+                                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                    <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding AI" />
+                                  </div>
+                                  <div className="flex flex-col gap-1 mt-1">
+                                    <button
+                                      type="button"
+                                      disabled={preweddingGenerateCount >= maxPreweddingGenerations}
+                                      onClick={handleGeneratePreweddingOnly}
+                                      className={`w-full text-center font-bold py-1.5 px-2.5 rounded-lg transition-all active:scale-[0.98] border text-[9px] ${
+                                        preweddingGenerateCount >= maxPreweddingGenerations
+                                          ? 'bg-theme-bg border-theme-border text-theme-text-muted/40 cursor-not-allowed opacity-50'
+                                          : 'bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer'
+                                      }`}
+                                    >
+                                      🔄 Generate Ulang Foto AI (Sisa: {Math.max(0, maxPreweddingGenerations - preweddingGenerateCount)}/{maxPreweddingGenerations})
+                                    </button>
+                                    {preweddingGenerateCount >= maxPreweddingGenerations && (
+                                      <span className="text-[8px] text-red-400 font-semibold text-center mt-0.5">Batas maksimal generate foto prewedding ({maxPreweddingGenerations}x) telah tercapai.</span>
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex flex-col gap-2">
+                                  <div className="text-[9px] text-theme-text-muted leading-relaxed">
+                                    Belum ada foto prewedding romantis AI. Klik tombol di bawah ini untuk membuat foto prewedding AI dari foto mempelai.
+                                  </div>
+                                  <button
+                                    type="button"
+                                    disabled={preweddingGenerateCount >= maxPreweddingGenerations}
+                                    onClick={handleGeneratePreweddingOnly}
+                                    className={`w-full font-bold py-2 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] ${
+                                      preweddingGenerateCount >= maxPreweddingGenerations
+                                        ? 'bg-theme-bg text-theme-text-muted/40 cursor-not-allowed opacity-50'
+                                        : 'bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer'
+                                    }`}
+                                  >
+                                    ✨ Generate Foto Prewedding AI (Sisa: {Math.max(0, maxPreweddingGenerations - preweddingGenerateCount)}/{maxPreweddingGenerations})
+                                  </button>
+                                  {preweddingGenerateCount >= maxPreweddingGenerations && (
+                                    <span className="text-[8px] text-red-400 font-semibold text-center">Batas maksimal generate foto prewedding ({maxPreweddingGenerations}x) telah tercapai.</span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
