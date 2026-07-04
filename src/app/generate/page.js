@@ -354,6 +354,9 @@ function GenerateContent() {
               setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
               setStoryList(content.story || []);
               setPreweddingPhotoUrl(content.prewedding_photo_url || '');
+              if (content.prewedding_photo_url) {
+                setGeneratePrewedding(true);
+              }
             } else if (pageConfig && pageConfig.meta?.template_type === 'birthday') {
               setTemplateType('birthday');
               const content = pageConfig.content || {};
@@ -517,7 +520,14 @@ function GenerateContent() {
         akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
         resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
         gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
-        quote: pageData?.content?.quote || ''
+        quote: pageData?.content?.quote || '',
+        // Preserve prewedding photo URL and AI generated content
+        prewedding_photo_url: preweddingPhotoUrl || pageData?.content?.prewedding_photo_url || null,
+        banner_tagline: pageData?.content?.banner_tagline || null,
+        invitation_intro: pageData?.content?.invitation_intro || null,
+        closing_message: pageData?.content?.closing_message || null,
+        style_palette: pageData?.content?.style_palette || null,
+        scene_description: pageData?.content?.scene_description || null,
       };
     } else {
       metaTitle = 'Draft Page';
