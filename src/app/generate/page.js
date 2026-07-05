@@ -1504,10 +1504,14 @@ function GenerateContent() {
         activeCampaignHeroImage = null;
       }
 
-      if (templateType === 'wedding' || templateType === 'campaign') {
+      if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday') {
         // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
         setAiProgressStatus('queued');
-        setAiProgressDetail(templateType === 'wedding' ? 'Menyiapkan payload undangan...' : 'Menyiapkan payload campaign...');
+        setAiProgressDetail(
+          templateType === 'wedding' 
+            ? 'Menyiapkan payload undangan...' 
+            : (templateType === 'birthday' ? 'Menyiapkan payload ulang tahun...' : 'Menyiapkan payload campaign...')
+        );
 
         // Generate random idempotency key
         const idempotencyKey = crypto.randomUUID 
@@ -1541,6 +1545,29 @@ function GenerateContent() {
               bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother },
               quote: prompt || '',
               theme: designKey,
+            },
+            async: true
+          };
+        } else if (templateType === 'birthday') {
+          // Prep assets if any
+          const inputAssets = [];
+          if (celebrantImage && celebrantImage !== DEFAULT_GROOM_AVATAR) {
+            inputAssets.push({ url: celebrantImage, role: 'celebrant' });
+          }
+
+          executePayload = {
+            idempotencyKey,
+            projectId: projectId || null,
+            templateType: 'birthday',
+            styleKey: 'default',
+            inputAssets,
+            inputContext: {
+              celebrantName,
+              celebrantAge,
+              eventDate: birthdayDate,
+              eventLocation: birthdayLocation,
+              theme: designKey,
+              quote: prompt || ''
             },
             async: true
           };
@@ -1620,6 +1647,41 @@ function GenerateContent() {
               style_palette: aiConfig.style_palette,
               scene_description: aiConfig.scene_description,
               quote: aiConfig.invitation_intro || 'Semoga menjadi keluarga sakinah mawaddah warahmah.',
+            }
+          };
+        } else if (templateType === 'birthday') {
+          compiledPageData = {
+            meta: {
+              title: `Undangan Ulang Tahun ${celebrantNickname || celebrantName}`,
+              theme: designKey,
+              template_type: 'birthday',
+              design_key: designKey,
+            },
+            content: {
+              design_key: designKey,
+              celebrant: {
+                name: celebrantName,
+                nickname: celebrantNickname,
+                age: celebrantAge,
+                parent_name: celebrantParents || null,
+                image_url: celebrantImage || null,
+                gender: celebrantGender
+              },
+              event: {
+                date: birthdayDate,
+                time: birthdayTime,
+                location: birthdayLocation,
+                maps_url: birthdayMaps || null
+              },
+              gift: birthdayGiftBank && birthdayGiftAccount ? {
+                bank_name: birthdayGiftBank,
+                account_number: birthdayGiftAccount,
+                account_holder: birthdayGiftHolder || ''
+              } : null,
+              // Map invitation_intro to quote for compatibility with existing birthday LP template
+              quote: aiConfig.invitation_intro || 'Selamat hari lahir! Semoga panjang umur, sehat selalu.',
+              banner_tagline: aiConfig.banner_tagline || null,
+              closing_message: aiConfig.closing_message || null,
             }
           };
         } else {
