@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
+import ImagePickerField from '@/components/ImagePickerField';
 import { Sparkles, ArrowRight, CheckCircle, ExternalLink, Globe, Layout, Smartphone, Laptop, AlertCircle, ChevronRight, X, Search, ShoppingBag, Heart } from 'lucide-react';
 const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg';
 const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
@@ -2363,118 +2364,21 @@ function GenerateContent() {
                         </div>
 
                         {/* Option: Custom Prewedding Background Photo */}
-                        <div className="flex flex-col gap-2 bg-theme-bg/50 p-3 rounded-xl border border-theme-border mt-1">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id="generatePrewedding"
-                              checked={generatePrewedding}
-                              onChange={(e) => setGeneratePrewedding(e.target.checked)}
-                              className="w-4 h-4 rounded border-theme-border text-theme-accent focus:ring-theme-accent bg-theme-surface cursor-pointer"
-                            />
-                            <label htmlFor="generatePrewedding" className="text-[10px] text-theme-text font-semibold cursor-pointer select-none">
-                              Gunakan Foto Cover / Background Prewedding
-                            </label>
-                          </div>
-                          {generatePrewedding && (
-                            <div className="mt-1.5 border-t border-theme-border pt-2 flex flex-col gap-2">
-                              {/* Source Selector: Unsplash vs Upload */}
-                              <div className="flex gap-2 mb-1">
-                                <button
-                                  type="button"
-                                  onClick={() => setPreweddingSource('unsplash')}
-                                  className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
-                                    preweddingSource === 'unsplash'
-                                      ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
-                                      : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
-                                  }`}
-                                >
-                                  📷 Pilihan Acak Unsplash
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setPreweddingSource('upload')}
-                                  className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
-                                    preweddingSource === 'upload'
-                                      ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
-                                      : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
-                                  }`}
-                                >
-                                  📤 Upload Sendiri
-                                </button>
-                              </div>
-
-                              {preweddingSource === 'unsplash' && (
-                                <div className="flex flex-col gap-2">
-                                  {isGeneratingPrewedding ? (
-                                    <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
-                                      <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-                                      <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengambil foto dari Unsplash...</span>
-                                    </div>
-                                  ) : preweddingPhotoUrl ? (
-                                    <>
-                                      <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Unsplash Saat Ini</div>
-                                      <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                        <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding Unsplash" />
-                                      </div>
-                                      <button
-                                        type="button"
-                                        onClick={handleGeneratePreweddingOnly}
-                                        className="w-full text-center font-bold py-1.5 px-2.5 rounded-lg transition-all active:scale-[0.98] border text-[9px] bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer"
-                                      >
-                                        🔄 Ganti Foto Unsplash Acak
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <div className="flex flex-col gap-2">
-                                      <div className="text-[9px] text-theme-text-muted leading-relaxed">
-                                        Belum ada foto background yang dipilih. Klik tombol di bawah untuk mengambil foto acak bertema romantis/pernikahan dari Unsplash.
-                                      </div>
-                                      <button
-                                        type="button"
-                                        onClick={handleGeneratePreweddingOnly}
-                                        className="w-full font-bold py-2 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer"
-                                      >
-                                        ✨ Ambil Foto Unsplash Acak
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-
-                              {preweddingSource === 'upload' && (
-                                <div className="flex flex-col gap-2">
-                                  {isUploadingPreweddingImage ? (
-                                    <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
-                                      <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-                                      <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengunggah foto...</span>
-                                    </div>
-                                  ) : preweddingPhotoUrl && !preweddingPhotoUrl.includes('images.unsplash.com') ? (
-                                    <>
-                                      <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Upload Anda</div>
-                                      <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                        <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding Upload" />
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="text-[9px] text-theme-text-muted leading-relaxed">
-                                      Silakan unggah foto background cover Anda sendiri untuk undangan.
-                                    </div>
-                                  )}
-                                  <label className="w-full bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-2 px-3 rounded-lg text-center cursor-pointer transition-colors">
-                                    {isUploadingPreweddingImage ? 'Mengunggah...' : 'Upload Background'}
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      className="hidden"
-                                      onChange={(e) => handleUploadImage(e.target.files[0], 'prewedding')}
-                                    />
-                                  </label>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                        <ImagePickerField
+                          checkboxId="generatePrewedding"
+                          checkboxLabel="Gunakan Foto Cover / Background Prewedding"
+                          unsplashQuery=""
+                          imageUrl={preweddingPhotoUrl}
+                          onImageChange={setPreweddingPhotoUrl}
+                          apiToken={session?.access_token}
+                          apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                          isEnabled={generatePrewedding}
+                          onEnabledChange={setGeneratePrewedding}
+                          source={preweddingSource}
+                          onSourceChange={setPreweddingSource}
+                          onUpload={handleUploadImage}
+                          uploadType="prewedding"
+                        />
 
                         {/* Kisah Cinta (Story) Builder */}
                         <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Kisah Cinta (Timeline)</div>
@@ -3265,122 +3169,21 @@ function GenerateContent() {
                           </div>
 
                           {/* Hero Background Image */}
-                          {/* Option: Custom Campaign Hero Background Photo */}
-                          <div className="flex flex-col gap-2 bg-theme-bg/50 p-3 rounded-xl border border-theme-border mt-1">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                id="generateCampaignHero"
-                                checked={generateCampaignHero}
-                                onChange={(e) => {
-                                  setGenerateCampaignHero(e.target.checked);
-                                  if (!e.target.checked) setCampaignHeroImage('');
-                                }}
-                                className="w-4 h-4 rounded border-theme-border text-theme-accent focus:ring-theme-accent bg-theme-surface cursor-pointer"
-                              />
-                              <label htmlFor="generateCampaignHero" className="text-[10px] text-theme-text font-semibold cursor-pointer select-none">
-                                Gunakan Foto Background Hero Section
-                              </label>
-                            </div>
-                            {generateCampaignHero && (
-                              <div className="mt-1.5 border-t border-theme-border pt-2 flex flex-col gap-2">
-                                {/* Source Selector: Unsplash vs Upload */}
-                                <div className="flex gap-2 mb-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => setCampaignHeroImageSource('unsplash')}
-                                    className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
-                                      campaignHeroImageSource === 'unsplash'
-                                        ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
-                                        : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
-                                    }`}
-                                  >
-                                    📷 Pilihan Acak Unsplash
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setCampaignHeroImageSource('upload')}
-                                    className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
-                                      campaignHeroImageSource === 'upload'
-                                        ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
-                                        : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
-                                    }`}
-                                  >
-                                    📤 Upload Sendiri
-                                  </button>
-                                </div>
-
-                                {campaignHeroImageSource === 'unsplash' && (
-                                  <div className="flex flex-col gap-2">
-                                    {isGeneratingCampaignHeroImage ? (
-                                      <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
-                                        <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-                                        <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengambil foto dari Unsplash...</span>
-                                      </div>
-                                    ) : campaignHeroImage ? (
-                                      <>
-                                        <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Unsplash Saat Ini</div>
-                                        <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                          <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Unsplash" />
-                                        </div>
-                                        <button
-                                          type="button"
-                                          onClick={handleGenerateCampaignHeroOnly}
-                                          className="w-full text-center font-bold py-1.5 px-2.5 rounded-lg transition-all active:scale-[0.98] border text-[9px] bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer"
-                                        >
-                                          🔄 Ganti Foto Unsplash Acak
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <div className="flex flex-col gap-2">
-                                        <div className="text-[9px] text-theme-text-muted leading-relaxed">
-                                          Belum ada foto background yang dipilih. Klik tombol di bawah untuk mengambil foto acak bertema bisnis/marketing dari Unsplash.
-                                        </div>
-                                        <button
-                                          type="button"
-                                          onClick={handleGenerateCampaignHeroOnly}
-                                          className="w-full font-bold py-2 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer"
-                                        >
-                                          ✨ Ambil Foto Unsplash Acak
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-
-                                {campaignHeroImageSource === 'upload' && (
-                                  <div className="flex flex-col gap-2">
-                                    {isUploadingCampaignHeroImage ? (
-                                      <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
-                                        <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-                                        <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengunggah foto...</span>
-                                      </div>
-                                    ) : campaignHeroImage && !campaignHeroImage.includes('images.unsplash.com') ? (
-                                      <>
-                                        <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Upload Anda</div>
-                                        <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                          <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Upload" />
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <div className="text-[9px] text-theme-text-muted leading-relaxed">
-                                        Silakan unggah foto background hero Anda sendiri.
-                                      </div>
-                                    )}
-                                    <label className="w-full bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-2 px-3 rounded-lg text-center cursor-pointer transition-colors">
-                                      {isUploadingCampaignHeroImage ? 'Mengunggah...' : 'Upload Background'}
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={(e) => handleUploadImage(e.target.files[0], 'campaignHero')}
-                                      />
-                                    </label>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          <ImagePickerField
+                            checkboxId="generateCampaignHero"
+                            checkboxLabel="Gunakan Foto Background Hero Section"
+                            unsplashQuery="business,workspace,marketing,success"
+                            imageUrl={campaignHeroImage}
+                            onImageChange={setCampaignHeroImage}
+                            apiToken={session?.access_token}
+                            apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                            isEnabled={generateCampaignHero}
+                            onEnabledChange={setGenerateCampaignHero}
+                            source={campaignHeroImageSource}
+                            onSourceChange={setCampaignHeroImageSource}
+                            onUpload={handleUploadImage}
+                            uploadType="campaignHero"
+                          />
                         </div>
 
                         {/* CONTACT SECTION FORM */}
