@@ -135,7 +135,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
             </nav>
 
             <!-- Hero Section -->
-            <header class="trust-hero px-6 py-16 md:py-24 text-center border-b border-slate-100">
+            <header class="trust-hero px-6 py-16 md:py-24 text-center border-b border-slate-100" style="${hero.image_url ? `background-image: linear-gradient(rgba(248,250,252,0.7), rgba(248,250,252,0.95)), url('${hero.image_url}'); background-size: cover; background-position: center;` : ''}">
                 <div class="max-w-3xl mx-auto">
                     <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold bg-teal-50 border border-teal-100 text-teal-600 uppercase tracking-widest mb-6">
                         Informasi & Penawaran Terverifikasi

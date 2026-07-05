@@ -148,8 +148,10 @@ function GenerateContent() {
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
   const [storyList, setStoryList] = useState([]);
   const [generatePrewedding, setGeneratePrewedding] = useState(false);
+  const [preweddingSource, setPreweddingSource] = useState('unsplash'); // 'unsplash' or 'upload'
   const [preweddingPhotoUrl, setPreweddingPhotoUrl] = useState('');
   const [isGeneratingPrewedding, setIsGeneratingPrewedding] = useState(false);
+  const [isUploadingPreweddingImage, setIsUploadingPreweddingImage] = useState(false);
   const [preweddingGenerateCount, setPreweddingGenerateCount] = useState(0);
   const [maxProjectEdits, setMaxProjectEdits] = useState(3);
   const [maxPreweddingGenerations, setMaxPreweddingGenerations] = useState(3);
@@ -192,6 +194,10 @@ function GenerateContent() {
   const [campaignHeadline, setCampaignHeadline] = useState('');
   const [campaignSubheadline, setCampaignSubheadline] = useState('');
   const [campaignCtaText, setCampaignCtaText] = useState('Dapatkan Sekarang!');
+  const [campaignHeroImage, setCampaignHeroImage] = useState('');
+  const [campaignHeroImageSource, setCampaignHeroImageSource] = useState('unsplash');
+  const [isGeneratingCampaignHeroImage, setIsGeneratingCampaignHeroImage] = useState(false);
+  const [isUploadingCampaignHeroImage, setIsUploadingCampaignHeroImage] = useState(false);
   const [campaignProblemsTitle, setCampaignProblemsTitle] = useState('Hambatan Utama Anda');
   const [campaignProblemsList, setCampaignProblemsList] = useState(['', '', '']);
   const [campaignSolutionsTitle, setCampaignSolutionsTitle] = useState('Solusi Kami');
@@ -366,8 +372,14 @@ function GenerateContent() {
               setPreweddingGenerateCount(content.prewedding_generate_count || 0);
               if (content.prewedding_photo_url) {
                 setGeneratePrewedding(true);
+                if (content.prewedding_photo_url.includes('images.unsplash.com')) {
+                  setPreweddingSource('unsplash');
+                } else {
+                  setPreweddingSource('upload');
+                }
               } else {
                 setGeneratePrewedding(false);
+                setPreweddingSource('unsplash');
               }
             } else if (pageConfig && pageConfig.meta?.template_type === 'birthday') {
               setTemplateType('birthday');
@@ -412,6 +424,16 @@ function GenerateContent() {
               setCampaignHeadline(content.hero?.headline || '');
               setCampaignSubheadline(content.hero?.subheadline || '');
               setCampaignCtaText(content.hero?.cta_text || 'Dapatkan Sekarang!');
+              setCampaignHeroImage(content.hero?.image_url || '');
+              if (content.hero?.image_url) {
+                if (content.hero.image_url.includes('images.unsplash.com')) {
+                  setCampaignHeroImageSource('unsplash');
+                } else {
+                  setCampaignHeroImageSource('upload');
+                }
+              } else {
+                setCampaignHeroImageSource('unsplash');
+              }
               setCampaignProblemsTitle(content.problems?.title || 'Hambatan Utama Anda');
               setCampaignProblemsList(content.problems?.list || ['', '', '']);
               setCampaignSolutionsTitle(content.solutions?.title || 'Solusi Kami');
@@ -500,7 +522,8 @@ function GenerateContent() {
         hero: {
           headline: campaignHeadline,
           subheadline: campaignSubheadline,
-          cta_text: campaignCtaText
+          cta_text: campaignCtaText,
+          image_url: campaignHeroImage || null
         },
         problems: {
           title: campaignProblemsTitle,
@@ -817,6 +840,8 @@ function GenerateContent() {
     const isGroom = target === 'groom';
     const isBride = target === 'bride';
     const isStory = target === 'story';
+    const isPrewedding = target === 'prewedding';
+    const isCampaignHero = target === 'campaignHero';
     const isCelebrant = target === 'celebrant';
     const isLogo = target === 'logo';
     const isBanner = target === 'banner';
@@ -826,6 +851,8 @@ function GenerateContent() {
     if (isGroom) setIsUploadingGroomImage(true);
     if (isBride) setIsUploadingBrideImage(true);
     if (isStory) setIsUploadingStoryImage(true);
+    if (isPrewedding) setIsUploadingPreweddingImage(true);
+    if (isCampaignHero) setIsUploadingCampaignHeroImage(true);
     if (isCelebrant) setIsUploadingCelebrantImage(true);
     if (isLogo) setIsUploadingLogo(true);
     if (isBanner) setIsUploadingBanner(true);
@@ -864,6 +891,8 @@ function GenerateContent() {
       if (isGroom) setGroomImage(publicUrl);
       if (isBride) setBrideImage(publicUrl);
       if (isStory) setNewStoryImage(publicUrl);
+      if (isPrewedding) setPreweddingPhotoUrl(publicUrl);
+      if (isCampaignHero) setCampaignHeroImage(publicUrl);
       if (isCelebrant) setCelebrantImage(publicUrl);
       if (isLogo) setStoreLogoUrl(publicUrl);
       if (isBanner) setStoreBannerUrl(publicUrl);
@@ -881,6 +910,8 @@ function GenerateContent() {
       if (isGroom) setIsUploadingGroomImage(false);
       if (isBride) setIsUploadingBrideImage(false);
       if (isStory) setIsUploadingStoryImage(false);
+      if (isPrewedding) setIsUploadingPreweddingImage(false);
+      if (isCampaignHero) setIsUploadingCampaignHeroImage(false);
       if (isCelebrant) setIsUploadingCelebrantImage(false);
       if (isLogo) setIsUploadingLogo(false);
       if (isBanner) setIsUploadingBanner(false);
@@ -1316,30 +1347,54 @@ function GenerateContent() {
     });
   };
 
-  // Helper to generate prewedding photo independently (e.g. during editMode)
+  // Helper to get random prewedding photo from Unsplash
   const handleGeneratePreweddingOnly = async () => {
-    console.log('[AI Platform] handleGeneratePreweddingOnly triggered. Count:', preweddingGenerateCount);
+    console.log('[AI Platform] handleGeneratePreweddingOnly triggered.');
     
-    if (preweddingGenerateCount >= maxPreweddingGenerations) {
-      const errMsg = `Batas maksimal generate foto prewedding (${maxPreweddingGenerations}x) telah tercapai.`;
-      setError(errMsg);
-      alert(errMsg);
-      return;
-    }
-
-    if (!groomImage || !brideImage || groomImage === DEFAULT_GROOM_AVATAR || brideImage === DEFAULT_BRIDE_AVATAR) {
-      const errMsg = 'Mohon unggah foto Pria dan Wanita Anda terlebih dahulu sebelum membuat foto prewedding romantis.';
-      setError(errMsg);
-      alert(errMsg); // Visual browser modal alert for immediate feedback
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top error banner
-      return;
-    }
-
     setError('');
     setIsGeneratingPrewedding(true);
 
     try {
-      console.log('[AI Platform] Sending API request to generate prewedding photo...');
+      console.log('[AI Platform] Sending API request to fetch random Unsplash photo...');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/prewedding`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({}),
+      });
+
+      const result = await response.json();
+      console.log('[AI Platform] Random photo response received:', result);
+      
+      if (response.ok && result.success) {
+        setPreweddingPhotoUrl(result.preweddingPhotoUrl);
+        console.log(`[AI Platform] Prewedding photo fetched successfully: ${result.preweddingPhotoUrl}`);
+      } else {
+        const errMsg = result.error || 'Gagal mengambil foto dari Unsplash. Silakan coba kembali.';
+        setError(errMsg);
+        alert(errMsg);
+      }
+    } catch (err) {
+      console.error('[AI Platform] Local prewedding fetch error:', err);
+      const errMsg = 'Terjadi kesalahan jaringan saat mengambil foto background.';
+      setError(errMsg);
+      alert(errMsg);
+    } finally {
+      setIsGeneratingPrewedding(false);
+    }
+  };
+
+  // Helper to get random campaign hero background photo from Unsplash
+  const handleGenerateCampaignHeroOnly = async () => {
+    console.log('[AI Platform] handleGenerateCampaignHeroOnly triggered.');
+    
+    setError('');
+    setIsGeneratingCampaignHeroImage(true);
+
+    try {
+      console.log('[AI Platform] Sending API request to fetch random Unsplash photo for campaign...');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/prewedding`, {
         method: 'POST',
         headers: {
@@ -1347,32 +1402,28 @@ function GenerateContent() {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          groomImageUrl: groomImage,
-          brideImageUrl: brideImage,
-          style: designKey === 'sage-green' || designKey === 'Sage Green' ? 'elegant romantic outdoor' : 'artistic creative studio'
+          query: 'business,workspace,marketing,success'
         }),
       });
 
       const result = await response.json();
-      console.log('[AI Platform] Prewedding generation response received:', result);
+      console.log('[AI Platform] Random campaign photo response received:', result);
       
       if (response.ok && result.success) {
-        const newCount = preweddingGenerateCount + 1;
-        setPreweddingGenerateCount(newCount);
-        setPreweddingPhotoUrl(result.preweddingPhotoUrl);
-        console.log(`[AI Platform] Prewedding photo generated successfully via button (New Count: ${newCount}): ${result.preweddingPhotoUrl}`);
+        setCampaignHeroImage(result.preweddingPhotoUrl);
+        console.log(`[AI Platform] Campaign hero photo fetched successfully: ${result.preweddingPhotoUrl}`);
       } else {
-        const errMsg = result.error || 'Gagal generate foto prewedding AI. Silakan coba kembali.';
+        const errMsg = result.error || 'Gagal mengambil foto dari Unsplash. Silakan coba kembali.';
         setError(errMsg);
         alert(errMsg);
       }
     } catch (err) {
-      console.error('[AI Platform] Local prewedding generation error:', err);
-      const errMsg = 'Terjadi kesalahan jaringan saat generate foto prewedding.';
+      console.error('[AI Platform] Local campaign hero fetch error:', err);
+      const errMsg = 'Terjadi kesalahan jaringan saat mengambil foto background.';
       setError(errMsg);
       alert(errMsg);
     } finally {
-      setIsGeneratingPrewedding(false);
+      setIsGeneratingCampaignHeroImage(false);
     }
   };
 
@@ -1389,10 +1440,36 @@ function GenerateContent() {
 
     try {
       let activePreweddingPhotoUrl = preweddingPhotoUrl;
+      let activeCampaignHeroImage = campaignHeroImage;
 
-      if (templateType === 'wedding' && generatePrewedding) {
+      if (templateType === 'wedding' && generatePrewedding && preweddingSource === 'unsplash' && !activePreweddingPhotoUrl) {
         setAiProgressStatus('queued');
-        setAiProgressDetail('Sedang membuat foto prewedding AI dari foto mempelai...');
+        setAiProgressDetail('Sedang mengambil foto background dari Unsplash...');
+        try {
+          const preResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/prewedding`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({}),
+          });
+          const preResult = await preResponse.json();
+          if (preResponse.ok && preResult.success) {
+            activePreweddingPhotoUrl = preResult.preweddingPhotoUrl;
+            setPreweddingPhotoUrl(activePreweddingPhotoUrl);
+            console.log(`[AI Platform] Prewedding photo fetched successfully from Unsplash: ${activePreweddingPhotoUrl}`);
+          } else {
+            console.warn('[AI Platform] Prewedding photo Unsplash fetch returned error:', preResult.error);
+          }
+        } catch (err) {
+          console.error('[AI Platform] Prewedding photo Unsplash fetch API error:', err);
+        }
+      }
+
+      if (templateType === 'campaign' && campaignHeroImageSource === 'unsplash' && !activeCampaignHeroImage) {
+        setAiProgressStatus('queued');
+        setAiProgressDetail('Sedang mengambil foto background campaign dari Unsplash...');
         try {
           const preResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/prewedding`, {
             method: 'POST',
@@ -1401,22 +1478,19 @@ function GenerateContent() {
               Authorization: `Bearer ${session.access_token}`,
             },
             body: JSON.stringify({
-              groomImageUrl: groomImage,
-              brideImageUrl: brideImage,
-              style: designKey === 'sage-green' || designKey === 'Sage Green' ? 'elegant romantic outdoor' : 'artistic creative studio'
+              query: 'business,workspace,marketing,success'
             }),
           });
           const preResult = await preResponse.json();
           if (preResponse.ok && preResult.success) {
-            activePreweddingPhotoUrl = preResult.preweddingPhotoUrl;
-            setPreweddingPhotoUrl(activePreweddingPhotoUrl);
-            setPreweddingGenerateCount(prev => prev + 1);
-            console.log(`[AI Platform] Prewedding photo generated successfully: ${activePreweddingPhotoUrl}`);
+            activeCampaignHeroImage = preResult.preweddingPhotoUrl;
+            setCampaignHeroImage(activeCampaignHeroImage);
+            console.log(`[AI Platform] Campaign hero photo fetched successfully from Unsplash: ${activeCampaignHeroImage}`);
           } else {
-            console.warn('[AI Platform] Prewedding photo generation returned error:', preResult.error);
+            console.warn('[AI Platform] Campaign hero photo Unsplash fetch returned error:', preResult.error);
           }
         } catch (err) {
-          console.error('[AI Platform] Prewedding photo generation API error:', err);
+          console.error('[AI Platform] Campaign hero photo Unsplash fetch API error:', err);
         }
       }
 
@@ -1553,7 +1627,8 @@ function GenerateContent() {
               hero: {
                 headline: aiConfig.hero?.headline || '',
                 subheadline: aiConfig.hero?.subheadline || '',
-                cta_text: aiConfig.hero?.cta_text || 'Dapatkan Sekarang!'
+                cta_text: aiConfig.hero?.cta_text || 'Dapatkan Sekarang!',
+                image_url: campaignHeroImage || null
               },
               problems: {
                 title: aiConfig.problems?.title || 'Hambatan Utama Anda',
@@ -1696,7 +1771,8 @@ function GenerateContent() {
             hero: {
               headline: campaignHeadline,
               subheadline: campaignSubheadline,
-              cta_text: campaignCtaText
+              cta_text: campaignCtaText,
+              image_url: campaignHeroImage || null
             },
             problems: {
               title: campaignProblemsTitle,
@@ -2277,7 +2353,7 @@ function GenerateContent() {
                           </div>
                         </div>
 
-                        {/* Option: Generate Prewedding Photo */}
+                        {/* Option: Custom Prewedding Background Photo */}
                         <div className="flex flex-col gap-2 bg-theme-bg/50 p-3 rounded-xl border border-theme-border mt-1">
                           <div className="flex items-center gap-2">
                             <input
@@ -2288,60 +2364,103 @@ function GenerateContent() {
                               className="w-4 h-4 rounded border-theme-border text-theme-accent focus:ring-theme-accent bg-theme-surface cursor-pointer"
                             />
                             <label htmlFor="generatePrewedding" className="text-[10px] text-theme-text font-semibold cursor-pointer select-none">
-                              Generate Foto Prewedding Romantis dengan AI
+                              Gunakan Foto Cover / Background Prewedding
                             </label>
                           </div>
                           {generatePrewedding && (
                             <div className="mt-1.5 border-t border-theme-border pt-2 flex flex-col gap-2">
-                              {isGeneratingPrewedding ? (
-                                <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
-                                  <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-                                  <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Sedang memproses foto romantis...</span>
-                                </div>
-                              ) : preweddingPhotoUrl ? (
-                                <>
-                                  <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Prewedding AI Saat Ini</div>
-                                  <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                    <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding AI" />
-                                  </div>
-                                  <div className="flex flex-col gap-1 mt-1">
-                                    <button
-                                      type="button"
-                                      disabled={preweddingGenerateCount >= maxPreweddingGenerations}
-                                      onClick={handleGeneratePreweddingOnly}
-                                      className={`w-full text-center font-bold py-1.5 px-2.5 rounded-lg transition-all active:scale-[0.98] border text-[9px] ${
-                                        preweddingGenerateCount >= maxPreweddingGenerations
-                                          ? 'bg-theme-bg border-theme-border text-theme-text-muted/40 cursor-not-allowed opacity-50'
-                                          : 'bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer'
-                                      }`}
-                                    >
-                                      🔄 Generate Ulang Foto AI (Sisa: {Math.max(0, maxPreweddingGenerations - preweddingGenerateCount)}/{maxPreweddingGenerations})
-                                    </button>
-                                    {preweddingGenerateCount >= maxPreweddingGenerations && (
-                                      <span className="text-[8px] text-red-400 font-semibold text-center mt-0.5">Batas maksimal generate foto prewedding ({maxPreweddingGenerations}x) telah tercapai.</span>
-                                    )}
-                                  </div>
-                                </>
-                              ) : (
+                              {/* Source Selector: Unsplash vs Upload */}
+                              <div className="flex gap-2 mb-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setPreweddingSource('unsplash')}
+                                  className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
+                                    preweddingSource === 'unsplash'
+                                      ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
+                                      : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
+                                  }`}
+                                >
+                                  📷 Pilihan Acak Unsplash
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setPreweddingSource('upload')}
+                                  className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
+                                    preweddingSource === 'upload'
+                                      ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
+                                      : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
+                                  }`}
+                                >
+                                  📤 Upload Sendiri
+                                </button>
+                              </div>
+
+                              {preweddingSource === 'unsplash' && (
                                 <div className="flex flex-col gap-2">
-                                  <div className="text-[9px] text-theme-text-muted leading-relaxed">
-                                    Belum ada foto prewedding romantis AI. Klik tombol di bawah ini untuk membuat foto prewedding AI dari foto mempelai.
-                                  </div>
-                                  <button
-                                    type="button"
-                                    disabled={preweddingGenerateCount >= maxPreweddingGenerations}
-                                    onClick={handleGeneratePreweddingOnly}
-                                    className={`w-full font-bold py-2 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] ${
-                                      preweddingGenerateCount >= maxPreweddingGenerations
-                                        ? 'bg-theme-bg text-theme-text-muted/40 cursor-not-allowed opacity-50'
-                                        : 'bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer'
-                                    }`}
-                                  >
-                                    ✨ Generate Foto Prewedding AI (Sisa: {Math.max(0, maxPreweddingGenerations - preweddingGenerateCount)}/{maxPreweddingGenerations})
-                                  </button>
-                                  {preweddingGenerateCount >= maxPreweddingGenerations && (
-                                    <span className="text-[8px] text-red-400 font-semibold text-center">Batas maksimal generate foto prewedding ({maxPreweddingGenerations}x) telah tercapai.</span>
+                                  {isGeneratingPrewedding ? (
+                                    <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
+                                      <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
+                                      <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengambil foto dari Unsplash...</span>
+                                    </div>
+                                  ) : preweddingPhotoUrl ? (
+                                    <>
+                                      <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Unsplash Saat Ini</div>
+                                      <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                        <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding Unsplash" />
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={handleGeneratePreweddingOnly}
+                                        className="w-full text-center font-bold py-1.5 px-2.5 rounded-lg transition-all active:scale-[0.98] border text-[9px] bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer"
+                                      >
+                                        🔄 Ganti Foto Unsplash Acak
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <div className="flex flex-col gap-2">
+                                      <div className="text-[9px] text-theme-text-muted leading-relaxed">
+                                        Belum ada foto background yang dipilih. Klik tombol di bawah untuk mengambil foto acak bertema romantis/pernikahan dari Unsplash.
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={handleGeneratePreweddingOnly}
+                                        className="w-full font-bold py-2 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer"
+                                      >
+                                        ✨ Ambil Foto Unsplash Acak
+                                      </button>
+                                    </div>
                                   )}
+                                </div>
+                              )}
+
+                              {preweddingSource === 'upload' && (
+                                <div className="flex flex-col gap-2">
+                                  {isUploadingPreweddingImage ? (
+                                    <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
+                                      <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
+                                      <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengunggah foto...</span>
+                                    </div>
+                                  ) : preweddingPhotoUrl && !preweddingPhotoUrl.includes('images.unsplash.com') ? (
+                                    <>
+                                      <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Upload Anda</div>
+                                      <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                        <img src={preweddingPhotoUrl} className="w-full h-full object-cover" alt="Prewedding Upload" />
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <div className="text-[9px] text-theme-text-muted leading-relaxed">
+                                      Silakan unggah foto background cover Anda sendiri untuk undangan.
+                                    </div>
+                                  )}
+                                  <label className="w-full bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-2 px-3 rounded-lg text-center cursor-pointer transition-colors">
+                                    {isUploadingPreweddingImage ? 'Mengunggah...' : 'Upload Background'}
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => handleUploadImage(e.target.files[0], 'prewedding')}
+                                    />
+                                  </label>
                                 </div>
                               )}
                             </div>
@@ -3135,6 +3254,106 @@ function GenerateContent() {
                               className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                             />
                           </div>
+
+                          {/* Hero Background Image */}
+                          <div className="flex flex-col gap-2 bg-theme-bg/50 p-3 rounded-xl border border-theme-border mt-1">
+                            <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Foto Background Hero Section
+                            </label>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setCampaignHeroImageSource('unsplash')}
+                                className={`flex-1 py-1 px-2.5 text-[9px] font-bold rounded-lg border transition-all ${
+                                  campaignHeroImageSource === 'unsplash'
+                                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
+                                    : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
+                                }`}
+                              >
+                                📷 Pilihan Acak Unsplash
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCampaignHeroImageSource('upload')}
+                                className={`flex-1 py-1 px-2.5 text-[9px] font-bold rounded-lg border transition-all ${
+                                  campaignHeroImageSource === 'upload'
+                                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
+                                    : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
+                                }`}
+                              >
+                                📤 Upload Sendiri
+                              </button>
+                            </div>
+
+                            {campaignHeroImageSource === 'unsplash' && (
+                              <div className="mt-1 flex flex-col gap-2">
+                                {isGeneratingCampaignHeroImage ? (
+                                  <div className="flex flex-col items-center justify-center p-3 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
+                                    <div className="h-4 w-4 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
+                                    <span className="text-[8px] text-theme-text-muted font-bold animate-pulse">Mengambil foto dari Unsplash...</span>
+                                  </div>
+                                ) : campaignHeroImage ? (
+                                  <>
+                                    <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Unsplash Saat Ini</div>
+                                    <div className="relative w-full h-24 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                      <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Unsplash" />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={handleGenerateCampaignHeroOnly}
+                                      className="w-full text-center font-bold py-1 px-2 rounded-lg transition-all active:scale-[0.98] border text-[9px] bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer"
+                                    >
+                                      🔄 Ganti Foto Unsplash Acak
+                                    </button>
+                                  </>
+                                ) : (
+                                  <div className="flex flex-col gap-2">
+                                    <div className="text-[9px] text-theme-text-muted leading-relaxed">
+                                      Belum ada foto background yang dipilih. Klik tombol di bawah untuk mengambil foto acak bertema bisnis/marketing dari Unsplash.
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={handleGenerateCampaignHeroOnly}
+                                      className="w-full font-bold py-1.5 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer"
+                                    >
+                                      ✨ Ambil Foto Unsplash Acak
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {campaignHeroImageSource === 'upload' && (
+                              <div className="mt-1 flex flex-col gap-2">
+                                {isUploadingCampaignHeroImage ? (
+                                  <div className="flex flex-col items-center justify-center p-3 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
+                                    <div className="h-4 w-4 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
+                                    <span className="text-[8px] text-theme-text-muted font-bold animate-pulse">Mengunggah foto...</span>
+                                  </div>
+                                ) : campaignHeroImage && !campaignHeroImage.includes('images.unsplash.com') ? (
+                                  <>
+                                    <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Upload Anda</div>
+                                    <div className="relative w-full h-24 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                      <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Upload" />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="text-[9px] text-theme-text-muted leading-relaxed">
+                                    Silakan unggah foto background hero Anda sendiri.
+                                  </div>
+                                )}
+                                <label className="w-full bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-3 rounded-lg text-center cursor-pointer transition-colors">
+                                  {isUploadingCampaignHeroImage ? 'Mengunggah...' : 'Upload Background'}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => handleUploadImage(e.target.files[0], 'campaignHero')}
+                                  />
+                                </label>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {/* CONTACT SECTION FORM */}
@@ -3408,7 +3627,7 @@ function GenerateContent() {
                           Tautan: <a href={successUrl || `http://localhost:5000/?slug=${slug}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-300 inline-flex items-center gap-0.5">{slug} <ExternalLink className="h-2.5 w-2.5 inline" /></a>
                         </div>
                         <div className="text-[9px] text-theme-text-muted mt-1.5">
-                          Kuota edit tersisa: {3 - editCount} dari 3 kali
+                          Kuota edit tersisa: {maxProjectEdits - editCount} dari {maxProjectEdits} kali
                         </div>
                       </>
                     )}
@@ -3600,7 +3819,7 @@ function GenerateContent() {
             <button
               type="submit"
               form="generate-form"
-              disabled={isPublishing || isFormInvalid() || editCount >= 3}
+              disabled={isPublishing || isFormInvalid() || editCount >= maxProjectEdits}
               className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               {isPublishing ? (
@@ -3611,7 +3830,7 @@ function GenerateContent() {
               ) : (
                 <>
                   <CheckCircle className="h-4 w-4" />
-                  <span>Simpan Perubahan ({3 - editCount}/3)</span>
+                  <span>Simpan Perubahan ({maxProjectEdits - editCount}/{maxProjectEdits})</span>
                 </>
               )}
             </button>

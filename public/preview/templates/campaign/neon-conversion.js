@@ -147,7 +147,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
             </nav>
 
             <!-- Hero Section -->
-            <header class="relative px-6 py-16 md:py-24 text-center overflow-hidden border-b border-gray-900">
+            <header class="relative px-6 py-16 md:py-24 text-center overflow-hidden border-b border-gray-900" style="${hero.image_url ? `background-image: linear-gradient(rgba(3,7,18,0.65), rgba(3,7,18,0.95)), url('${hero.image_url}'); background-size: cover; background-position: center;` : ''}">
                 <!-- Glowing Backdrops -->
                 <div class="absolute top-12 left-1/4 w-72 h-72 rounded-full bg-pink-500/10 blur-3xl -z-10 pointer-events-none"></div>
                 <div class="absolute bottom-12 right-1/4 w-72 h-72 rounded-full bg-purple-500/10 blur-3xl -z-10 pointer-events-none"></div>

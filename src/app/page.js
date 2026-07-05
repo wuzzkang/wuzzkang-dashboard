@@ -20,6 +20,28 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const [maxProjectEdits, setMaxProjectEdits] = useState(0);
+
+  // Fetch systemSettings for max edits config
+  useEffect(() => {
+    const fetchProfileSettings = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const result = await res.json();
+          if (result.systemSettings) {
+            setMaxProjectEdits(result.systemSettings.max_project_edits || 3);
+          }
+        }
+      } catch (e) {
+        // silently ignore
+      }
+    };
+    fetchProfileSettings();
+  }, [session]);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -117,7 +139,7 @@ export default function DashboardPage() {
   const filteredProjects = projects.filter((project) => {
     const templateType = getProjectTemplateType(project);
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     if (filterType === 'all') return matchesSearch;
     if (filterType === 'undangan') {
       return matchesSearch && (templateType === 'wedding' || templateType === 'birthday');
@@ -143,11 +165,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Sticky Search and Filter Controls */}
-        <div 
+        <div
           className="sticky top-14 z-20 pb-3 pt-2 -mx-4 px-4 border-b transition-theme backdrop-blur-md"
-          style={{ 
-            backgroundColor: 'var(--theme-surface)', 
-            borderColor: 'var(--theme-border)' 
+          style={{
+            backgroundColor: 'var(--theme-surface)',
+            borderColor: 'var(--theme-border)'
           }}
         >
           {/* Search Input */}
@@ -177,11 +199,10 @@ export default function DashboardPage() {
               <button
                 key={t.id}
                 onClick={() => setFilterType(t.id)}
-                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all border whitespace-nowrap ${
-                  filterType === t.id
+                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all border whitespace-nowrap ${filterType === t.id
                     ? 'bg-theme-accent border-theme-accent text-theme-accent-text'
                     : 'bg-theme-card border-theme-border text-theme-text-sec hover:border-theme-text-muted'
-                }`}
+                  }`}
                 style={filterType !== t.id ? {
                   backgroundColor: 'var(--theme-card)',
                   borderColor: 'var(--theme-border)',
@@ -239,7 +260,7 @@ export default function DashboardPage() {
                         </h3>
                         {getStatusBadge(project.status)}
                       </div>
-                      
+
                       <div className="space-y-2 text-xs text-theme-text-sec mt-3">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-3.5 w-3.5 text-theme-text-muted flex-shrink-0" />
@@ -277,25 +298,25 @@ export default function DashboardPage() {
                               <ExternalLink className="h-3.5 w-3.5" />
                             </a>
                             {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign') && (
-                              (project.edit_count || 0) >= 3 ? (
+                              (project.edit_count || 0) >= maxProjectEdits ? (
                                 <button
                                   disabled
                                   className="flex-1 text-center bg-theme-border/50 text-theme-text-muted font-bold text-xs py-2.5 px-3 rounded-xl cursor-not-allowed border border-theme-border"
-                                  title="Batas edit habis (maksimal 3x). Silakan hubungi admin."
+                                  title={`Batas edit habis (maksimal ${maxProjectEdits}x). Silakan hubungi admin.`}
                                 >
-                                  Edit (0/3)
+                                  Edit (0/{maxProjectEdits})
                                 </button>
                               ) : (
                                 <Link
                                   href={`/generate?id=${project.id}&editMode=true`}
                                   className="flex-1 text-center bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
                                 >
-                                  <span>Edit ({3 - (project.edit_count || 0)}/3)</span>
+                                  <span>Edit ({maxProjectEdits - (project.edit_count || 0)}/{maxProjectEdits})</span>
                                 </Link>
                               )
                             )}
                           </div>
-                          
+
                           {(templateType === 'wedding' || templateType === 'birthday') && (
                             <button
                               onClick={() => {
@@ -349,7 +370,7 @@ export default function DashboardPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
             <div className="bg-theme-card border border-theme-border rounded-3xl w-full max-w-xs p-5 shadow-2xl relative text-theme-text animate-in fade-in zoom-in-95 duration-200">
               {/* Close button */}
-              <button 
+              <button
                 onClick={() => {
                   setShareModalOpen(false);
                   setShareProject(null);
@@ -375,10 +396,10 @@ export default function DashboardPage() {
                     Link Utama (Tanpa Nama)
                   </label>
                   <div className="flex gap-1.5">
-                    <input 
-                      type="text" 
-                      readOnly 
-                      value={shareProject.live_url || ''} 
+                    <input
+                      type="text"
+                      readOnly
+                      value={shareProject.live_url || ''}
                       onClick={(e) => e.target.select()}
                       className="flex-grow bg-theme-surface border border-theme-border rounded-xl px-2.5 py-1.5 text-xs focus:outline-none text-theme-text truncate"
                     />
@@ -401,7 +422,7 @@ export default function DashboardPage() {
                   <label className="block text-[9px] uppercase tracking-wider font-bold text-theme-text-muted mb-1">
                     Nama Tamu Undangan
                   </label>
-                  <input 
+                  <input
                     type="text"
                     placeholder="Ketik nama tamu (misal: Budi)"
                     value={guestName}
@@ -424,10 +445,10 @@ export default function DashboardPage() {
                           Link Khusus Tamu
                         </label>
                         <div className="flex gap-1.5">
-                          <input 
-                            type="text" 
-                            readOnly 
-                            value={personalizedUrl} 
+                          <input
+                            type="text"
+                            readOnly
+                            value={personalizedUrl}
                             onClick={(e) => e.target.select()}
                             className="flex-grow bg-theme-surface border border-theme-border rounded-xl px-2.5 py-1.5 text-xs focus:outline-none text-theme-text truncate"
                           />
@@ -457,7 +478,7 @@ export default function DashboardPage() {
                           <Copy className="h-3 w-3" />
                           <span>{copied ? 'Tersalin! ✅' : 'Salin'}</span>
                         </button>
-                        
+
                         <a
                           href={waUrl}
                           target="_blank"
