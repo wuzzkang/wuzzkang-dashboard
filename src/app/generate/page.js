@@ -1504,13 +1504,15 @@ function GenerateContent() {
         activeCampaignHeroImage = null;
       }
 
-      if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday') {
+      if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday' || templateType === 'toko-online') {
         // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
         setAiProgressStatus('queued');
         setAiProgressDetail(
           templateType === 'wedding' 
             ? 'Menyiapkan payload undangan...' 
-            : (templateType === 'birthday' ? 'Menyiapkan payload ulang tahun...' : 'Menyiapkan payload campaign...')
+            : (templateType === 'birthday' 
+                ? 'Menyiapkan payload ulang tahun...' 
+                : (templateType === 'toko-online' ? 'Menyiapkan payload toko online...' : 'Menyiapkan payload campaign...'))
         );
 
         // Generate random idempotency key
@@ -1568,6 +1570,24 @@ function GenerateContent() {
               eventLocation: birthdayLocation,
               theme: designKey,
               quote: prompt || ''
+            },
+            async: true
+          };
+        } else if (templateType === 'toko-online') {
+          executePayload = {
+            idempotencyKey,
+            projectId: projectId || null,
+            templateType: 'toko-online',
+            styleKey: 'default',
+            inputAssets: [],
+            inputContext: {
+              storeName: storeName || name,
+              storeDescription: storeDescription || '',
+              products: tokoProducts.map(p => ({
+                name: p.name,
+                price: p.price,
+                description: p.description || ''
+              }))
             },
             async: true
           };
@@ -1684,6 +1704,57 @@ function GenerateContent() {
               closing_message: aiConfig.closing_message || null,
             }
           };
+        } else if (templateType === 'toko-online') {
+          compiledPageData = {
+            meta: {
+              title: storeName || 'Toko Online',
+              theme: designKey,
+              template_type: 'toko-online',
+              design_key: designKey,
+            },
+            content: {
+              design_key: designKey,
+              store: {
+                name: storeName,
+                tagline: aiConfig.store_tagline || storeTagline,
+                description: aiConfig.store_description || storeDescription || null,
+                logo_url: storeLogoUrl || null,
+                banner_url: storeBannerUrl || null
+              },
+              products: tokoProducts.map((p, idx) => {
+                const aiProduct = aiConfig.products?.[idx];
+                return {
+                  name: aiProduct?.name || p.name,
+                  price: p.price,
+                  description: aiProduct?.description || p.description || null,
+                  image_url: p.image_url || null
+                };
+              }),
+              contact: {
+                whatsapp: tokoWhatsapp,
+                instagram: tokoInstagram || null,
+                shopee_url: tokoShopee || null,
+                tokopedia_url: tokoTokopedia || null,
+                address: tokoAddress || null
+              },
+              quote: tokoQuote || null
+            }
+          };
+
+          // Also populate React state variables to reflect the generated values in form inputs instantly
+          if (aiConfig.store_tagline) setStoreTagline(aiConfig.store_tagline);
+          if (aiConfig.store_description) setStoreDescription(aiConfig.store_description);
+          if (aiConfig.products && Array.isArray(aiConfig.products)) {
+            setTokoProducts(tokoProducts.map((p, idx) => {
+              const aiProduct = aiConfig.products[idx];
+              return {
+                name: aiProduct?.name || p.name,
+                price: p.price,
+                description: aiProduct?.description || p.description || null,
+                image_url: p.image_url || null
+              };
+            }));
+          }
         } else {
           // campaign template output compiled
           compiledPageData = {
