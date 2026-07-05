@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import { Sparkles, ArrowRight, CheckCircle, ExternalLink, Globe, Layout, Smartphone, Laptop, AlertCircle, ChevronRight, X, Search, ShoppingBag, Heart } from 'lucide-react';
 const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg';
 const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
+const DEFAULT_CAMPAIGN_HERO_IMAGE = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80';
 import { supabase } from '@/lib/supabase';
 
 // Helper dinamis untuk ikon template
@@ -196,6 +197,7 @@ function GenerateContent() {
   const [campaignCtaText, setCampaignCtaText] = useState('Dapatkan Sekarang!');
   const [campaignHeroImage, setCampaignHeroImage] = useState('');
   const [campaignHeroImageSource, setCampaignHeroImageSource] = useState('unsplash');
+  const [generateCampaignHero, setGenerateCampaignHero] = useState(false);
   const [isGeneratingCampaignHeroImage, setIsGeneratingCampaignHeroImage] = useState(false);
   const [isUploadingCampaignHeroImage, setIsUploadingCampaignHeroImage] = useState(false);
   const [campaignProblemsTitle, setCampaignProblemsTitle] = useState('Hambatan Utama Anda');
@@ -426,12 +428,14 @@ function GenerateContent() {
               setCampaignCtaText(content.hero?.cta_text || 'Dapatkan Sekarang!');
               setCampaignHeroImage(content.hero?.image_url || '');
               if (content.hero?.image_url) {
+                setGenerateCampaignHero(true);
                 if (content.hero.image_url.includes('images.unsplash.com')) {
                   setCampaignHeroImageSource('unsplash');
                 } else {
                   setCampaignHeroImageSource('upload');
                 }
               } else {
+                setGenerateCampaignHero(false);
                 setCampaignHeroImageSource('unsplash');
               }
               setCampaignProblemsTitle(content.problems?.title || 'Hambatan Utama Anda');
@@ -523,7 +527,7 @@ function GenerateContent() {
           headline: campaignHeadline,
           subheadline: campaignSubheadline,
           cta_text: campaignCtaText,
-          image_url: campaignHeroImage || null
+          image_url: generateCampaignHero ? (campaignHeroImage || null) : null
         },
         problems: {
           title: campaignProblemsTitle,
@@ -651,6 +655,8 @@ function GenerateContent() {
     campaignUrgency,
     campaignClosingCta,
     campaignWhatsapp,
+    campaignHeroImage,
+    generateCampaignHero,
     preweddingPhotoUrl,
     generatePrewedding,
     preweddingGenerateCount
@@ -1467,7 +1473,7 @@ function GenerateContent() {
         }
       }
 
-      if (templateType === 'campaign' && campaignHeroImageSource === 'unsplash' && !activeCampaignHeroImage) {
+      if (templateType === 'campaign' && generateCampaignHero && campaignHeroImageSource === 'unsplash' && !activeCampaignHeroImage) {
         setAiProgressStatus('queued');
         setAiProgressDetail('Sedang mengambil foto background campaign dari Unsplash...');
         try {
@@ -1492,6 +1498,9 @@ function GenerateContent() {
         } catch (err) {
           console.error('[AI Platform] Campaign hero photo Unsplash fetch API error:', err);
         }
+      } else if (templateType === 'campaign' && !generateCampaignHero) {
+        // User did not check "Gunakan Foto Background", clear the image
+        activeCampaignHeroImage = null;
       }
 
       if (templateType === 'wedding' || templateType === 'campaign') {
@@ -1628,7 +1637,7 @@ function GenerateContent() {
                 headline: aiConfig.hero?.headline || '',
                 subheadline: aiConfig.hero?.subheadline || '',
                 cta_text: aiConfig.hero?.cta_text || 'Dapatkan Sekarang!',
-                image_url: campaignHeroImage || null
+                image_url: activeCampaignHeroImage || null
               },
               problems: {
                 title: aiConfig.problems?.title || 'Hambatan Utama Anda',
@@ -1772,7 +1781,7 @@ function GenerateContent() {
               headline: campaignHeadline,
               subheadline: campaignSubheadline,
               cta_text: campaignCtaText,
-              image_url: campaignHeroImage || null
+              image_url: activeCampaignHeroImage || null
             },
             problems: {
               title: campaignProblemsTitle,
@@ -3256,101 +3265,119 @@ function GenerateContent() {
                           </div>
 
                           {/* Hero Background Image */}
+                          {/* Option: Custom Campaign Hero Background Photo */}
                           <div className="flex flex-col gap-2 bg-theme-bg/50 p-3 rounded-xl border border-theme-border mt-1">
-                            <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
-                              Foto Background Hero Section
-                            </label>
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setCampaignHeroImageSource('unsplash')}
-                                className={`flex-1 py-1 px-2.5 text-[9px] font-bold rounded-lg border transition-all ${
-                                  campaignHeroImageSource === 'unsplash'
-                                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
-                                    : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
-                                }`}
-                              >
-                                📷 Pilihan Acak Unsplash
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setCampaignHeroImageSource('upload')}
-                                className={`flex-1 py-1 px-2.5 text-[9px] font-bold rounded-lg border transition-all ${
-                                  campaignHeroImageSource === 'upload'
-                                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
-                                    : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
-                                }`}
-                              >
-                                📤 Upload Sendiri
-                              </button>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id="generateCampaignHero"
+                                checked={generateCampaignHero}
+                                onChange={(e) => {
+                                  setGenerateCampaignHero(e.target.checked);
+                                  if (!e.target.checked) setCampaignHeroImage('');
+                                }}
+                                className="w-4 h-4 rounded border-theme-border text-theme-accent focus:ring-theme-accent bg-theme-surface cursor-pointer"
+                              />
+                              <label htmlFor="generateCampaignHero" className="text-[10px] text-theme-text font-semibold cursor-pointer select-none">
+                                Gunakan Foto Background Hero Section
+                              </label>
                             </div>
+                            {generateCampaignHero && (
+                              <div className="mt-1.5 border-t border-theme-border pt-2 flex flex-col gap-2">
+                                {/* Source Selector: Unsplash vs Upload */}
+                                <div className="flex gap-2 mb-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setCampaignHeroImageSource('unsplash')}
+                                    className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
+                                      campaignHeroImageSource === 'unsplash'
+                                        ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
+                                        : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
+                                    }`}
+                                  >
+                                    📷 Pilihan Acak Unsplash
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setCampaignHeroImageSource('upload')}
+                                    className={`flex-1 py-1.5 px-3 text-[10px] font-bold rounded-lg border transition-all ${
+                                      campaignHeroImageSource === 'upload'
+                                        ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-sm'
+                                        : 'bg-theme-card border-theme-border text-theme-text-sec hover:text-theme-text'
+                                    }`}
+                                  >
+                                    📤 Upload Sendiri
+                                  </button>
+                                </div>
 
-                            {campaignHeroImageSource === 'unsplash' && (
-                              <div className="mt-1 flex flex-col gap-2">
-                                {isGeneratingCampaignHeroImage ? (
-                                  <div className="flex flex-col items-center justify-center p-3 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
-                                    <div className="h-4 w-4 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-                                    <span className="text-[8px] text-theme-text-muted font-bold animate-pulse">Mengambil foto dari Unsplash...</span>
-                                  </div>
-                                ) : campaignHeroImage ? (
-                                  <>
-                                    <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Unsplash Saat Ini</div>
-                                    <div className="relative w-full h-24 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                      <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Unsplash" />
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={handleGenerateCampaignHeroOnly}
-                                      className="w-full text-center font-bold py-1 px-2 rounded-lg transition-all active:scale-[0.98] border text-[9px] bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer"
-                                    >
-                                      🔄 Ganti Foto Unsplash Acak
-                                    </button>
-                                  </>
-                                ) : (
+                                {campaignHeroImageSource === 'unsplash' && (
                                   <div className="flex flex-col gap-2">
-                                    <div className="text-[9px] text-theme-text-muted leading-relaxed">
-                                      Belum ada foto background yang dipilih. Klik tombol di bawah untuk mengambil foto acak bertema bisnis/marketing dari Unsplash.
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={handleGenerateCampaignHeroOnly}
-                                      className="w-full font-bold py-1.5 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer"
-                                    >
-                                      ✨ Ambil Foto Unsplash Acak
-                                    </button>
+                                    {isGeneratingCampaignHeroImage ? (
+                                      <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
+                                        <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
+                                        <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengambil foto dari Unsplash...</span>
+                                      </div>
+                                    ) : campaignHeroImage ? (
+                                      <>
+                                        <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Unsplash Saat Ini</div>
+                                        <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                          <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Unsplash" />
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={handleGenerateCampaignHeroOnly}
+                                          className="w-full text-center font-bold py-1.5 px-2.5 rounded-lg transition-all active:scale-[0.98] border text-[9px] bg-theme-card hover:bg-theme-bg border-theme-border text-theme-text-sec cursor-pointer"
+                                        >
+                                          🔄 Ganti Foto Unsplash Acak
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <div className="flex flex-col gap-2">
+                                        <div className="text-[9px] text-theme-text-muted leading-relaxed">
+                                          Belum ada foto background yang dipilih. Klik tombol di bawah untuk mengambil foto acak bertema bisnis/marketing dari Unsplash.
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={handleGenerateCampaignHeroOnly}
+                                          className="w-full font-bold py-2 px-3 rounded-lg text-center transition-all shadow-md active:scale-[0.98] text-[9px] bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text cursor-pointer"
+                                        >
+                                          ✨ Ambil Foto Unsplash Acak
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
-                              </div>
-                            )}
 
-                            {campaignHeroImageSource === 'upload' && (
-                              <div className="mt-1 flex flex-col gap-2">
-                                {isUploadingCampaignHeroImage ? (
-                                  <div className="flex flex-col items-center justify-center p-3 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
-                                    <div className="h-4 w-4 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-                                    <span className="text-[8px] text-theme-text-muted font-bold animate-pulse">Mengunggah foto...</span>
-                                  </div>
-                                ) : campaignHeroImage && !campaignHeroImage.includes('images.unsplash.com') ? (
-                                  <>
-                                    <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Upload Anda</div>
-                                    <div className="relative w-full h-24 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
-                                      <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Upload" />
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="text-[9px] text-theme-text-muted leading-relaxed">
-                                    Silakan unggah foto background hero Anda sendiri.
+                                {campaignHeroImageSource === 'upload' && (
+                                  <div className="flex flex-col gap-2">
+                                    {isUploadingCampaignHeroImage ? (
+                                      <div className="flex flex-col items-center justify-center p-4 bg-theme-surface/50 border border-theme-border rounded-lg gap-2">
+                                        <div className="h-5 w-5 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
+                                        <span className="text-[9px] text-theme-text-muted font-bold animate-pulse">Mengunggah foto...</span>
+                                      </div>
+                                    ) : campaignHeroImage && !campaignHeroImage.includes('images.unsplash.com') ? (
+                                      <>
+                                        <div className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Foto Upload Anda</div>
+                                        <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
+                                          <img src={campaignHeroImage} className="w-full h-full object-cover" alt="Hero Upload" />
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="text-[9px] text-theme-text-muted leading-relaxed">
+                                        Silakan unggah foto background hero Anda sendiri.
+                                      </div>
+                                    )}
+                                    <label className="w-full bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-2 px-3 rounded-lg text-center cursor-pointer transition-colors">
+                                      {isUploadingCampaignHeroImage ? 'Mengunggah...' : 'Upload Background'}
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => handleUploadImage(e.target.files[0], 'campaignHero')}
+                                      />
+                                    </label>
                                   </div>
                                 )}
-                                <label className="w-full bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-3 rounded-lg text-center cursor-pointer transition-colors">
-                                  {isUploadingCampaignHeroImage ? 'Mengunggah...' : 'Upload Background'}
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={(e) => handleUploadImage(e.target.files[0], 'campaignHero')}
-                                  />
-                                </label>
                               </div>
                             )}
                           </div>
