@@ -63,6 +63,36 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Intercept window.fetch globally to catch 401 Unauthorized when a session is invalidated externally
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      try {
+        const response = await originalFetch(...args);
+        const requestUrl = typeof args[0] === 'string' ? args[0] : (args[0] instanceof URL ? args[0].href : (args[0] && args[0].url));
+        const isBackendApi = requestUrl && requestUrl.startsWith(process.env.NEXT_PUBLIC_API_URL);
+
+        if (response.status === 401 && isBackendApi) {
+          console.warn('[AuthContext] Intercepted backend 401 Unauthorized. Revoking credentials...');
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (currentSession) {
+            await supabase.auth.signOut();
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+          }
+        }
+        return response;
+      } catch (err) {
+        throw err;
+      }
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
   return (
     <AuthContext.Provider value={{ user, session, profile, loading, refreshProfile }}>
       {children}
