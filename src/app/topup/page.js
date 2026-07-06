@@ -21,6 +21,7 @@ export default function TopUpPage() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [products, setProducts] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -51,6 +52,108 @@ export default function TopUpPage() {
     };
     fetchProducts();
   }, [session]);
+
+  // Fetch active payment methods list from backend
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      if (!session) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payment-methods`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data)) {
+            setPaymentMethods(result.data);
+            
+            // Set default selected channel based on fetched methods
+            const activeMethods = result.data.filter(m => m.is_active);
+            if (activeMethods.length > 0) {
+              const vaMethod = activeMethods.find(m => m.id === 'virtual_account');
+              if (vaMethod && vaMethod.config?.channels?.length > 0) {
+                setChannel(vaMethod.config.channels[0]);
+              } else {
+                const firstMethod = activeMethods[0];
+                if (firstMethod.id === 'qris') {
+                  setChannel('QRIS');
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch payment methods:', err);
+      }
+    };
+    fetchPaymentMethods();
+  }, [session]);
+
+  // Fetch active pending topup transaction from backend
+  useEffect(() => {
+    const fetchPendingTransaction = async () => {
+      if (!session) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/pending`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setActiveTransaction(result.data);
+            // Sync channel select state to match the pending channel
+            if (result.data.metadata?.channel) {
+              setChannel(result.data.metadata.channel);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch pending transaction:', err);
+      }
+    };
+    fetchPendingTransaction();
+  }, [session]);
+
+  // Helper to determine payment options based on dynamic database setting
+  const getActivePaymentChannels = () => {
+    if (paymentMethods.length === 0) {
+      // Fallback
+      return [
+        { code: 'BCA', name: 'BCA Virtual Account' },
+        { code: 'MANDIRI', name: 'Mandiri Virtual Account' },
+        { code: 'BNI', name: 'BNI Virtual Account' },
+        { code: 'BRI', name: 'BRI Virtual Account' },
+      ];
+    }
+
+    const channels = [];
+    
+    // Process Virtual Account
+    const vaMethod = paymentMethods.find(m => m.id === 'virtual_account' && m.is_active);
+    if (vaMethod) {
+      const vaChannels = vaMethod.config?.channels || ['BCA', 'MANDIRI', 'BNI', 'BRI'];
+      vaChannels.forEach(ch => {
+        channels.push({
+          code: ch,
+          name: `${ch} Virtual Account`
+        });
+      });
+    }
+
+    // Process QRIS
+    const qrisMethod = paymentMethods.find(m => m.id === 'qris' && m.is_active);
+    if (qrisMethod) {
+      channels.push({
+        code: 'QRIS',
+        name: 'QRIS (Gopay, OVO, ShopeePay, LinkAja)'
+      });
+    }
+
+    return channels;
+  };
 
   if (loading || (!user && loading)) {
     return (
@@ -106,6 +209,32 @@ export default function TopUpPage() {
       }
     } catch (err) {
       setError('Terjadi kesalahan jaringan.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelPayment = async () => {
+    if (!activeTransaction) return;
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${activeTransaction.id}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        setActiveTransaction(null);
+      } else {
+        const result = await response.json();
+        setError(result.error || 'Gagal membatalkan tagihan pembayaran.');
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan jaringan saat membatalkan.');
     } finally {
       setIsSubmitting(false);
     }
@@ -241,10 +370,10 @@ export default function TopUpPage() {
                   {/* Channel Selection */}
                   <div>
                     <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2.5">
-                      Metode Pembayaran (Virtual Account)
+                      Pilih Metode Pembayaran
                     </label>
                     <div className="space-y-2">
-                      {paymentChannels.map((ch) => (
+                      {getActivePaymentChannels().map((ch) => (
                         <button
                           key={ch.code}
                           type="button"
@@ -288,11 +417,15 @@ export default function TopUpPage() {
                 </form>
               </div>
             ) : (
-              /* Menampilkan VA Number */
+              /* Menampilkan VA Number / QRIS Code */
               <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 space-y-5">
                 <div>
                   <h3 className="text-sm font-bold text-theme-text mb-0.5" style={{ fontFamily: "'Sora', sans-serif" }}>Menunggu Pembayaran</h3>
-                  <p className="text-[10px] text-theme-text-sec">Silakan lakukan transfer ke nomor Virtual Account di bawah</p>
+                  <p className="text-[10px] text-theme-text-sec">
+                    {channel === 'QRIS' 
+                      ? 'Silakan scan kode QRIS di bawah ini untuk membayar' 
+                      : 'Silakan lakukan transfer ke nomor Virtual Account di bawah'}
+                  </p>
                 </div>
 
                 <div className="bg-theme-bg border border-theme-border rounded-xl p-4 space-y-3">
@@ -315,13 +448,38 @@ export default function TopUpPage() {
                     </span>
                   </div>
 
-                  <div className="border-t border-theme-border pt-3.5 flex flex-col gap-1">
-                    <span className="text-[9px] text-theme-text-muted uppercase tracking-wider font-bold">Nomor Virtual Account ({channel})</span>
-                    <span className="text-xl font-mono font-extrabold text-theme-accent tracking-wide select-all">
-                      {(activeTransaction.va_number || '').trim() || '88301234567890'}
-                    </span>
-                  </div>
+                  {channel === 'QRIS' ? (
+                    <div className="border-t border-theme-border pt-3.5 flex flex-col items-center gap-3">
+                      <span className="text-[9px] text-theme-text-muted uppercase tracking-wider font-bold">Scan Kode QRIS</span>
+                      <div className="bg-white p-3 rounded-2xl border border-theme-border flex items-center justify-center">
+                        <img 
+                          src={activeTransaction.metadata?.qr_image_url || activeTransaction.winpay?.qrUrl || '/qris.png'} 
+                          alt="QRIS Code" 
+                          className="w-48 h-48 object-contain"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="border-t border-theme-border pt-3.5 flex flex-col gap-1">
+                      <span className="text-[9px] text-theme-text-muted uppercase tracking-wider font-bold">Nomor Virtual Account ({channel})</span>
+                      <span className="text-xl font-mono font-extrabold text-theme-accent tracking-wide select-all">
+                        {(activeTransaction.va_number || '').trim() || '88301234567890'}
+                      </span>
+                    </div>
+                  )}
                 </div>
+
+                {/* WhatsApp Payment Verification Button for Manual QRIS Image Mode */}
+                {channel === 'QRIS' && activeTransaction.metadata?.confirm_payment_url && (
+                  <a
+                    href={activeTransaction.metadata.confirm_payment_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-center"
+                  >
+                    <span>Verifikasi Pembayaran via WhatsApp</span>
+                  </a>
+                )}
 
                 {/* Local Dev Simulator Helper */}
                 <div className="bg-theme-accent/5 border border-theme-accent/10 rounded-xl p-4 space-y-2">
@@ -349,10 +507,11 @@ export default function TopUpPage() {
                 </div>
 
                 <button
-                  onClick={() => setActiveTransaction(null)}
-                  className="w-full border border-theme-border text-theme-text-sec hover:text-theme-text font-semibold text-xs py-2.5 px-4 rounded-xl transition-all"
+                  onClick={handleCancelPayment}
+                  disabled={isSubmitting}
+                  className="w-full border border-theme-border text-theme-text-sec hover:text-theme-text font-semibold text-xs py-2.5 px-4 rounded-xl transition-all disabled:opacity-50"
                 >
-                  Batal / Kembali
+                  {isSubmitting ? 'Membatalkan...' : 'Batal / Kembali'}
                 </button>
               </div>
             )}
