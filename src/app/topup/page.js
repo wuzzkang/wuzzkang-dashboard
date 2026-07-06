@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
-import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone } from 'lucide-react';
+import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone, Clock } from 'lucide-react';
 
 export default function TopUpPage() {
   const { user, session, profile, loading, refreshProfile } = useAuth();
@@ -18,6 +18,7 @@ export default function TopUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [activeTransaction, setActiveTransaction] = useState(null);
+  const [timeLeft, setTimeLeft] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [products, setProducts] = useState([]);
@@ -116,6 +117,39 @@ export default function TopUpPage() {
     };
     fetchPendingTransaction();
   }, [session]);
+
+  // Countdown timer for pending payment expiration
+  useEffect(() => {
+    if (!activeTransaction || !activeTransaction.metadata?.expired_at) {
+      setTimeLeft('');
+      return;
+    }
+
+    const updateTimer = () => {
+      const difference = new Date(activeTransaction.metadata.expired_at).getTime() - Date.now();
+      if (difference <= 0) {
+        setTimeLeft('Expired');
+        setActiveTransaction(null);
+        refreshProfile();
+        return;
+      }
+
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      const parts = [];
+      if (hours > 0) parts.push(`${hours} jam`);
+      if (minutes > 0) parts.push(`${minutes} menit`);
+      parts.push(`${seconds} detik`);
+
+      setTimeLeft(`Sisa waktu: ${parts.join(' ')}`);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [activeTransaction, refreshProfile]);
 
   // Helper to determine payment options based on dynamic database setting
   const getActivePaymentChannels = () => {
@@ -433,6 +467,16 @@ export default function TopUpPage() {
                     <span>Order ID:</span>
                     <span className="font-mono text-theme-text">{activeTransaction.order_id}</span>
                   </div>
+                  
+                  {timeLeft && (
+                    <div className="flex justify-between items-center text-[10px] font-semibold text-theme-text-sec border-t border-theme-border/40 pt-2">
+                      <span>Batas Pembayaran:</span>
+                      <span className="text-red-400 font-bold flex items-center gap-1.5">
+                        <Clock className="h-3 w-3 animate-pulse" />
+                        <span>{timeLeft}</span>
+                      </span>
+                    </div>
+                  )}
                   
                   <div className="flex justify-between items-center text-[10px] font-semibold text-theme-text-sec">
                     <span>Nominal Pembayaran:</span>
