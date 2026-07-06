@@ -582,29 +582,31 @@ export default function TopUpPage() {
                 )}
 
                 {/* Local Dev Simulator Helper */}
-                <div className="bg-theme-accent/5 border border-theme-accent/10 rounded-xl p-4 space-y-2">
-                  <div className="flex gap-2 items-center text-[10px] font-bold text-theme-accent uppercase tracking-wider">
-                    <Smartphone className="h-3.5 w-3.5" />
-                    <span>Simulator Pembayaran (Lokal Dev)</span>
+                {(process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_ENABLE_PAYMENT_SIMULATOR === 'true') && (
+                  <div className="bg-theme-accent/5 border border-theme-accent/10 rounded-xl p-4 space-y-2">
+                    <div className="flex gap-2 items-center text-[10px] font-bold text-theme-accent uppercase tracking-wider">
+                      <Smartphone className="h-3.5 w-3.5" />
+                      <span>Simulator Pembayaran (Lokal Dev)</span>
+                    </div>
+                    <p className="text-[10px] text-theme-text-sec leading-relaxed">
+                      Karena Anda berada di lingkungan pengembangan lokal, Anda dapat langsung menyimulasikan konfirmasi pembayaran sukses tanpa perlu mentransfer uang asli.
+                    </p>
+                    <button
+                      onClick={handleSimulatePayment}
+                      disabled={isSimulating}
+                      className="w-full mt-1 bg-theme-accent/80 hover:bg-theme-accent text-theme-accent-text font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isSimulating ? (
+                        <>
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                          <span>Memproses Simulasi...</span>
+                        </>
+                      ) : (
+                        <span>Simulasikan Bayar Sukses</span>
+                      )}
+                    </button>
                   </div>
-                  <p className="text-[10px] text-theme-text-sec leading-relaxed">
-                    Karena Anda berada di lingkungan pengembangan lokal, Anda dapat langsung menyimulasikan konfirmasi pembayaran sukses tanpa perlu mentransfer uang asli.
-                  </p>
-                  <button
-                    onClick={handleSimulatePayment}
-                    disabled={isSimulating}
-                    className="w-full mt-1 bg-theme-accent/80 hover:bg-theme-accent text-theme-accent-text font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
-                  >
-                    {isSimulating ? (
-                      <>
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        <span>Memproses Simulasi...</span>
-                      </>
-                    ) : (
-                      <span>Simulasikan Bayar Sukses</span>
-                    )}
-                  </button>
-                </div>
+                )}
 
                 <button
                   onClick={handleCancelPayment}
