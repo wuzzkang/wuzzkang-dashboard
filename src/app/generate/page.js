@@ -184,6 +184,8 @@ function GenerateContent() {
   const [storeDescription, setStoreDescription] = useState('');
   const [storeLogoUrl, setStoreLogoUrl] = useState('');
   const [storeBannerUrl, setStoreBannerUrl] = useState('');
+  const [generateStoreBanner, setGenerateStoreBanner] = useState(false);
+  const [storeBannerSource, setStoreBannerSource] = useState('unsplash');
   const [tokoProducts, setTokoProducts] = useState([{ name: '', price: '', description: '', image_url: '' }]);
   const [tokoWhatsapp, setTokoWhatsapp] = useState('');
   const [tokoInstagram, setTokoInstagram] = useState('');
@@ -412,6 +414,17 @@ function GenerateContent() {
               setStoreDescription(content.store?.description || '');
               setStoreLogoUrl(content.store?.logo_url || '');
               setStoreBannerUrl(content.store?.banner_url || '');
+              if (content.store?.banner_url) {
+                setGenerateStoreBanner(true);
+                if (content.store.banner_url.includes('images.unsplash.com')) {
+                  setStoreBannerSource('unsplash');
+                } else {
+                  setStoreBannerSource('upload');
+                }
+              } else {
+                setGenerateStoreBanner(false);
+                setStoreBannerSource('unsplash');
+              }
               setTokoProducts(content.products || [{ name: '', price: '', description: '', image_url: '' }]);
               setTokoWhatsapp(content.contact?.whatsapp || '');
               setTokoInstagram(content.contact?.instagram || '');
@@ -504,7 +517,7 @@ function GenerateContent() {
           tagline: storeTagline,
           description: storeDescription || null,
           logo_url: storeLogoUrl || null,
-          banner_url: storeBannerUrl || null
+          banner_url: generateStoreBanner ? (storeBannerUrl || null) : null
         },
         products: tokoProducts.map(p => ({
           name: p.name,
@@ -636,6 +649,8 @@ function GenerateContent() {
     storeDescription,
     storeLogoUrl,
     storeBannerUrl,
+    generateStoreBanner,
+    storeBannerSource,
     tokoProducts,
     tokoWhatsapp,
     tokoInstagram,
@@ -851,7 +866,7 @@ function GenerateContent() {
     const isCampaignHero = target === 'campaignHero';
     const isCelebrant = target === 'celebrant';
     const isLogo = target === 'logo';
-    const isBanner = target === 'banner';
+    const isBanner = target === 'banner' || target === 'storeBanner';
     const isProduct = target.startsWith('product-');
     const productIndex = isProduct ? parseInt(target.split('-')[1]) : null;
 
@@ -1448,6 +1463,7 @@ function GenerateContent() {
     try {
       let activePreweddingPhotoUrl = preweddingPhotoUrl;
       let activeCampaignHeroImage = campaignHeroImage;
+      let activeStoreBannerUrl = storeBannerUrl;
 
       if (templateType === 'wedding' && generatePrewedding && preweddingSource === 'unsplash' && !activePreweddingPhotoUrl) {
         setAiProgressStatus('queued');
@@ -1502,6 +1518,36 @@ function GenerateContent() {
       } else if (templateType === 'campaign' && !generateCampaignHero) {
         // User did not check "Gunakan Foto Background", clear the image
         activeCampaignHeroImage = null;
+      }
+
+      if (templateType === 'toko-online' && generateStoreBanner && storeBannerSource === 'unsplash' && !activeStoreBannerUrl) {
+        setAiProgressStatus('queued');
+        setAiProgressDetail('Sedang mengambil foto background toko dari Unsplash...');
+        try {
+          const preResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/prewedding`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              query: 'shopping,store,commercial,product'
+            }),
+          });
+          const preResult = await preResponse.json();
+          if (preResponse.ok && preResult.success) {
+            activeStoreBannerUrl = preResult.preweddingPhotoUrl;
+            setStoreBannerUrl(activeStoreBannerUrl);
+            console.log(`[AI Platform] Store banner photo fetched successfully from Unsplash: ${activeStoreBannerUrl}`);
+          } else {
+            console.warn('[AI Platform] Store banner photo Unsplash fetch returned error:', preResult.error);
+          }
+        } catch (err) {
+          console.error('[AI Platform] Store banner photo Unsplash fetch API error:', err);
+        }
+      } else if (templateType === 'toko-online' && !generateStoreBanner) {
+        // User did not check the banner option, clear the image
+        activeStoreBannerUrl = null;
       }
 
       if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday' || templateType === 'toko-online') {
@@ -1719,7 +1765,7 @@ function GenerateContent() {
                 tagline: aiConfig.store_tagline || storeTagline,
                 description: aiConfig.store_description || storeDescription || null,
                 logo_url: storeLogoUrl || null,
-                banner_url: storeBannerUrl || null
+                banner_url: generateStoreBanner ? (activeStoreBannerUrl || null) : null
               },
               products: tokoProducts.map((p, idx) => {
                 const aiProduct = aiConfig.products?.[idx];
@@ -2981,7 +3027,7 @@ function GenerateContent() {
                           />
                         </div>
 
-                        {/* Logo & Banner Uploads */}
+                        {/* Logo Toko */}
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Logo Toko (Opsional)</label>
@@ -3000,24 +3046,24 @@ function GenerateContent() {
                               </label>
                             </div>
                           </div>
-                          <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Banner Hero (Opsional)</label>
-                            <div className="flex gap-2 items-center bg-theme-bg p-2 rounded-xl border border-theme-border">
-                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[10px]">
-                                {storeBannerUrl ? <img src={storeBannerUrl} className="w-full h-full object-cover" /> : '🖼️'}
-                              </div>
-                              <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-2 rounded text-center cursor-pointer transition-all">
-                                {isUploadingBanner ? 'Uploading...' : 'Upload'}
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => handleUploadImage(e.target.files[0], 'banner')}
-                                />
-                              </label>
-                            </div>
-                          </div>
                         </div>
+
+                        {/* Banner Hero / Background Image */}
+                        <ImagePickerField
+                          checkboxId="generateStoreBanner"
+                          checkboxLabel="Gunakan Foto Background / Banner Hero Section"
+                          unsplashQuery="shopping,store,commercial,product"
+                          imageUrl={storeBannerUrl}
+                          onImageChange={setStoreBannerUrl}
+                          apiToken={session?.access_token}
+                          apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                          isEnabled={generateStoreBanner}
+                          onEnabledChange={setGenerateStoreBanner}
+                          source={storeBannerSource}
+                          onSourceChange={setStoreBannerSource}
+                          onUpload={handleUploadImage}
+                          uploadType="storeBanner"
+                        />
 
                         {/* Katalog Produk */}
                         <div className="flex justify-between items-center border-t border-theme-border pt-4">
