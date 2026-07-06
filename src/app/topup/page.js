@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
-import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone, Clock } from 'lucide-react';
+import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X } from 'lucide-react';
 
 export default function TopUpPage() {
   const { user, session, profile, loading, refreshProfile } = useAuth();
@@ -23,6 +23,9 @@ export default function TopUpPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [products, setProducts] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [isQrisZoomed, setIsQrisZoomed] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -151,6 +154,33 @@ export default function TopUpPage() {
     return () => clearInterval(interval);
   }, [activeTransaction, refreshProfile]);
 
+  const fetchHistory = async () => {
+    if (!session) return;
+    try {
+      setIsLoadingHistory(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/history`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          setTransactions(result.data);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch transaction history:', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // Fetch transaction history reactively
+  useEffect(() => {
+    fetchHistory();
+  }, [session, activeTransaction]);
+
   // Helper to determine payment options based on dynamic database setting
   const getActivePaymentChannels = () => {
     if (paymentMethods.length === 0) {
@@ -204,6 +234,17 @@ export default function TopUpPage() {
     { code: 'BNI', name: 'BNI Virtual Account' },
     { code: 'BRI', name: 'BRI Virtual Account' },
   ];
+
+  const downloadQris = () => {
+    if (!activeTransaction) return;
+    const qrUrl = activeTransaction.metadata?.qr_image_url || activeTransaction.winpay?.qrUrl || '/qris.png';
+    const link = document.createElement('a');
+    link.href = qrUrl;
+    link.download = `QRIS-${activeTransaction.order_id}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleCreatePayment = async (e) => {
     e.preventDefault();
@@ -493,15 +534,30 @@ export default function TopUpPage() {
                   </div>
 
                   {channel === 'QRIS' ? (
-                    <div className="border-t border-theme-border pt-3.5 flex flex-col items-center gap-3">
+                    <div className="border-t border-theme-border pt-3.5 flex flex-col items-center gap-3.5">
                       <span className="text-[9px] text-theme-text-muted uppercase tracking-wider font-bold">Scan Kode QRIS</span>
-                      <div className="bg-white p-3 rounded-2xl border border-theme-border flex items-center justify-center">
+                      <div 
+                        onClick={() => setIsQrisZoomed(true)}
+                        className="bg-white p-2.5 rounded-2xl border border-theme-border flex items-center justify-center cursor-zoom-in hover:scale-[1.02] active:scale-95 transition-all shadow-md group relative overflow-hidden"
+                      >
                         <img 
                           src={activeTransaction.metadata?.qr_image_url || activeTransaction.winpay?.qrUrl || '/qris.png'} 
                           alt="QRIS Code" 
-                          className="w-48 h-48 object-contain"
+                          className="w-56 h-56 object-contain"
                         />
+                        <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold gap-1 rounded-2xl">
+                          <Maximize2 className="h-3.5 w-3.5" />
+                          <span>Klik untuk Perbesar</span>
+                        </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={downloadQris}
+                        className="text-[10px] font-bold text-theme-accent hover:underline flex items-center gap-1 mt-0.5"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        <span>Unduh Gambar QRIS</span>
+                      </button>
                     </div>
                   ) : (
                     <div className="border-t border-theme-border pt-3.5 flex flex-col gap-1">
@@ -594,7 +650,156 @@ export default function TopUpPage() {
               </li>
             </ul>
           </div>
+
+          {/* Riwayat Transaksi Card */}
+          <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 animate-fadeIn">
+            <h3 className="text-xs font-bold text-theme-text mb-3" style={{ fontFamily: "'Sora', sans-serif" }}>Riwayat Transaksi</h3>
+            {isLoadingHistory ? (
+              <div className="py-6 flex items-center justify-center">
+                <RefreshCw className="h-4 w-4 animate-spin text-theme-text-muted" />
+              </div>
+            ) : transactions.length === 0 ? (
+              <p className="text-center text-xs text-theme-text-muted py-4">Belum ada riwayat transaksi</p>
+            ) : (
+              <div className="space-y-3 max-h-72 overflow-y-auto pr-1 no-scrollbar">
+                {transactions.map((tx) => {
+                  const isTopup = tx.type === 'topup';
+                  const isManual = tx.metadata?.mode === 'image';
+                  const channelName = tx.metadata?.channel || (isTopup ? 'Top Up' : 'Deployment');
+                  const cashVal = tx.metadata?.cash_amount;
+                  const dateStr = new Date(tx.created_at).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
+
+                  // Status details
+                  let statusColor = 'text-theme-text-sec bg-theme-bg border-theme-border';
+                  if (tx.status === 'PAID' || tx.status === 'SUCCESS') {
+                    statusColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                  } else if (tx.status === 'PENDING') {
+                    statusColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                  } else if (tx.status === 'EXPIRED') {
+                    statusColor = 'text-theme-text-muted bg-theme-bg border-theme-border';
+                  } else if (tx.status === 'FAILED') {
+                    statusColor = 'text-red-400 bg-red-500/10 border-red-500/20';
+                  }
+
+                  return (
+                    <div key={tx.id} className="bg-theme-bg/30 border border-theme-border/60 rounded-xl p-3 space-y-2.5 transition-all hover:border-theme-border">
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-bold text-theme-text">
+                              {isManual ? 'QRIS (Manual)' : `${channelName}`}
+                            </span>
+                            {tx.va_number && tx.va_number !== tx.order_id && (
+                              <span className="font-mono text-[9px] text-theme-text-sec bg-theme-bg px-1 py-0.5 rounded border border-theme-border">
+                                {tx.va_number}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-theme-text-muted block mt-0.5">{dateStr}</span>
+                        </div>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border ${statusColor}`}>
+                          {tx.status}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-xs pt-1 border-t border-theme-border/30">
+                        <span className="text-theme-text-sec font-medium">
+                          {cashVal ? `Rp ${cashVal.toLocaleString('id-ID')}` : '-'}
+                        </span>
+                        <span className={`font-black ${isTopup ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {isTopup ? `+${tx.amount.toLocaleString('id-ID')}` : `-${Math.abs(tx.amount).toLocaleString('id-ID')}`} Credit
+                        </span>
+                      </div>
+
+                      {/* Interactive Actions for PENDING status */}
+                      {tx.status === 'PENDING' && isTopup && (
+                        <div className="pt-2 border-t border-theme-border/20 flex gap-2">
+                          {isManual ? (
+                            tx.metadata?.confirm_payment_url && (
+                              <a
+                                href={tx.metadata.confirm_payment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full text-center bg-emerald-600/20 hover:bg-emerald-600/35 border border-emerald-500/30 text-emerald-400 font-bold text-[10px] py-1.5 px-3 rounded-lg transition-all"
+                              >
+                                Lanjut Konfirmasi WA
+                              </a>
+                            )
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setActiveTransaction(tx);
+                                setChannel(tx.metadata?.channel || 'BCA');
+                              }}
+                              className="w-full text-center bg-theme-accent/20 hover:bg-theme-accent/35 border border-theme-accent/30 text-theme-accent font-bold text-[10px] py-1.5 px-3 rounded-lg transition-all"
+                            >
+                              Lihat Cara Bayar (VA)
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* QRIS Zoom Modal Overlay */}
+        {isQrisZoomed && activeTransaction && (
+          <div 
+            onClick={() => setIsQrisZoomed(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-all duration-300 cursor-zoom-out animate-fadeIn"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white p-5 rounded-3xl w-full max-w-[400px] shadow-2xl relative text-slate-900 flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-200"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setIsQrisZoomed(false)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                title="Tutup"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="text-center mt-2">
+                <h3 className="text-base font-black tracking-tight text-slate-900" style={{ fontFamily: "'Sora', sans-serif" }}>
+                  Scan Kode QRIS
+                </h3>
+                <p className="text-[10px] font-mono text-slate-500 mt-1">
+                  Order ID: {activeTransaction.order_id}
+                </p>
+              </div>
+
+              {/* QRIS Large Image */}
+              <div className="bg-white p-2.5 rounded-2xl border border-slate-200 flex items-center justify-center shadow-inner">
+                <img 
+                  src={activeTransaction.metadata?.qr_image_url || activeTransaction.winpay?.qrUrl || '/qris.png'} 
+                  alt="QRIS Code Large" 
+                  className="w-[350px] h-[350px] object-contain"
+                />
+              </div>
+
+              <div className="w-full mt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsQrisZoomed(false)}
+                  className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200/60 cursor-pointer active:scale-[0.98]"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
