@@ -1603,6 +1603,7 @@ function GenerateContent() {
               quote: prompt || '',
               theme: designKey,
             },
+            previewOnly: true,
             async: true
           };
         } else if (templateType === 'birthday') {
@@ -1626,6 +1627,7 @@ function GenerateContent() {
               theme: designKey,
               quote: prompt || ''
             },
+            previewOnly: true,
             async: true
           };
         } else if (templateType === 'toko-online') {
@@ -1644,6 +1646,7 @@ function GenerateContent() {
                 description: p.description || ''
               }))
             },
+            previewOnly: true,
             async: true
           };
         } else {
@@ -1659,6 +1662,7 @@ function GenerateContent() {
               campaignBrief: campaignBrief || '',
               targetAudience: '', // empty default, can be populated if form field added later
             },
+            previewOnly: true,
             async: true
           };
         }
