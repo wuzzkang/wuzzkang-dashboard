@@ -462,57 +462,7 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
             ${giftHtml}
 
             <!-- GUESTBOOK -->
-            <section id="guestbook" class="py-20 px-4" style="background:${bgCard}">
-                <div class="max-w-sm mx-auto">
-                    <div class="text-center mb-10">
-                        <p class="cl-sans text-[10px] uppercase tracking-widest font-semibold mb-2" style="color:${primary}">Buku Tamu</p>
-                        <h2 class="cl-cursive mb-2" style="font-size:2.8rem;color:${primary}">Kehadiran & Doa</h2>
-                        <p class="cl-sans text-xs" style="color:${textMuted}">Doa dan kehadiran Anda adalah kebahagiaan bagi kami.</p>
-                    </div>
-
-                    <!-- RSVP Form -->
-                    <div class="cl-card mb-6">
-                        <h3 class="cl-serif text-sm font-bold mb-5" style="color:${textDark}">Kirim Ucapan</h3>
-                        <form id="cl-rsvp-form" class="space-y-3">
-                            <input type="text" id="cl-rsvp-name" placeholder="Nama Anda..." required
-                                class="cl-input" value="${guestName !== 'Tamu Undangan' ? guestName : ''}">
-                            <select id="cl-rsvp-status" class="cl-input">
-                                <option value="Hadir">✅ Insyaallah Hadir</option>
-                                <option value="Tidak Hadir">❌ Maaf Tidak Bisa Hadir</option>
-                                <option value="Ragu-ragu">🤔 Masih Ragu-ragu</option>
-                            </select>
-
-                            <!-- Sticker Picker -->
-                            <div>
-                                <label class="cl-sans text-[10px] font-bold uppercase tracking-wider block mb-2" style="color:${textMuted}">Pilih Stiker</label>
-                                <div class="flex gap-2 justify-around" id="cl-sticker-row">
-                                    ${['🌹','💍','🥂','🎉','🤲'].map((s, i) => `
-                                        <button type="button" data-sticker="${s}"
-                                            class="cl-sticker-btn text-xl p-2 rounded-xl border transition-all"
-                                            style="background:${bgCream};border-color:${i===0?primary:light+'44'};${i===0?`box-shadow:0 0 0 2px ${primary}33`:''}"
-                                        >${s}</button>
-                                    `).join('')}
-                                </div>
-                            </div>
-
-                            <textarea id="cl-rsvp-wish" rows="3" placeholder="Tulis doa & ucapan terbaik..." required class="cl-input" style="resize:none"></textarea>
-
-                            <button type="submit" class="btn-cl w-full py-3 rounded-full cl-sans text-xs font-semibold tracking-wider">
-                                Kirim Ucapan 💌
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Wish List -->
-                    <div class="cl-card">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="cl-serif text-sm font-bold" style="color:${textDark}">Ucapan Tamu</h3>
-                            <span class="cl-sans text-[10px] font-bold px-2.5 py-0.5 rounded-full" style="background:${primary}22;color:${primary}" id="cl-wishes-count">0</span>
-                        </div>
-                        <div class="space-y-3 max-h-80 overflow-y-auto pr-1" id="cl-wishes-list"></div>
-                    </div>
-                </div>
-            </section>
+            <div id="wishes-board-root"></div>
 
             <!-- FOOTER -->
             <footer class="py-16 text-center px-4 relative overflow-hidden" style="background:${textDark}">
@@ -606,62 +556,15 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
         });
     }
 
-    // ── Sticker Selector ──────────────────────────────────────────────────────
-    let selectedSticker = '🌹';
-    document.querySelectorAll('.cl-sticker-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.cl-sticker-btn').forEach(b => {
-                b.style.borderColor = light + '44';
-                b.style.boxShadow = 'none';
-            });
-            btn.style.borderColor = primary;
-            btn.style.boxShadow = `0 0 0 2px ${primary}33`;
-            selectedSticker = btn.dataset.sticker;
+    // Initialize Guestbook Board Component
+    const wishesRoot = document.getElementById('wishes-board-root');
+    if (wishesRoot) {
+        const { initWishesBoard } = await import('../components/WishesBoard.js');
+        initWishesBoard(wishesRoot, pageConfig, guestName, {
+            primaryColor: primary,
+            bgLight: '#FAF7F5',
+            borderColor: '#EADFD9',
+            buttonClass: 'btn-cl'
         });
-    });
-
-    // ── Wish Rendering ────────────────────────────────────────────────────────
-    const wishList  = document.getElementById('cl-wishes-list');
-    const wishCount = document.getElementById('cl-wishes-count');
-
-    const renderWishes = () => {
-        const all = JSON.parse(localStorage.getItem(wishesKey)) || [];
-        wishCount.innerText = all.length;
-        if (all.length === 0) {
-            wishList.innerHTML = `<p class="cl-sans text-xs text-center py-8" style="color:${textMuted}">Belum ada ucapan. Jadilah yang pertama! 🌹</p>`;
-            return;
-        }
-        wishList.innerHTML = all.map(w => {
-            const color = w.status === 'Hadir' ? '#16a34a' : w.status === 'Tidak Hadir' ? '#dc2626' : '#b45309';
-            return `
-                <div class="cl-wish-item relative">
-                    <span class="absolute right-3 top-3 text-xl">${w.sticker || '🌹'}</span>
-                    <div class="flex items-center gap-2 mb-1 pr-8">
-                        <span class="cl-sans text-xs font-bold" style="color:${textDark}">${w.name}</span>
-                        <span class="cl-sans text-[9px] font-semibold px-2 py-0.5 rounded-full" style="background:${color}18;color:${color}">${w.status}</span>
-                    </div>
-                    <p class="cl-sans text-xs leading-relaxed mb-1 pr-8" style="color:${textMuted}">${w.wish}</p>
-                    <span class="cl-sans text-[9px]" style="color:${textMuted}88">${w.time || 'Baru saja'}</span>
-                </div>
-            `;
-        }).join('');
-    };
-    renderWishes();
-
-    // ── RSVP Submit ───────────────────────────────────────────────────────────
-    document.getElementById('cl-rsvp-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name   = document.getElementById('cl-rsvp-name').value.trim();
-        const status = document.getElementById('cl-rsvp-status').value;
-        const wish   = document.getElementById('cl-rsvp-wish').value.trim();
-        if (!name || !wish) return;
-
-        const all = JSON.parse(localStorage.getItem(wishesKey)) || [];
-        all.unshift({ name, status, wish, sticker: selectedSticker, time: 'Baru saja' });
-        localStorage.setItem(wishesKey, JSON.stringify(all));
-
-        document.getElementById('cl-rsvp-wish').value = '';
-        renderWishes();
-        wishList.scrollTop = 0;
-    });
+    }
 }

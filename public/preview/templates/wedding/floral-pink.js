@@ -471,69 +471,7 @@ export async function render(pageConfig, guestName) {
             ${giftHtml}
 
             <!-- RSVP & wishes (Guestbook) Section -->
-            <section id="guestbook" class="py-24 px-4 bg-wedding-secondary/10">
-                <div class="max-w-3xl mx-auto">
-                    <div class="text-center mb-12">
-                        <span class="text-wedding-primary pink-serif tracking-[0.2em] uppercase text-xs font-bold">Buku Tamu</span>
-                        <h2 class="pink-cursive text-5xl text-wedding-primary mt-2 mb-4">Konfirmasi Kehadiran & Doa</h2>
-                        <p class="text-sm text-slate-500 max-w-md mx-auto">Kehadiran serta doa restu Anda sangat berarti bagi kami.</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                        <!-- RSVP Form Card -->
-                        <div class="bg-white rounded-3xl p-8 shadow-sm border border-pink-100">
-                            <h3 class="pink-serif text-lg font-bold text-slate-800 mb-6">Kirim Ucapan</h3>
-                            <form id="rsvp-form" class="space-y-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nama Anda</label>
-                                    <input type="text" id="rsvp-name" required value="${guestName !== 'Tamu Undangan' ? guestName : ''}" placeholder="Nama lengkap Anda..." class="w-full bg-[#FFFDFE] border border-[#FCECEF] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-wedding-primary transition-colors text-slate-700">
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Konfirmasi Kehadiran</label>
-                                    <select id="rsvp-status" required class="w-full bg-[#FFFDFE] border border-[#FCECEF] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-wedding-primary transition-colors text-slate-700">
-                                        <option value="Hadir">Saya akan Hadir</option>
-                                        <option value="Tidak Hadir">Maaf, tidak bisa Hadir</option>
-                                        <option value="Ragu-ragu">Masih Ragu-ragu</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Sticker Hiasan</label>
-                                    <div class="flex gap-3 justify-between py-1" id="sticker-selector">
-                                        <button type="button" data-sticker="❤️" class="sticker-btn text-2xl p-2 rounded-xl bg-[#FFFDFE] border border-slate-100 hover:scale-115 transition-transform active:bg-wedding-secondary focus:outline-none">❤️</button>
-                                        <button type="button" data-sticker="🌸" class="sticker-btn text-2xl p-2 rounded-xl bg-[#FFFDFE] border border-slate-100 hover:scale-115 transition-transform active:bg-wedding-secondary focus:outline-none border-wedding-primary ring-2 ring-wedding-primary/10">🌸</button>
-                                        <button type="button" data-sticker="💍" class="sticker-btn text-2xl p-2 rounded-xl bg-[#FFFDFE] border border-slate-100 hover:scale-115 transition-transform active:bg-wedding-secondary focus:outline-none">💍</button>
-                                        <button type="button" data-sticker="🎉" class="sticker-btn text-2xl p-2 rounded-xl bg-[#FFFDFE] border border-slate-100 hover:scale-115 transition-transform active:bg-wedding-secondary focus:outline-none">🎉</button>
-                                        <button type="button" data-sticker="🥂" class="sticker-btn text-2xl p-2 rounded-xl bg-[#FFFDFE] border border-slate-100 hover:scale-115 transition-transform active:bg-wedding-secondary focus:outline-none">🥂</button>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ucapan & Doa</label>
-                                    <textarea id="rsvp-wish" required rows="4" placeholder="Tulis ucapan dan doa terbaik untuk kedua mempelai di sini..." class="w-full bg-[#FFFDFE] border border-[#FCECEF] rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-wedding-primary transition-colors text-slate-700"></textarea>
-                                </div>
-
-                                <button type="submit" class="w-full btn-pink-primary py-3.5 rounded-full text-sm font-semibold tracking-wider mt-4">
-                                    KIRIM UCAPAN
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Wishes Guestbook List -->
-                        <div class="bg-white rounded-3xl p-8 shadow-sm border border-pink-100 flex flex-col h-[500px]">
-                            <h3 class="pink-serif text-lg font-bold text-slate-800 mb-6 flex justify-between items-center">
-                                <span>Buku Tamu</span>
-                                <span class="bg-wedding-secondary text-wedding-primary text-xs px-2.5 py-1 rounded-full font-bold" id="wishes-count">0</span>
-                            </h3>
-                            <!-- Scrolling Container -->
-                            <div class="flex-grow overflow-y-auto space-y-4 pr-2" id="wishes-list-container">
-                                <!-- Dynamically populated -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <div id="wishes-board-root"></div>
 
             <!-- Footer -->
             <footer class="bg-[#2E2023] py-20 text-center text-slate-300">
@@ -668,76 +606,15 @@ export async function render(pageConfig, guestName) {
         });
     }
 
-    // Interactive Wishes Guestbook functions
-    let selectedSticker = '🌸';
-    const stickerBtns = document.querySelectorAll('.sticker-btn');
-    stickerBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            stickerBtns.forEach(b => {
-                b.classList.remove('border-wedding-primary', 'ring-2', 'ring-wedding-primary/10');
-            });
-            btn.classList.add('border-wedding-primary', 'ring-2', 'ring-wedding-primary/10');
-            selectedSticker = btn.getAttribute('data-sticker');
+    // Initialize Guestbook Board Component
+    const wishesRoot = document.getElementById('wishes-board-root');
+    if (wishesRoot) {
+        const { initWishesBoard } = await import('../components/WishesBoard.js');
+        initWishesBoard(wishesRoot, pageConfig, guestName, {
+            primaryColor: primary,
+            bgLight: '#FFFDFE',
+            borderColor: '#FCECEF',
+            buttonClass: 'btn-pink-primary'
         });
-    });
-
-    const wishesContainer = document.getElementById('wishes-list-container');
-    const wishesCountEl = document.getElementById('wishes-count');
-
-    const renderWishes = () => {
-        const currentWishes = JSON.parse(localStorage.getItem(wishesKey)) || [];
-        wishesCountEl.innerText = currentWishes.length;
-
-        if (currentWishes.length === 0) {
-            wishesContainer.innerHTML = `<div class="text-center text-xs text-slate-400 py-12">Belum ada ucapan. Jadilah yang pertama!</div>`;
-            return;
-        }
-
-        wishesContainer.innerHTML = currentWishes.map(w => {
-            const statusBadgeColor = w.status === 'Hadir' 
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                : w.status === 'Tidak Hadir' ? 'bg-rose-50 text-rose-700 border-rose-100' : 'bg-amber-50 text-amber-700 border-amber-100';
-
-            return `
-                <div class="bg-[#FFFDFE] rounded-2xl p-4 border border-[#FCECEF] relative hover:shadow-sm transition-shadow">
-                    <div class="absolute right-4 top-4 text-2xl">${w.sticker || '🌸'}</div>
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="font-bold text-sm text-slate-800">${w.name}</span>
-                        <span class="text-[10px] font-semibold px-2 py-0.5 border rounded-full ${statusBadgeColor}">${w.status}</span>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed mb-2 pr-6">${w.wish}</p>
-                    <span class="text-[9px] text-slate-400 font-medium">${w.time || 'Baru saja'}</span>
-                </div>
-            `;
-        }).join('');
-    };
-
-    renderWishes();
-
-    const formEl = document.getElementById('rsvp-form');
-    formEl.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const nameInput = document.getElementById('rsvp-name').value.trim();
-        const statusSelect = document.getElementById('rsvp-status').value;
-        const wishText = document.getElementById('rsvp-wish').value.trim();
-
-        if (!nameInput || !wishText) return;
-
-        const newWish = {
-            name: nameInput,
-            status: statusSelect,
-            wish: wishText,
-            sticker: selectedSticker,
-            time: 'Baru saja'
-        };
-
-        const currentWishes = JSON.parse(localStorage.getItem(wishesKey)) || [];
-        currentWishes.unshift(newWish);
-        localStorage.setItem(wishesKey, JSON.stringify(currentWishes));
-
-        document.getElementById('rsvp-wish').value = '';
-        renderWishes();
-        wishesContainer.scrollTop = 0;
-    });
+    }
 }
