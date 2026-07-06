@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette } from 'lucide-react';
+import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette, History } from 'lucide-react';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,6 +38,7 @@ export default function Sidebar() {
     { name: 'Buat Halaman', href: '/generate', icon: PlusCircle },
     { name: 'Profil & Tracking', href: '/profile', icon: User },
     { name: 'Top Up', href: '/topup', icon: CreditCard },
+    { name: 'Riwayat Transaksi', href: '/payments/history', icon: History },
   ];
 
   return (
