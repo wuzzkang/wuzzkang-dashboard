@@ -3,6 +3,8 @@
  * Bohemian rustic romantic theme with warm cream background,
  * bronze/brown accents, decorative SVG florals and elegant typography.
  */
+import { renderImageSlider } from '../components/ImageSlider.js';
+
 export async function render(pageConfig, guestName = 'Tamu Undangan') {
     const appEl = document.getElementById('app');
     const content = pageConfig.content || {};
@@ -13,6 +15,7 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
     const gift = content.gift || {};
     const quote = content.quote || 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri... (Ar-Rum: 21)';
     const stories = content.story || [];
+    const gallery = content.gallery || [];
 
     // ── Theme Colors ──────────────────────────────────────────────────────────
     const primary   = '#9B7B6A'; // Warm bronze/brown
@@ -246,6 +249,25 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
         `;
     }
 
+    // Gallery Slider Section render helper
+    let galleryHtml = '';
+    let sliderInstance = null;
+    if (gallery && gallery.length > 0) {
+        sliderInstance = renderImageSlider('wedding-gallery', gallery);
+        galleryHtml = `
+            <section id="photo-gallery" class="py-20 px-4" style="background:${bgCream};border-top:1px solid ${light}44;border-bottom:1px solid ${light}44">
+                <div class="max-w-4xl mx-auto text-center">
+                    <p class="cl-sans text-[10px] uppercase tracking-widest font-semibold" style="color:${primary}">Galeri Foto</p>
+                    <h2 class="cl-cursive text-5xl md:text-6xl mt-2 mb-12" style="color:${primary}">Momen Bahagia</h2>
+                    
+                    <div class="w-full">
+                        ${sliderInstance.html}
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
     // ── Gift Section HTML ─────────────────────────────────────────────────────
     let giftHtml = '';
     if (gift && gift.bank_name && gift.account_number) {
@@ -381,6 +403,9 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
             <!-- LOVE STORY (dynamic) -->
             ${storyHtml}
 
+            <!-- GALLERY (dynamic slider) -->
+            ${galleryHtml}
+
             <!-- EVENT SECTION -->
             <section id="events" class="py-20 px-4 relative overflow-hidden" style="background-color:${bgCream}">
                 <div class="cl-corner cl-corner-tl">${floralSvgTL}</div>
@@ -494,6 +519,11 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
             </footer>
         </main>
     `;
+
+    // Initialize Slider if exists
+    if (sliderInstance) {
+        sliderInstance.setup();
+    }
 
     // ── Open Invitation Handler ────────────────────────────────────────────────
     document.getElementById('cl-open-btn').addEventListener('click', () => {

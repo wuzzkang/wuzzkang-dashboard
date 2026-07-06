@@ -152,6 +152,8 @@ function GenerateContent() {
   const [generatePrewedding, setGeneratePrewedding] = useState(false);
   const [preweddingSource, setPreweddingSource] = useState('unsplash'); // 'unsplash' or 'upload'
   const [preweddingPhotoUrl, setPreweddingPhotoUrl] = useState('');
+  const [galleryList, setGalleryList] = useState([]);
+  const [isUploadingGalleryImage, setIsUploadingGalleryImage] = useState(false);
   const [isGeneratingPrewedding, setIsGeneratingPrewedding] = useState(false);
   const [isUploadingPreweddingImage, setIsUploadingPreweddingImage] = useState(false);
   const [preweddingGenerateCount, setPreweddingGenerateCount] = useState(0);
@@ -372,6 +374,7 @@ function GenerateContent() {
               setGroomImage(content.groom?.image_url || DEFAULT_GROOM_AVATAR);
               setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
               setStoryList(content.story || []);
+              setGalleryList(content.gallery || []);
               const activePhoto = content.prewedding_photo_url || content.last_generated_prewedding_url || '';
               setPreweddingPhotoUrl(activePhoto);
               setPreweddingGenerateCount(content.prewedding_generate_count || 0);
@@ -573,6 +576,7 @@ function GenerateContent() {
         akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
         resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
         gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
+        gallery: galleryList.length > 0 ? galleryList : null,
         quote: pageData?.content?.quote || '',
         // Reset prewedding photo to null if user unchecks the option, otherwise use generated/saved URL
         prewedding_photo_url: generatePrewedding ? (preweddingPhotoUrl || pageData?.content?.prewedding_photo_url || null) : null,
@@ -675,7 +679,8 @@ function GenerateContent() {
     generateCampaignHero,
     preweddingPhotoUrl,
     generatePrewedding,
-    preweddingGenerateCount
+    preweddingGenerateCount,
+    galleryList
   ]);
 
   // Synchronize state with live preview iframe
@@ -863,6 +868,7 @@ function GenerateContent() {
     const isBride = target === 'bride';
     const isStory = target === 'story';
     const isPrewedding = target === 'prewedding';
+    const isGallery = target === 'gallery';
     const isCampaignHero = target === 'campaignHero';
     const isCelebrant = target === 'celebrant';
     const isLogo = target === 'logo';
@@ -874,6 +880,7 @@ function GenerateContent() {
     if (isBride) setIsUploadingBrideImage(true);
     if (isStory) setIsUploadingStoryImage(true);
     if (isPrewedding) setIsUploadingPreweddingImage(true);
+    if (isGallery) setIsUploadingGalleryImage(true);
     if (isCampaignHero) setIsUploadingCampaignHeroImage(true);
     if (isCelebrant) setIsUploadingCelebrantImage(true);
     if (isLogo) setIsUploadingLogo(true);
@@ -914,6 +921,7 @@ function GenerateContent() {
       if (isBride) setBrideImage(publicUrl);
       if (isStory) setNewStoryImage(publicUrl);
       if (isPrewedding) setPreweddingPhotoUrl(publicUrl);
+      if (isGallery) setGalleryList(prev => [...prev, publicUrl]);
       if (isCampaignHero) setCampaignHeroImage(publicUrl);
       if (isCelebrant) setCelebrantImage(publicUrl);
       if (isLogo) setStoreLogoUrl(publicUrl);
@@ -933,6 +941,7 @@ function GenerateContent() {
       if (isBride) setIsUploadingBrideImage(false);
       if (isStory) setIsUploadingStoryImage(false);
       if (isPrewedding) setIsUploadingPreweddingImage(false);
+      if (isGallery) setIsUploadingGalleryImage(false);
       if (isCampaignHero) setIsUploadingCampaignHeroImage(false);
       if (isCelebrant) setIsUploadingCelebrantImage(false);
       if (isLogo) setIsUploadingLogo(false);
@@ -2399,7 +2408,6 @@ function GenerateContent() {
                                 Lihat Contoh Desain
                               </button>
                             </div>
-                          </div>
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
@@ -2418,6 +2426,25 @@ function GenerateContent() {
                                 Lihat Contoh Desain
                               </button>
                             </div>
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('javanese-traditional')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'javanese-traditional' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                  }`}
+                              >
+                                <span className="text-lg">🤎</span>
+                                <span className="text-[10px] font-bold">Traditional Javanese</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('javanese-traditional')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Mempelai Pria */}
@@ -2558,6 +2585,46 @@ function GenerateContent() {
                           onUpload={handleUploadImage}
                           uploadType="prewedding"
                         />
+
+                        {/* Galeri Foto Pernikahan */}
+                        <div className="space-y-2 border-t border-theme-border pt-4">
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
+                            Galeri Foto Pernikahan (Tampil di Slider)
+                          </label>
+                          <div className="grid grid-cols-4 gap-2">
+                            {galleryList.map((url, idx) => (
+                              <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-theme-border bg-theme-surface group">
+                                <img src={url} className="w-full h-full object-cover" alt="Gallery preview" />
+                                <button
+                                  type="button"
+                                  onClick={() => setGalleryList(galleryList.filter((_, i) => i !== idx))}
+                                  className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-opacity"
+                                >
+                                  Hapus
+                                </button>
+                              </div>
+                            ))}
+                            {galleryList.length < 12 && (
+                              <label className="flex flex-col items-center justify-center aspect-square bg-theme-bg/50 hover:bg-theme-bg border border-dashed border-theme-border rounded-xl cursor-pointer hover:border-theme-accent transition-colors">
+                                <span className="text-xl text-theme-text-sec">{isUploadingGalleryImage ? '⏳' : '＋'}</span>
+                                <span className="text-[8px] text-theme-text-sec font-semibold mt-1">
+                                  {isUploadingGalleryImage ? 'Mengunggah...' : 'Tambah Foto'}
+                                </span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  disabled={isUploadingGalleryImage}
+                                  onChange={(e) => {
+                                    if (e.target.files?.[0]) {
+                                      handleUploadImage(e.target.files[0], 'gallery');
+                                    }
+                                  }}
+                                />
+                              </label>
+                            )}
+                          </div>
+                        </div>
 
                         {/* Kisah Cinta (Story) Builder */}
                         <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Kisah Cinta (Timeline)</div>
@@ -4048,6 +4115,7 @@ function GenerateContent() {
                     previewDesignKey === 'sage-green' ? 'Sage Green 🌿' :
                       previewDesignKey === 'floral-pink' ? 'Floral Pink 🌸' :
                         previewDesignKey === 'classic-love' ? 'Classic Love 🌹' :
+                        previewDesignKey === 'javanese-traditional' ? 'Javanese Traditional 🤎' :
                           previewDesignKey === 'cute-balloon' ? 'Cute Balloon 🎈' :
                             previewDesignKey === 'elegant-gold' ? 'Elegant Gold ✨' :
                               previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' :
@@ -4231,7 +4299,7 @@ function GenerateContent() {
                   } else {
                     mockData = {
                       meta: {
-                        title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : previewDesignKey === 'floral-pink' ? 'Floral Pink' : 'Classic Love'}`,
+                        title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : previewDesignKey === 'floral-pink' ? 'Floral Pink' : previewDesignKey === 'classic-love' ? 'Classic Love' : 'Javanese Traditional'}`,
                         template_type: 'wedding',
                         design_key: previewDesignKey
                       },
@@ -4254,6 +4322,11 @@ function GenerateContent() {
                           { year: '2021', title: 'Pertama Bertemu', desc: 'Kami diperkenalkan oleh seorang teman baik di sebuah acara sosial, di mana kami menemukan banyak kesamaan minat.' },
                           { year: '2023', title: 'Menyatakan Komitmen', desc: 'Setelah dua tahun tumbuh bersama dalam persahabatan dan kecocokan, kami berkomitmen untuk melangkah ke arah masa depan bersama.' },
                           { year: '2025', title: 'Pertunangan', desc: 'Di hadapan keluarga besar, Rian melamar Dinda untuk membangun keluarga bahagia dan abadi bersama.' }
+                        ],
+                        gallery: [
+                          'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600',
+                          'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=600',
+                          'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600'
                         ],
                         akad: {
                           date: '2026-10-10',

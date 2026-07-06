@@ -2,6 +2,8 @@
  * Sage Green Wedding Invitation Template
  * Botanical theme, elegant serif headings, soft sage color palette.
  */
+import { renderImageSlider } from '../components/ImageSlider.js';
+
 export async function render(pageConfig, guestName) {
     const appEl = document.getElementById('app');
     const content = pageConfig.content || {};
@@ -12,6 +14,7 @@ export async function render(pageConfig, guestName) {
     const gift = content.gift || {};
     const quote = content.quote || 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri... (Ar-Rum: 21)';
     const stories = content.story || [];
+    const gallery = content.gallery || [];
 
     // Colors
     const primary = '#5A7C64'; // Sage Green
@@ -156,6 +159,25 @@ export async function render(pageConfig, guestName) {
         `;
     }
 
+    // Gallery Slider Section render helper
+    let galleryHtml = '';
+    let sliderInstance = null;
+    if (gallery && gallery.length > 0) {
+        sliderInstance = renderImageSlider('wedding-gallery', gallery);
+        galleryHtml = `
+            <section id="photo-gallery" class="py-24 px-4 bg-wedding-secondary/20 border-t border-b border-wedding-primary/5">
+                <div class="max-w-4xl mx-auto text-center">
+                    <span class="text-wedding-primary sage-serif tracking-[0.2em] uppercase text-xs font-bold">Galeri Foto</span>
+                    <h2 class="sage-cursive text-5xl md:text-6xl text-wedding-primary mt-2 mb-12">Momen Bahagia</h2>
+                    
+                    <div class="w-full">
+                        ${sliderInstance.html}
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
     // Gift cards render helper
     let giftHtml = '';
     if (gift && gift.bank_name && gift.account_number) {
@@ -288,6 +310,9 @@ export async function render(pageConfig, guestName) {
 
             <!-- Love Story Section (Dynamic) -->
             ${storyHtml}
+
+            <!-- Gallery Section (Dynamic Slider) -->
+            ${galleryHtml}
 
             <!-- Events Section -->
             <section id="events" class="py-24 px-4 bg-wedding-secondary/20 border-t border-b border-wedding-primary/5">
@@ -424,6 +449,11 @@ export async function render(pageConfig, guestName) {
         .bg-wedding-secondary { background-color: ${secondary} !important; }
     `;
     document.head.appendChild(styleColors);
+
+    // Initialize Slider if exists
+    if (sliderInstance) {
+        sliderInstance.setup();
+    }
 
     // Audio Elements
     const audioEl = document.getElementById('bg-music');
