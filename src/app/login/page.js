@@ -11,6 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -41,7 +42,14 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      if (isSignUp) {
+      if (isForgotPassword) {
+        // Request password reset link
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/update-password`,
+        });
+        if (error) throw error;
+        setMessage('Link reset password berhasil dikirim! Silakan periksa kotak masuk email Anda.');
+      } else if (isSignUp) {
         // Sign up with Supabase Auth
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -91,10 +99,14 @@ export default function LoginPage() {
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <h1 className="text-2xl font-black text-theme-text tracking-tight animate-pulse" style={{ fontFamily: "'Sora', sans-serif" }}>
-            Siluet
+            {isForgotPassword ? 'Reset Password' : 'Siluet'}
           </h1>
           <p className="text-xs text-theme-text-sec mt-1.5 leading-relaxed">
-            {isSignUp ? 'Buat akun untuk memulai generate landing page' : 'Masuk ke dashboard akun Anda'}
+            {isForgotPassword 
+              ? 'Masukkan email Anda untuk menerima link reset password'
+              : isSignUp 
+              ? 'Buat akun untuk memulai generate landing page' 
+              : 'Masuk ke dashboard akun Anda'}
           </p>
         </div>
 
@@ -114,7 +126,7 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleAuth} className="space-y-4">
-          {isSignUp && (
+          {isSignUp && !isForgotPassword && (
             <div>
               <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                 Nama Lengkap
@@ -154,24 +166,41 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-4 w-4 text-theme-text-muted" />
-              </span>
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-9 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-              />
+          {!isForgotPassword && (
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
+                  Password
+                </label>
+                {!isSignUp && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotPassword(true);
+                      setAuthError('');
+                      setMessage('');
+                    }}
+                    className="text-[10px] font-semibold text-theme-accent hover:underline focus:outline-none"
+                  >
+                    Lupa password?
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-4 w-4 text-theme-text-muted" />
+                </span>
+                <input
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full pl-9 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <button
             type="submit"
@@ -182,7 +211,13 @@ export default function LoginPage() {
               <div className="h-4 w-4 rounded-full border-2 border-theme-accent-text/20 border-t-theme-accent-text animate-spin"></div>
             ) : (
               <>
-                <span>{isSignUp ? 'Daftar Sekarang' : 'Masuk Dashboard'}</span>
+                <span>
+                  {isForgotPassword 
+                    ? 'Kirim Link Reset' 
+                    : isSignUp 
+                    ? 'Daftar Sekarang' 
+                    : 'Masuk Dashboard'}
+                </span>
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -191,11 +226,29 @@ export default function LoginPage() {
 
         {/* Toggle link */}
         <div className="mt-6 text-center text-xs text-theme-text-sec">
-          {isSignUp ? (
+          {isForgotPassword ? (
+            <p>
+              Sudah ingat password?{' '}
+              <button
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setAuthError('');
+                  setMessage('');
+                }}
+                className="text-theme-accent font-bold hover:underline"
+              >
+                Log In
+              </button>
+            </p>
+          ) : isSignUp ? (
             <p>
               Sudah punya akun?{' '}
               <button
-                onClick={() => setIsSignUp(false)}
+                onClick={() => {
+                  setIsSignUp(false);
+                  setAuthError('');
+                  setMessage('');
+                }}
                 className="text-theme-accent font-bold hover:underline"
               >
                 Log In
@@ -205,7 +258,11 @@ export default function LoginPage() {
             <p>
               Belum punya akun?{' '}
               <button
-                onClick={() => setIsSignUp(true)}
+                onClick={() => {
+                  setIsSignUp(true);
+                  setAuthError('');
+                  setMessage('');
+                }}
                 className="text-theme-accent font-bold hover:underline"
               >
                 Daftar Baru
