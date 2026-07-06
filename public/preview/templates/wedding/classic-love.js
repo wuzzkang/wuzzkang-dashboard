@@ -102,10 +102,18 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
 
             /* Corner decoration */
             .cl-corner { position: absolute; width: 120px; height: 120px; pointer-events: none; z-index: 5; }
-            .cl-corner-tl { top: 0; left: 0; }
-            .cl-corner-tr { top: 0; right: 0; }
-            .cl-corner-bl { bottom: 0; left: 0; }
-            .cl-corner-br { bottom: 0; right: 0; }
+            @keyframes cl-sway-right {
+                0%, 100% { transform: rotate(0deg) scale(1); }
+                50% { transform: rotate(3deg) scale(1.03); }
+            }
+            @keyframes cl-sway-left {
+                0%, 100% { transform: rotate(0deg) scale(1); }
+                50% { transform: rotate(-3deg) scale(1.03); }
+            }
+            .cl-corner-tl { top: 0; left: 0; transform-origin: top left; animation: cl-sway-left 6s ease-in-out infinite; }
+            .cl-corner-tr { top: 0; right: 0; transform-origin: top right; animation: cl-sway-right 6s ease-in-out infinite; }
+            .cl-corner-bl { bottom: 0; left: 0; transform-origin: bottom left; animation: cl-sway-right 7s ease-in-out infinite; }
+            .cl-corner-br { bottom: 0; right: 0; transform-origin: bottom right; animation: cl-sway-left 7s ease-in-out infinite; }
 
             /* Divider ornament */
             .cl-divider {

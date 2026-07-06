@@ -118,6 +118,32 @@ export async function render(pageConfig, guestName) {
                 background: ${primary}66;
                 border-radius: 3px;
             }
+
+            /* Gunungan breathing animation */
+            @keyframes java-glowing-gold {
+                0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 2px ${accent}22); }
+                50% { opacity: 1; filter: drop-shadow(0 0 8px ${accent}66); transform: scale(1.03); }
+            }
+            .java-decor-tr {
+                position: absolute; top: -5px; right: -5px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: top right;
+                animation: java-glowing-gold 5s ease-in-out infinite;
+            }
+            .java-decor-tl {
+                position: absolute; top: -5px; left: -5px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: top left;
+                animation: java-glowing-gold 5s ease-in-out infinite;
+            }
+            .java-decor-br {
+                position: absolute; bottom: -5px; right: -5px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: bottom right;
+                animation: java-glowing-gold 6s ease-in-out infinite;
+            }
+            .java-decor-bl {
+                position: absolute; bottom: -5px; left: -5px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: bottom left;
+                animation: java-glowing-gold 6s ease-in-out infinite;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -144,6 +170,64 @@ export async function render(pageConfig, guestName) {
     const groomImage = groom.image_url || defaultGroomAvatar;
     const brideImage = bride.image_url || defaultBrideAvatar;
     const coverImage = content.prewedding_photo_url || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200';
+
+    // ── Gunungan SVGs ────────────────────────────────────────────────────────
+    const javaSvgTL = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+        <!-- Styled Javanese Gunungan / Batik Pattern -->
+        <path d="M50 10 L85 65 C85 65 70 85 50 85 C30 85 15 65 15 65 Z" fill="#C59B27" opacity="0.15"/>
+        <path d="M50 10 C53 30 75 55 80 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 10 C47 30 25 55 20 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 85 L50 35" stroke="#C59B27" stroke-width="2" stroke-linecap="round"/>
+        <path d="M50 55 C60 50 70 52 75 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 55 C40 50 30 52 25 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C62 40 68 45 70 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C38 40 32 45 30 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="50" cy="85" r="3" fill="#C59B27"/>
+        <circle cx="35" cy="80" r="2.5" fill="#C59B27"/>
+        <circle cx="65" cy="80" r="2.5" fill="#C59B27"/>
+    </svg>`;
+
+    const javaSvgTR = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scaleX(-1)">
+        <path d="M50 10 L85 65 C85 65 70 85 50 85 C30 85 15 65 15 65 Z" fill="#C59B27" opacity="0.15"/>
+        <path d="M50 10 C53 30 75 55 80 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 10 C47 30 25 55 20 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 85 L50 35" stroke="#C59B27" stroke-width="2" stroke-linecap="round"/>
+        <path d="M50 55 C60 50 70 52 75 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 55 C40 50 30 52 25 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C62 40 68 45 70 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C38 40 32 45 30 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="50" cy="85" r="3" fill="#C59B27"/>
+        <circle cx="35" cy="80" r="2.5" fill="#C59B27"/>
+        <circle cx="65" cy="80" r="2.5" fill="#C59B27"/>
+    </svg>`;
+
+    const javaSvgBL = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scaleY(-1)">
+        <path d="M50 10 L85 65 C85 65 70 85 50 85 C30 85 15 65 15 65 Z" fill="#C59B27" opacity="0.15"/>
+        <path d="M50 10 C53 30 75 55 80 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 10 C47 30 25 55 20 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 85 L50 35" stroke="#C59B27" stroke-width="2" stroke-linecap="round"/>
+        <path d="M50 55 C60 50 70 52 75 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 55 C40 50 30 52 25 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C62 40 68 45 70 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C38 40 32 45 30 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="50" cy="85" r="3" fill="#C59B27"/>
+        <circle cx="35" cy="80" r="2.5" fill="#C59B27"/>
+        <circle cx="65" cy="80" r="2.5" fill="#C59B27"/>
+    </svg>`;
+
+    const javaSvgBR = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scale(-1)">
+        <path d="M50 10 L85 65 C85 65 70 85 50 85 C30 85 15 65 15 65 Z" fill="#C59B27" opacity="0.15"/>
+        <path d="M50 10 C53 30 75 55 80 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 10 C47 30 25 55 20 65" stroke="#C59B27" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M50 85 L50 35" stroke="#C59B27" stroke-width="2" stroke-linecap="round"/>
+        <path d="M50 55 C60 50 70 52 75 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 55 C40 50 30 52 25 58" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C62 40 68 45 70 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M50 45 C38 40 32 45 30 48" stroke="#C59B27" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="50" cy="85" r="3" fill="#C59B27"/>
+        <circle cx="35" cy="80" r="2.5" fill="#C59B27"/>
+        <circle cx="65" cy="80" r="2.5" fill="#C59B27"/>
+    </svg>`;
 
     // Love Story timeline render helper
     let storyHtml = '';
@@ -233,10 +317,15 @@ export async function render(pageConfig, guestName) {
         `;
     }
 
-    // Render components to page
     appEl.innerHTML = `
         <!-- Welcome Overlay Cover -->
         <div id="invitation-cover" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-4 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(61,27,19,0.65), rgba(61,27,19,0.9)), url('${coverImage}');">
+            <!-- Corner Gunungan -->
+            <div class="java-decor-tl">${javaSvgTL}</div>
+            <div class="java-decor-tr">${javaSvgTR}</div>
+            <div class="java-decor-bl">${javaSvgBL}</div>
+            <div class="java-decor-br">${javaSvgBR}</div>
+            
             <div class="max-w-2xl mx-auto text-white flex flex-col items-center">
                 <span class="java-serif uppercase tracking-[0.3em] text-xs font-semibold text-white/80 mb-4">Serat Ulem Pernikahan</span>
                 <h1 class="java-cursive text-7xl md:text-8xl text-white my-4 drop-shadow-md">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>
@@ -268,6 +357,12 @@ export async function render(pageConfig, guestName) {
         <main class="w-full flex-grow opacity-0 transition-opacity duration-1000" id="main-content">
             <!-- Hero / Cover Page -->
             <section class="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(247,242,239,0.92), rgba(247,242,239,0.96)), url('${coverImage}');">
+                <!-- Corner Gunungan -->
+                <div class="java-decor-tl">${javaSvgTL}</div>
+                <div class="java-decor-tr">${javaSvgTR}</div>
+                <div class="java-decor-bl">${javaSvgBL}</div>
+                <div class="java-decor-br">${javaSvgBR}</div>
+
                 <div class="max-w-2xl mx-auto z-10 py-16">
                     <span class="java-serif uppercase tracking-[0.25em] text-xs font-semibold text-wedding-primary mb-4 block">Pahargyan Polokromo</span>
                     <h1 class="java-cursive text-7xl md:text-8xl text-wedding-primary my-6">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>

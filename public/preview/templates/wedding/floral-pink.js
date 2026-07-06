@@ -103,6 +103,40 @@ export async function render(pageConfig, guestName) {
                 background: ${primary}66;
                 border-radius: 3px;
             }
+
+            /* Flower float animation */
+            @keyframes flower-sway-right {
+                0%, 100% { transform: rotate(0deg) translateY(0); }
+                50% { transform: rotate(5deg) translateY(-5px); }
+            }
+            @keyframes flower-sway-left {
+                0%, 100% { transform: rotate(0deg) translateY(0); }
+                50% { transform: rotate(-5deg) translateY(-5px); }
+            }
+            .flower-decor-tr {
+                position: absolute; top: -5px; right: -5px; width: 150px; height: 150px;
+                pointer-events: none; z-index: 20; transform-origin: top right;
+                animation: flower-sway-right 5s ease-in-out infinite;
+                opacity: 0.9;
+            }
+            .flower-decor-tl {
+                position: absolute; top: -5px; left: -5px; width: 150px; height: 150px;
+                pointer-events: none; z-index: 20; transform-origin: top left;
+                animation: flower-sway-left 5s ease-in-out infinite;
+                opacity: 0.9;
+            }
+            .flower-decor-br {
+                position: absolute; bottom: -5px; right: -5px; width: 150px; height: 150px;
+                pointer-events: none; z-index: 20; transform-origin: bottom right;
+                animation: flower-sway-left 6s ease-in-out infinite;
+                opacity: 0.9;
+            }
+            .flower-decor-bl {
+                position: absolute; bottom: -5px; left: -5px; width: 150px; height: 150px;
+                pointer-events: none; z-index: 20; transform-origin: bottom left;
+                animation: flower-sway-right 6s ease-in-out infinite;
+                opacity: 0.9;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -129,6 +163,55 @@ export async function render(pageConfig, guestName) {
     const groomImage = groom.image_url || defaultGroomAvatar;
     const brideImage = bride.image_url || defaultBrideAvatar;
     const coverImage = content.prewedding_photo_url || 'https://images.unsplash.com/photo-1543807535-eceef0bc6599?auto=format&fit=crop&q=80&w=1200';
+
+    // ── Flower SVGs ──────────────────────────────────────────────────────────
+    const flowerSvgTL = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+        <path d="M0 0 C25 25 55 45 100 60" stroke="#8A6B72" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="35" cy="35" r="5" fill="#EFA9B6"/>
+        <path d="M35 20 C40 10 50 15 45 25 C40 35 35 35 35 20 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M20 35 C10 35 15 45 25 40 C35 35 35 35 20 35 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M35 50 C30 60 20 55 25 45 C30 35 35 35 35 50 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M50 35 C60 35 55 25 45 30 C35 35 35 35 50 35 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M45 45 C55 50 50 60 40 50 C30 40 35 35 45 45 Z" fill="#FFF2F4" opacity="0.9"/>
+        <circle cx="65" cy="48" r="3" fill="#EFA9B6"/>
+        <path d="M65 43 C70 40 72 45 68 47 Z" fill="#D88C9A"/>
+    </svg>`;
+
+    const flowerSvgTR = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scaleX(-1)">
+        <path d="M0 0 C25 25 55 45 100 60" stroke="#8A6B72" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="35" cy="35" r="5" fill="#EFA9B6"/>
+        <path d="M35 20 C40 10 50 15 45 25 C40 35 35 35 35 20 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M20 35 C10 35 15 45 25 40 C35 35 35 35 20 35 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M35 50 C30 60 20 55 25 45 C30 35 35 35 35 50 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M50 35 C60 35 55 25 45 30 C35 35 35 35 50 35 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M45 45 C55 50 50 60 40 50 C30 40 35 35 45 45 Z" fill="#FFF2F4" opacity="0.9"/>
+        <circle cx="65" cy="48" r="3" fill="#EFA9B6"/>
+        <path d="M65 43 C70 40 72 45 68 47 Z" fill="#D88C9A"/>
+    </svg>`;
+
+    const flowerSvgBL = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scaleY(-1)">
+        <path d="M0 0 C25 25 55 45 100 60" stroke="#8A6B72" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="35" cy="35" r="5" fill="#EFA9B6"/>
+        <path d="M35 20 C40 10 50 15 45 25 C40 35 35 35 35 20 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M20 35 C10 35 15 45 25 40 C35 35 35 35 20 35 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M35 50 C30 60 20 55 25 45 C30 35 35 35 35 50 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M50 35 C60 35 55 25 45 30 C35 35 35 35 50 35 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M45 45 C55 50 50 60 40 50 C30 40 35 35 45 45 Z" fill="#FFF2F4" opacity="0.9"/>
+        <circle cx="65" cy="48" r="3" fill="#EFA9B6"/>
+        <path d="M65 43 C70 40 72 45 68 47 Z" fill="#D88C9A"/>
+    </svg>`;
+
+    const flowerSvgBR = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scale(-1)">
+        <path d="M0 0 C25 25 55 45 100 60" stroke="#8A6B72" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="35" cy="35" r="5" fill="#EFA9B6"/>
+        <path d="M35 20 C40 10 50 15 45 25 C40 35 35 35 35 20 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M20 35 C10 35 15 45 25 40 C35 35 35 35 20 35 Z" fill="#D88C9A" opacity="0.9"/>
+        <path d="M35 50 C30 60 20 55 25 45 C30 35 35 35 35 50 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M50 35 C60 35 55 25 45 30 C35 35 35 35 50 35 Z" fill="#E29DAA" opacity="0.95"/>
+        <path d="M45 45 C55 50 50 60 40 50 C30 40 35 35 45 45 Z" fill="#FFF2F4" opacity="0.9"/>
+        <circle cx="65" cy="48" r="3" fill="#EFA9B6"/>
+        <path d="M65 43 C70 40 72 45 68 47 Z" fill="#D88C9A"/>
+    </svg>`;
 
     // Love Story timeline render helper
     let storyHtml = '';
@@ -218,10 +301,15 @@ export async function render(pageConfig, guestName) {
         `;
     }
 
-    // Render components to page
     appEl.innerHTML = `
         <!-- Welcome Overlay Cover -->
         <div id="invitation-cover" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-4 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(78,54,60,0.5), rgba(78,54,60,0.85)), url('${coverImage}');">
+            <!-- Corner flowers -->
+            <div class="flower-decor-tl">${flowerSvgTL}</div>
+            <div class="flower-decor-tr">${flowerSvgTR}</div>
+            <div class="flower-decor-bl">${flowerSvgBL}</div>
+            <div class="flower-decor-br">${flowerSvgBR}</div>
+            
             <div class="max-w-2xl mx-auto text-white flex flex-col items-center">
                 <span class="pink-serif uppercase tracking-[0.3em] text-xs font-semibold text-white/80 mb-4">Undangan Pernikahan</span>
                 <h1 class="pink-cursive text-7xl md:text-8xl text-white my-4 drop-shadow-md">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>
@@ -253,6 +341,12 @@ export async function render(pageConfig, guestName) {
         <main class="w-full flex-grow opacity-0 transition-opacity duration-1000" id="main-content">
             <!-- Hero / Cover Page -->
             <section class="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(255,249,250,0.9), rgba(255,249,250,0.95)), url('${coverImage}');">
+                <!-- Corner flowers -->
+                <div class="flower-decor-tl">${flowerSvgTL}</div>
+                <div class="flower-decor-tr">${flowerSvgTR}</div>
+                <div class="flower-decor-bl">${flowerSvgBL}</div>
+                <div class="flower-decor-br">${flowerSvgBR}</div>
+
                 <div class="max-w-2xl mx-auto z-10 py-16">
                     <span class="pink-serif uppercase tracking-[0.25em] text-xs font-semibold text-wedding-primary mb-4 block">Walimatul 'Ursy</span>
                     <h1 class="pink-cursive text-7xl md:text-8xl text-wedding-primary my-6">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>

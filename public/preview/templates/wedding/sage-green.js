@@ -88,6 +88,40 @@ export async function render(pageConfig, guestName) {
                 background: ${primary}66;
                 border-radius: 3px;
             }
+
+            /* Leaf sway animation */
+            @keyframes leaf-sway-right {
+                0%, 100% { transform: rotate(0deg) scale(1); }
+                50% { transform: rotate(3deg) scale(1.02); }
+            }
+            @keyframes leaf-sway-left {
+                0%, 100% { transform: rotate(0deg) scale(1); }
+                50% { transform: rotate(-3deg) scale(1.02); }
+            }
+            .leaf-decor-tr {
+                position: absolute; top: -10px; right: -10px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: top right;
+                animation: leaf-sway-right 6s ease-in-out infinite;
+                opacity: 0.85;
+            }
+            .leaf-decor-tl {
+                position: absolute; top: -10px; left: -10px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: top left;
+                animation: leaf-sway-left 6s ease-in-out infinite;
+                opacity: 0.85;
+            }
+            .leaf-decor-br {
+                position: absolute; bottom: -10px; right: -10px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: bottom right;
+                animation: leaf-sway-left 7s ease-in-out infinite;
+                opacity: 0.85;
+            }
+            .leaf-decor-bl {
+                position: absolute; bottom: -10px; left: -10px; width: 140px; height: 140px;
+                pointer-events: none; z-index: 20; transform-origin: bottom left;
+                animation: leaf-sway-right 7s ease-in-out infinite;
+                opacity: 0.85;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -114,6 +148,43 @@ export async function render(pageConfig, guestName) {
     const groomImage = groom.image_url || defaultGroomAvatar;
     const brideImage = bride.image_url || defaultBrideAvatar;
     const coverImage = content.prewedding_photo_url || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1200';
+
+    // ── Leaf SVGs ────────────────────────────────────────────────────────────
+    const leafSvgTL = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+        <path d="M0 0 C30 30 70 70 100 100" stroke="#5A7C64" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M20 15 C35 10 45 20 40 30 C35 40 25 35 20 15 Z" fill="#5A7C64" opacity="0.4"/>
+        <path d="M40 35 C55 30 65 40 60 50 C55 60 45 55 40 35 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M60 55 C75 50 85 60 80 70 C75 80 65 75 60 55 Z" fill="#5A7C64" opacity="0.35"/>
+        <path d="M15 30 C15 45 25 55 35 50 C45 45 40 35 15 30 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M35 50 C35 65 45 75 55 70 C65 65 60 55 35 50 Z" fill="#5A7C64" opacity="0.35"/>
+    </svg>`;
+
+    const leafSvgTR = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scaleX(-1)">
+        <path d="M0 0 C30 30 70 70 100 100" stroke="#5A7C64" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M20 15 C35 10 45 20 40 30 C35 40 25 35 20 15 Z" fill="#5A7C64" opacity="0.4"/>
+        <path d="M40 35 C55 30 65 40 60 50 C55 60 45 55 40 35 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M60 55 C75 50 85 60 80 70 C75 80 65 75 60 55 Z" fill="#5A7C64" opacity="0.35"/>
+        <path d="M15 30 C15 45 25 55 35 50 C45 45 40 35 15 30 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M35 50 C35 65 45 75 55 70 C65 65 60 55 35 50 Z" fill="#5A7C64" opacity="0.35"/>
+    </svg>`;
+
+    const leafSvgBL = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scaleY(-1)">
+        <path d="M0 0 C30 30 70 70 100 100" stroke="#5A7C64" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M20 15 C35 10 45 20 40 30 C35 40 25 35 20 15 Z" fill="#5A7C64" opacity="0.4"/>
+        <path d="M40 35 C55 30 65 40 60 50 C55 60 45 55 40 35 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M60 55 C75 50 85 60 80 70 C75 80 65 75 60 55 Z" fill="#5A7C64" opacity="0.35"/>
+        <path d="M15 30 C15 45 25 55 35 50 C45 45 40 35 15 30 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M35 50 C35 65 45 75 55 70 C65 65 60 55 35 50 Z" fill="#5A7C64" opacity="0.35"/>
+    </svg>`;
+
+    const leafSvgBR = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full" style="transform:scale(-1)">
+        <path d="M0 0 C30 30 70 70 100 100" stroke="#5A7C64" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M20 15 C35 10 45 20 40 30 C35 40 25 35 20 15 Z" fill="#5A7C64" opacity="0.4"/>
+        <path d="M40 35 C55 30 65 40 60 50 C55 60 45 55 40 35 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M60 55 C75 50 85 60 80 70 C75 80 65 75 60 55 Z" fill="#5A7C64" opacity="0.35"/>
+        <path d="M15 30 C15 45 25 55 35 50 C45 45 40 35 15 30 Z" fill="#789A82" opacity="0.4"/>
+        <path d="M35 50 C35 65 45 75 55 70 C65 65 60 55 35 50 Z" fill="#5A7C64" opacity="0.35"/>
+    </svg>`;
 
     // Love Story timeline render helper
     let storyHtml = '';
@@ -207,6 +278,12 @@ export async function render(pageConfig, guestName) {
     appEl.innerHTML = `
         <!-- Welcome Overlay Cover -->
         <div id="invitation-cover" class="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-4 bg-cover bg-center transition-all duration-1000" style="background-image: linear-gradient(rgba(47,62,51,0.5), rgba(47,62,51,0.85)), url('${coverImage}');">
+            <!-- Corner leaves -->
+            <div class="leaf-decor-tl">${leafSvgTL}</div>
+            <div class="leaf-decor-tr">${leafSvgTR}</div>
+            <div class="leaf-decor-bl">${leafSvgBL}</div>
+            <div class="leaf-decor-br">${leafSvgBR}</div>
+            
             <div class="max-w-2xl mx-auto text-white flex flex-col items-center">
                 <span class="sage-serif uppercase tracking-[0.3em] text-xs font-semibold text-white/80 mb-4">Undangan Pernikahan</span>
                 <h1 class="sage-cursive text-7xl md:text-8xl text-white my-4 drop-shadow-md">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>
@@ -238,6 +315,12 @@ export async function render(pageConfig, guestName) {
         <main class="w-full flex-grow opacity-0 transition-opacity duration-1000" id="main-content">
             <!-- Hero / Cover Page -->
             <section class="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(244,247,244,0.9), rgba(244,247,244,0.95)), url('${coverImage}');">
+                <!-- Corner leaves -->
+                <div class="leaf-decor-tl">${leafSvgTL}</div>
+                <div class="leaf-decor-tr">${leafSvgTR}</div>
+                <div class="leaf-decor-bl">${leafSvgBL}</div>
+                <div class="leaf-decor-br">${leafSvgBR}</div>
+
                 <div class="max-w-2xl mx-auto z-10 py-16">
                     <span class="sage-serif uppercase tracking-[0.25em] text-xs font-semibold text-wedding-primary mb-4 block">Walimatul 'Ursy</span>
                     <h1 class="sage-cursive text-7xl md:text-8xl text-wedding-primary my-6">${groom.nickname || 'Groom'} & ${bride.nickname || 'Bride'}</h1>
