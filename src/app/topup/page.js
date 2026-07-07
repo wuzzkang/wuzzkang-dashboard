@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import Skeleton from '@/components/Skeleton';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X } from 'lucide-react';
 
 export default function TopUpPage() {
@@ -27,6 +28,7 @@ export default function TopUpPage() {
   const [transactions, setTransactions] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isQrisZoomed, setIsQrisZoomed] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // Modal / Detail close handlers to handle popstate / browser back button
   const prevActiveTxRef = useRef(null);
@@ -349,9 +351,6 @@ export default function TopUpPage() {
   const handleCancelPayment = async () => {
     if (!activeTransaction) return;
 
-    const confirmCancel = window.confirm('Apakah Anda yakin ingin membatalkan tagihan pembayaran ini?');
-    if (!confirmCancel) return;
-
     setIsSubmitting(true);
     setError('');
 
@@ -670,7 +669,7 @@ export default function TopUpPage() {
                 )}
 
                 <button
-                  onClick={handleCancelPayment}
+                  onClick={() => setShowCancelConfirm(true)}
                   disabled={isSubmitting}
                   className="w-full border border-theme-border text-theme-text-sec hover:text-theme-text font-semibold text-xs py-2.5 px-4 rounded-xl transition-all disabled:opacity-50"
                 >
@@ -842,7 +841,7 @@ export default function TopUpPage() {
         {/* QRIS Zoom Modal Overlay */}
         {isQrisZoomed && activeTransaction && (
           <div 
-            onClick={() => setIsQrisZoomed(false)}
+            onClick={handleCloseQris}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-all duration-300 cursor-zoom-out animate-fadeIn"
           >
             <div 
@@ -851,13 +850,13 @@ export default function TopUpPage() {
             >
               {/* Close button */}
               <button
-                onClick={() => setIsQrisZoomed(false)}
+                onClick={handleCloseQris}
                 className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                 title="Tutup"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4.5 w-4.5" />
               </button>
-
+ 
               <div className="text-center mt-2">
                 <h3 className="text-base font-black tracking-tight text-slate-900" style={{ fontFamily: "'Sora', sans-serif" }}>
                   Scan Kode QRIS
@@ -866,20 +865,20 @@ export default function TopUpPage() {
                   Order ID: {activeTransaction.order_id}
                 </p>
               </div>
-
+ 
               {/* QRIS Large Image */}
-              <div className="bg-white p-2.5 rounded-2xl border border-slate-200 flex items-center justify-center shadow-inner">
+              <div className="bg-white p-2 rounded-2xl border border-slate-200 flex items-center justify-center shadow-inner">
                 <img 
                   src={activeTransaction.metadata?.qr_image_url || activeTransaction.winpay?.qrUrl || '/qris.png'} 
                   alt="QRIS Code Large" 
                   className="w-[350px] h-[350px] object-contain"
                 />
               </div>
-
+ 
               <div className="w-full mt-1">
                 <button
                   type="button"
-                  onClick={() => setIsQrisZoomed(false)}
+                  onClick={handleCloseQris}
                   className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200/60 cursor-pointer active:scale-[0.98]"
                 >
                   Tutup
@@ -888,6 +887,20 @@ export default function TopUpPage() {
             </div>
           </div>
         )}
+
+        <ConfirmDialog
+          isOpen={showCancelConfirm}
+          title="Batalkan Tagihan"
+          message="Apakah Anda yakin ingin membatalkan tagihan pembayaran ini? Tindakan ini tidak dapat dibatalkan."
+          confirmLabel="Ya, Batalkan"
+          cancelLabel="Kembali"
+          onConfirm={() => {
+            handleCancelPayment();
+            setShowCancelConfirm(false);
+          }}
+          onCancel={() => setShowCancelConfirm(false)}
+          variant="warning"
+        />
       </main>
     </div>
   );

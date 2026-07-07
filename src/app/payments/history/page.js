@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import Skeleton from '@/components/Skeleton';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   History,
   ArrowUpRight,
@@ -45,6 +46,7 @@ export default function PaymentHistoryPage() {
   const [selectedTx, setSelectedTx] = useState(null);
   const [isQrisZoomed, setIsQrisZoomed] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelTxId, setCancelTxId] = useState(null);
 
   // Modal / Detail close handlers to handle popstate / browser back button
   const handleCloseDetail = () => {
@@ -215,9 +217,6 @@ export default function PaymentHistoryPage() {
   // Cancel pending transaction in history detail
   const handleCancelPayment = async (txId) => {
     if (!session || !txId) return;
-
-    const confirmCancel = window.confirm('Apakah Anda yakin ingin membatalkan tagihan pembayaran ini?');
-    if (!confirmCancel) return;
 
     setIsCancelling(true);
     try {
@@ -754,9 +753,9 @@ export default function PaymentHistoryPage() {
 
                 {/* Cancel pending transaction */}
                 <button
-                  onClick={() => handleCancelPayment(selectedTx.id)}
+                  onClick={() => setCancelTxId(selectedTx.id)}
                   disabled={isCancelling}
-                  className="w-full border border-theme-border hover:bg-red-500/10 hover:text-red-400 text-theme-text-sec font-semibold text-xs py-2 px-4 rounded-xl transition-all disabled:opacity-50 mt-1"
+                  className="w-full border border-theme-border hover:bg-red-500/10 hover:text-red-400 text-theme-text-sec font-semibold text-xs py-2.5 px-4 rounded-xl transition-all disabled:opacity-50 mt-1"
                 >
                   {isCancelling ? 'Membatalkan...' : 'Batalkan Tagihan ini'}
                 </button>
@@ -826,6 +825,20 @@ export default function PaymentHistoryPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={cancelTxId !== null}
+        title="Batalkan Tagihan"
+        message="Apakah Anda yakin ingin membatalkan tagihan pembayaran ini? Tindakan ini tidak dapat dibatalkan."
+        confirmLabel="Ya, Batalkan"
+        cancelLabel="Kembali"
+        onConfirm={() => {
+          handleCancelPayment(cancelTxId);
+          setCancelTxId(null);
+        }}
+        onCancel={() => setCancelTxId(null)}
+        variant="warning"
+      />
     </div>
   );
 }

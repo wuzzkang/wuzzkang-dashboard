@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import Skeleton from '@/components/Skeleton';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   User, Mail, Shield, Radio, Save, Check, AlertCircle, Eye, EyeOff,
   BarChart2, Target, Music2, ExternalLink, Loader2, KeyRound, Palette, LogOut
@@ -90,10 +91,9 @@ export default function ProfilePage() {
     window.dispatchEvent(new Event('themeChange'));
   };
 
-  const handleLogout = async () => {
-    const confirmLogout = window.confirm('Apakah Anda yakin ingin keluar dari akun?');
-    if (!confirmLogout) return;
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
+  const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
       router.push('/login');
@@ -480,13 +480,24 @@ export default function ProfilePage() {
         {/* ── Logout Button ──────────────────────────────────────────────── */}
         <div className="mt-6 flex justify-center">
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             className="w-full bg-red-600/10 hover:bg-red-600/20 text-red-500 hover:text-red-400 border border-red-500/20 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
           >
             <LogOut className="h-4.5 w-4.5" />
             <span>Keluar dari Akun</span>
           </button>
         </div>
+
+        <ConfirmDialog
+          isOpen={showLogoutConfirm}
+          title="Keluar dari Akun"
+          message="Apakah Anda yakin ingin keluar dari akun? Anda harus login kembali untuk mengakses panel pengelola landing page Anda."
+          confirmLabel="Ya, Keluar"
+          cancelLabel="Batal"
+          onConfirm={handleLogout}
+          onCancel={() => setShowLogoutConfirm(false)}
+          variant="danger"
+        />
 
       </main>
     </div>
