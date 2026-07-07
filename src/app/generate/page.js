@@ -2397,7 +2397,11 @@ function GenerateContent() {
       if (response.ok && result.success) {
         router.push('/');
       } else {
-        setError(result.error || 'Gagal menyimpan perubahan.');
+        setError(
+          result.error && typeof result.error === 'object'
+            ? Object.values(result.error).flat().join(', ')
+            : (result.error || 'Gagal menyimpan perubahan.')
+        );
       }
     } catch (err) {
       setError('Terjadi kesalahan saat menyimpan perubahan.');
@@ -2662,6 +2666,11 @@ function GenerateContent() {
                   </div>
 
                   <form id="generate-form" onSubmit={editMode ? handleSaveDeployed : handleGenerate} className="space-y-4">
+                    {error && (
+                      <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold p-3.5 rounded-xl">
+                        {error}
+                      </div>
+                    )}
                     {/* Tipe Template Selector */}
                     <div>
                       <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
