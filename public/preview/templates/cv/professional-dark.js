@@ -13,7 +13,7 @@
  * @param {object} pageConfig - The full pageConfig object from Supabase
  * @param {string} [guestName] - Unused for CV, kept for interface consistency
  */
-export async function render(pageConfig, guestName = '') {
+export async function render(pageConfig, guestName = '', brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
     const appEl = document.getElementById('app');
     const content = pageConfig.content || {};
     const profile = content.profile || {};
@@ -22,6 +22,9 @@ export async function render(pageConfig, guestName = '') {
     const skills = content.skills || [];
     const languages = content.languages || [];
     const certifications = content.certifications || [];
+
+    const brandName = brandConfig?.name || 'Siluet';
+    const brandDomain = brandConfig?.domain || 'siluet.web.id';
 
     // Inject CSS (with unique ID to prevent duplicate injection on re-render)
     if (!document.getElementById('cv-professional-dark-styles')) {
@@ -491,7 +494,7 @@ export async function render(pageConfig, guestName = '') {
 
                 <!-- ===== FOOTER ===== -->
                 <footer class="cv-footer">
-                    <p>CV dibuat dengan <a href="https://siluet.web.id" target="_blank" rel="noopener noreferrer" style="color:#63b3ed;text-decoration:none;">Siluet</a> &bull; ${currentYear}</p>
+                    <p>CV dibuat dengan <a href="https://${brandDomain}" target="_blank" rel="noopener noreferrer" style="color:#63b3ed;text-decoration:none;">${brandName}</a> &bull; ${currentYear}</p>
                 </footer>
 
             </div>

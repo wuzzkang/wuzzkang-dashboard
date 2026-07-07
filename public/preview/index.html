@@ -37,6 +37,12 @@
         const PREVIEW_VERSION = '1.2.0';
         const cacheBust = `?v=${PREVIEW_VERSION}`;
 
+        // Global Branding Config
+        const BRAND_CONFIG = {
+            name: 'Siluet',
+            domain: 'siluet.web.id'
+        };
+
         // Notify parent that iframe is ready to receive postMessage data
         window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
 
@@ -115,7 +121,7 @@
                         const module = await import(`./templates/cv/${designKey}.js${cacheBust}`);
                         
                         // Execute the template renderer (CV does not use guestName)
-                        await module.render(pageData, '');
+                        await module.render(pageData, '', BRAND_CONFIG);
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template CV: ${err.message}</div>`;
                     }
