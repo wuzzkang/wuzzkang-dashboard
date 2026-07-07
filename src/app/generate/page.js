@@ -19,6 +19,7 @@ const getProductIcon = (id) => {
     case 'birthday': return '🎂';
     case 'toko-online': return '🛍️';
     case 'campaign': return '⚡';
+    case 'cv': return '📄';
     default: return '📄';
   }
 };
@@ -30,6 +31,7 @@ const getProductDefaultDescription = (id) => {
     case 'birthday': return 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.';
     case 'toko-online': return 'Landing page e-commerce instan untuk katalog dagangan.';
     case 'campaign': return 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.';
+    case 'cv': return 'Web CV profesional yang ATS-friendly, siap dibagikan sebagai link atau di-export ke PDF.';
     default: return 'Rancang landing page instan sesuai kebutuhan Anda.';
   }
 };
@@ -231,6 +233,25 @@ function GenerateContent() {
   const [isGeneratingCampaignBenefits, setIsGeneratingCampaignBenefits] = useState(false);
   const [isGeneratingCampaignTestimonials, setIsGeneratingCampaignTestimonials] = useState(false);
   const [isGeneratingCampaignUrgency, setIsGeneratingCampaignUrgency] = useState(false);
+
+  // CV form states
+  const [cvName, setCvName] = useState('');
+  const [cvTitle, setCvTitle] = useState('');
+  const [cvSummary, setCvSummary] = useState('');
+  const [cvEmail, setCvEmail] = useState('');
+  const [cvPhone, setCvPhone] = useState('');
+  const [cvLocation, setCvLocation] = useState('');
+  const [cvLinkedin, setCvLinkedin] = useState('');
+  const [cvGithub, setCvGithub] = useState('');
+  const [cvPortfolio, setCvPortfolio] = useState('');
+  const [cvPhotoUrl, setCvPhotoUrl] = useState('');
+  const [isUploadingCvPhoto, setIsUploadingCvPhoto] = useState(false);
+  const [cvExperiences, setCvExperiences] = useState([{ company: '', position: '', period: '', description: '' }]);
+  const [cvEducations, setCvEducations] = useState([{ institution: '', degree: '', period: '', gpa: '' }]);
+  const [cvSkillsInput, setCvSkillsInput] = useState('');
+  const [cvSkills, setCvSkills] = useState([]);
+  const [cvLanguages, setCvLanguages] = useState([{ language: '', level: '' }]);
+  const [cvCertifications, setCvCertifications] = useState([]);
 
   // Toko Online upload & AI loader states
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -467,6 +488,26 @@ function GenerateContent() {
               setCampaignClosingCta(content.closing?.cta_text || 'Dapatkan Sekarang!');
               setCampaignWhatsapp(content.contact?.whatsapp || '');
               setDesignKey(pageConfig.meta?.design_key || 'neon-conversion');
+            } else if (pageConfig && pageConfig.meta?.template_type === 'cv') {
+              setTemplateType('cv');
+              const content = pageConfig.content || {};
+              setCvName(content.profile?.name || '');
+              setCvTitle(content.profile?.title || '');
+              setCvSummary(content.profile?.summary || '');
+              setCvEmail(content.profile?.email || '');
+              setCvPhone(content.profile?.phone || '');
+              setCvLocation(content.profile?.location || '');
+              setCvLinkedin(content.profile?.linkedin_url || '');
+              setCvGithub(content.profile?.github_url || '');
+              setCvPortfolio(content.profile?.portfolio_url || '');
+              setCvPhotoUrl(content.profile?.photo_url || '');
+              setCvExperiences(content.experiences?.length > 0 ? content.experiences : [{ company: '', position: '', period: '', description: '' }]);
+              setCvEducations(content.educations?.length > 0 ? content.educations : [{ institution: '', degree: '', period: '', gpa: '' }]);
+              setCvSkills(content.skills || []);
+              setCvSkillsInput('');
+              setCvLanguages(content.languages?.length > 0 ? content.languages : [{ language: '', level: '' }]);
+              setCvCertifications(content.certifications || []);
+              setDesignKey(pageConfig.meta?.design_key || 'professional-dark');
             } else {
               setTemplateType('store');
             }
@@ -590,6 +631,27 @@ function GenerateContent() {
         style_palette: pageData?.content?.style_palette || null,
         scene_description: pageData?.content?.scene_description || null,
       };
+    } else if (templateType === 'cv') {
+      metaTitle = cvName ? `CV — ${cvName}` : 'Curriculum Vitae';
+      assembledContent = {
+        profile: {
+          name: cvName,
+          title: cvTitle,
+          summary: cvSummary,
+          photo_url: cvPhotoUrl || null,
+          email: cvEmail,
+          phone: cvPhone,
+          location: cvLocation,
+          linkedin_url: cvLinkedin || null,
+          github_url: cvGithub || null,
+          portfolio_url: cvPortfolio || null,
+        },
+        experiences: cvExperiences.filter(e => e.company && e.position && e.period),
+        educations: cvEducations.filter(e => e.institution && e.degree && e.period),
+        skills: cvSkills,
+        languages: cvLanguages.filter(l => l.language && l.level),
+        certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
+      };
     } else {
       metaTitle = 'Draft Page';
       assembledContent = {};
@@ -681,7 +743,22 @@ function GenerateContent() {
     preweddingPhotoUrl,
     generatePrewedding,
     preweddingGenerateCount,
-    galleryList
+    galleryList,
+    cvName,
+    cvTitle,
+    cvSummary,
+    cvEmail,
+    cvPhone,
+    cvLocation,
+    cvLinkedin,
+    cvGithub,
+    cvPortfolio,
+    cvPhotoUrl,
+    cvExperiences,
+    cvEducations,
+    cvSkills,
+    cvLanguages,
+    cvCertifications,
   ]);
 
   // Synchronize state with live preview iframe
@@ -851,6 +928,12 @@ function GenerateContent() {
       return !campaignHeadline || !campaignSubheadline || !campaignWhatsapp ||
         campaignBenefits.some(b => !b.title || !b.desc) ||
         campaignTestimonials.some(t => !t.name || !t.content);
+    }
+    if (templateType === 'cv') {
+      return !cvName || !cvTitle || !cvSummary || !cvEmail || !cvPhone || !cvLocation ||
+        cvSkills.length === 0 ||
+        cvEducations.length === 0 ||
+        cvEducations.some(e => !e.institution || !e.degree || !e.period);
     }
     if (templateType === 'store') {
       return !prompt;
@@ -1556,7 +1639,7 @@ function GenerateContent() {
         activeStoreBannerUrl = null;
       }
 
-      if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday' || templateType === 'toko-online') {
+      if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'cv') {
         // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
         setAiProgressStatus('queued');
         setAiProgressDetail(
@@ -1564,7 +1647,9 @@ function GenerateContent() {
             ? 'Menyiapkan payload undangan...' 
             : (templateType === 'birthday' 
                 ? 'Menyiapkan payload ulang tahun...' 
-                : (templateType === 'toko-online' ? 'Menyiapkan payload toko online...' : 'Menyiapkan payload campaign...'))
+                : (templateType === 'toko-online' 
+                    ? 'Menyiapkan payload toko online...' 
+                    : (templateType === 'cv' ? 'Menyiapkan payload CV...' : 'Menyiapkan payload campaign...')))
         );
 
         // Generate random idempotency key
@@ -1642,6 +1727,36 @@ function GenerateContent() {
                 price: p.price,
                 description: p.description || ''
               }))
+            },
+            previewOnly: true,
+            async: true
+          };
+        } else if (templateType === 'cv') {
+          executePayload = {
+            idempotencyKey,
+            projectId: projectId || null,
+            templateType: 'cv',
+            styleKey: 'default',
+            inputAssets: [],
+            inputContext: {
+              profile: {
+                name: cvName,
+                title: cvTitle,
+                summary: cvSummary
+              },
+              experiences: cvExperiences.map(e => ({
+                company: e.company,
+                position: e.position,
+                period: e.period,
+                description: e.description || ''
+              })),
+              educations: cvEducations.map(e => ({
+                institution: e.institution,
+                degree: e.degree,
+                period: e.period,
+                gpa: e.gpa || ''
+              })),
+              skills: cvSkills
             },
             previewOnly: true,
             async: true
@@ -1808,6 +1923,56 @@ function GenerateContent() {
                 price: p.price,
                 description: aiProduct?.description || p.description || null,
                 image_url: p.image_url || null
+              };
+            }));
+          }
+        } else if (templateType === 'cv') {
+          compiledPageData = {
+            meta: {
+              title: cvName ? `CV — ${cvName}` : 'Curriculum Vitae',
+              theme: designKey || 'professional-dark',
+              template_type: 'cv',
+              design_key: designKey || 'professional-dark',
+            },
+            content: {
+              profile: {
+                name: cvName,
+                title: cvTitle,
+                summary: aiConfig.profile?.summary || cvSummary,
+                photo_url: cvPhotoUrl || null,
+                email: cvEmail,
+                phone: cvPhone,
+                location: cvLocation,
+                linkedin_url: cvLinkedin || null,
+                github_url: cvGithub || null,
+                portfolio_url: cvPortfolio || null,
+              },
+              experiences: cvExperiences.map((exp, idx) => {
+                const aiExp = aiConfig.experiences?.[idx];
+                return {
+                  company: exp.company,
+                  position: exp.position,
+                  period: exp.period,
+                  description: aiExp?.description || exp.description || null
+                };
+              }),
+              educations: cvEducations.filter(e => e.institution && e.degree && e.period),
+              skills: cvSkills,
+              languages: cvLanguages.filter(l => l.language && l.level),
+              certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
+            }
+          };
+
+          // Also populate React state variables to reflect the generated values in form inputs instantly
+          if (aiConfig.profile?.summary) setCvSummary(aiConfig.profile.summary);
+          if (aiConfig.experiences && Array.isArray(aiConfig.experiences)) {
+            setCvExperiences(cvExperiences.map((exp, idx) => {
+              const aiExp = aiConfig.experiences[idx];
+              return {
+                company: exp.company,
+                position: exp.position,
+                period: exp.period,
+                description: aiExp?.description || exp.description || null
               };
             }));
           }
@@ -1993,6 +2158,28 @@ function GenerateContent() {
             contact: {
               whatsapp: campaignWhatsapp
             }
+          };
+        }
+        if (templateType === 'cv') {
+          payload.cv_details = {
+            design_key: designKey || 'professional-dark',
+            profile: {
+              name: cvName,
+              title: cvTitle,
+              summary: cvSummary,
+              photo_url: cvPhotoUrl || null,
+              email: cvEmail,
+              phone: cvPhone,
+              location: cvLocation,
+              linkedin_url: cvLinkedin || null,
+              github_url: cvGithub || null,
+              portfolio_url: cvPortfolio || null,
+            },
+            experiences: cvExperiences.filter(e => e.company && e.position && e.period),
+            educations: cvEducations.filter(e => e.institution && e.degree && e.period),
+            skills: cvSkills,
+            languages: cvLanguages.filter(l => l.language && l.level),
+            certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
           };
         }
 
@@ -3659,8 +3846,419 @@ function GenerateContent() {
                       </div>
                     )}
 
+                    {/* CV Fields */}
+                    {templateType === 'cv' && (
+                      <div className="space-y-5 border-t border-theme-border pt-4">
+
+                        {/* Design Picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                            Pilih Desain Tema
+                          </label>
+                          <div className="flex gap-3">
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36">
+                              <button
+                                type="button"
+                                onClick={() => setDesignKey('professional-dark')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'professional-dark'
+                                    ? 'border-theme-accent bg-theme-accent/10 text-theme-accent'
+                                    : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
+                                }`}
+                              >
+                                <span className="text-lg">💼</span>
+                                <span className="text-[10px] font-bold">Professional Dark</span>
+                                <span className="text-[8px] opacity-70">ATS-Friendly</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* === PROFIL === */}
+                        <div className="space-y-3">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">1. Data Profil</div>
+
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <div>
+                              <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Nama Lengkap *</label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="e.g. Budi Santoso"
+                                value={cvName}
+                                onChange={(e) => setCvName(e.target.value)}
+                                className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Jabatan / Posisi Dilamar *</label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="e.g. Frontend Engineer"
+                                value={cvTitle}
+                                onChange={(e) => setCvTitle(e.target.value)}
+                                className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Ringkasan Profesional *</label>
+                            <textarea
+                              rows={3}
+                              required
+                              placeholder="Tulis ringkasan singkat tentang diri Anda, pengalaman, dan nilai yang Anda tawarkan..."
+                              value={cvSummary}
+                              onChange={(e) => setCvSummary(e.target.value)}
+                              className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <div>
+                              <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Email *</label>
+                              <input
+                                type="email"
+                                required
+                                placeholder="email@contoh.com"
+                                value={cvEmail}
+                                onChange={(e) => setCvEmail(e.target.value)}
+                                className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">No. Telepon / WhatsApp *</label>
+                              <input
+                                type="tel"
+                                required
+                                placeholder="e.g. 628123456789"
+                                value={cvPhone}
+                                onChange={(e) => setCvPhone(e.target.value)}
+                                className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Lokasi / Kota *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Jakarta, Indonesia"
+                              value={cvLocation}
+                              onChange={(e) => setCvLocation(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Link Sosial / Portofolio (Opsional)</label>
+                            <input
+                              type="url"
+                              placeholder="URL LinkedIn (https://linkedin.com/in/...)"
+                              value={cvLinkedin}
+                              onChange={(e) => setCvLinkedin(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                            <input
+                              type="url"
+                              placeholder="URL GitHub (https://github.com/...)"
+                              value={cvGithub}
+                              onChange={(e) => setCvGithub(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                            <input
+                              type="url"
+                              placeholder="URL Portofolio / Website"
+                              value={cvPortfolio}
+                              onChange={(e) => setCvPortfolio(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* === PENGALAMAN KERJA === */}
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">2. Pengalaman Kerja</div>
+                            <button
+                              type="button"
+                              onClick={() => setCvExperiences(prev => [...prev, { company: '', position: '', period: '', description: '' }])}
+                              className="text-[9px] font-bold text-theme-accent hover:text-theme-accent-hover transition-colors"
+                            >+ Tambah</button>
+                          </div>
+                          {cvExperiences.map((exp, idx) => (
+                            <div key={idx} className="border border-theme-border/60 rounded-xl p-3 space-y-2 bg-theme-bg/40 relative">
+                              {cvExperiences.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCvExperiences(prev => prev.filter((_, i) => i !== idx))}
+                                  className="absolute top-2 right-2 text-[9px] text-red-400 hover:text-red-300 font-bold transition-colors"
+                                >✕</button>
+                              )}
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Nama Perusahaan</label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. PT Teknologi Maju"
+                                    value={exp.company}
+                                    onChange={(e) => setCvExperiences(prev => prev.map((x, i) => i === idx ? { ...x, company: e.target.value } : x))}
+                                    className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Jabatan</label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Frontend Developer"
+                                    value={exp.position}
+                                    onChange={(e) => setCvExperiences(prev => prev.map((x, i) => i === idx ? { ...x, position: e.target.value } : x))}
+                                    className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Periode</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Jan 2023 – Sekarang"
+                                  value={exp.period}
+                                  onChange={(e) => setCvExperiences(prev => prev.map((x, i) => i === idx ? { ...x, period: e.target.value } : x))}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Deskripsi Singkat (Opsional)</label>
+                                <textarea
+                                  rows={2}
+                                  placeholder="Tanggung jawab utama dan pencapaian..."
+                                  value={exp.description}
+                                  onChange={(e) => setCvExperiences(prev => prev.map((x, i) => i === idx ? { ...x, description: e.target.value } : x))}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none resize-none leading-relaxed"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* === PENDIDIKAN === */}
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">3. Pendidikan *</div>
+                            <button
+                              type="button"
+                              onClick={() => setCvEducations(prev => [...prev, { institution: '', degree: '', period: '', gpa: '' }])}
+                              className="text-[9px] font-bold text-theme-accent hover:text-theme-accent-hover transition-colors"
+                            >+ Tambah</button>
+                          </div>
+                          {cvEducations.map((edu, idx) => (
+                            <div key={idx} className="border border-theme-border/60 rounded-xl p-3 space-y-2 bg-theme-bg/40 relative">
+                              {cvEducations.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCvEducations(prev => prev.filter((_, i) => i !== idx))}
+                                  className="absolute top-2 right-2 text-[9px] text-red-400 hover:text-red-300 font-bold transition-colors"
+                                >✕</button>
+                              )}
+                              <div>
+                                <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Nama Institusi *</label>
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="e.g. Universitas Indonesia"
+                                  value={edu.institution}
+                                  onChange={(e) => setCvEducations(prev => prev.map((x, i) => i === idx ? { ...x, institution: e.target.value } : x))}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Gelar / Program Studi *</label>
+                                  <input
+                                    type="text"
+                                    required
+                                    placeholder="e.g. S1 Teknik Informatika"
+                                    value={edu.degree}
+                                    onChange={(e) => setCvEducations(prev => prev.map((x, i) => i === idx ? { ...x, degree: e.target.value } : x))}
+                                    className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Periode *</label>
+                                  <input
+                                    type="text"
+                                    required
+                                    placeholder="e.g. 2019 – 2023"
+                                    value={edu.period}
+                                    onChange={(e) => setCvEducations(prev => prev.map((x, i) => i === idx ? { ...x, period: e.target.value } : x))}
+                                    className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">IPK / GPA (Opsional)</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 3.80"
+                                  value={edu.gpa || ''}
+                                  onChange={(e) => setCvEducations(prev => prev.map((x, i) => i === idx ? { ...x, gpa: e.target.value } : x))}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* === KEAHLIAN === */}
+                        <div className="space-y-2">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">4. Keahlian (Skills) *</div>
+                          <p className="text-[8px] text-theme-text-muted">Ketik keahlian lalu tekan Enter atau koma untuk menambahkan.</p>
+                          <div
+                            className="flex flex-wrap gap-1.5 min-h-[40px] p-2 bg-theme-bg border border-theme-border rounded-xl cursor-text"
+                            onClick={() => document.getElementById('cv-skills-input')?.focus()}
+                          >
+                            {cvSkills.map((skill, idx) => (
+                              <span key={idx} className="inline-flex items-center gap-1 text-[10px] font-semibold bg-theme-accent/15 text-theme-accent border border-theme-accent/25 px-2.5 py-0.5 rounded-full">
+                                {skill}
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setCvSkills(prev => prev.filter((_, i) => i !== idx)); }}
+                                  className="hover:text-red-400 transition-colors leading-none"
+                                >✕</button>
+                              </span>
+                            ))}
+                            <input
+                              id="cv-skills-input"
+                              type="text"
+                              placeholder={cvSkills.length === 0 ? 'e.g. JavaScript, React, Node.js...' : ''}
+                              value={cvSkillsInput}
+                              onChange={(e) => setCvSkillsInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if ((e.key === 'Enter' || e.key === ',') && cvSkillsInput.trim()) {
+                                  e.preventDefault();
+                                  const newSkill = cvSkillsInput.trim().replace(/,$/, '');
+                                  if (newSkill && !cvSkills.includes(newSkill)) {
+                                    setCvSkills(prev => [...prev, newSkill]);
+                                  }
+                                  setCvSkillsInput('');
+                                }
+                                if (e.key === 'Backspace' && !cvSkillsInput && cvSkills.length > 0) {
+                                  setCvSkills(prev => prev.slice(0, -1));
+                                }
+                              }}
+                              onBlur={() => {
+                                if (cvSkillsInput.trim()) {
+                                  const newSkill = cvSkillsInput.trim().replace(/,$/, '');
+                                  if (newSkill && !cvSkills.includes(newSkill)) setCvSkills(prev => [...prev, newSkill]);
+                                  setCvSkillsInput('');
+                                }
+                              }}
+                              className="flex-1 min-w-[100px] bg-transparent text-xs text-theme-text placeholder-theme-text-muted outline-none border-none"
+                            />
+                          </div>
+                        </div>
+
+                        {/* === BAHASA === */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">5. Kemampuan Bahasa (Opsional)</div>
+                            <button
+                              type="button"
+                              onClick={() => setCvLanguages(prev => [...prev, { language: '', level: '' }])}
+                              className="text-[9px] font-bold text-theme-accent hover:text-theme-accent-hover transition-colors"
+                            >+ Tambah</button>
+                          </div>
+                          {cvLanguages.map((lang, idx) => (
+                            <div key={idx} className="flex gap-2 items-start">
+                              <div className="flex-1">
+                                <input
+                                  type="text"
+                                  placeholder="Bahasa (e.g. Indonesia)"
+                                  value={lang.language}
+                                  onChange={(e) => setCvLanguages(prev => prev.map((x, i) => i === idx ? { ...x, language: e.target.value } : x))}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <input
+                                  type="text"
+                                  placeholder="Level (e.g. Native)"
+                                  value={lang.level}
+                                  onChange={(e) => setCvLanguages(prev => prev.map((x, i) => i === idx ? { ...x, level: e.target.value } : x))}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                              </div>
+                              {cvLanguages.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCvLanguages(prev => prev.filter((_, i) => i !== idx))}
+                                  className="text-[9px] text-red-400 hover:text-red-300 font-bold mt-1.5 transition-colors flex-shrink-0"
+                                >✕</button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* === SERTIFIKASI === */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">6. Sertifikasi (Opsional)</div>
+                            <button
+                              type="button"
+                              onClick={() => setCvCertifications(prev => [...prev, { name: '', issuer: '', year: '' }])}
+                              className="text-[9px] font-bold text-theme-accent hover:text-theme-accent-hover transition-colors"
+                            >+ Tambah</button>
+                          </div>
+                          {cvCertifications.map((cert, idx) => (
+                            <div key={idx} className="border border-theme-border/60 rounded-xl p-2.5 space-y-1.5 bg-theme-bg/40 relative">
+                              <button
+                                type="button"
+                                onClick={() => setCvCertifications(prev => prev.filter((_, i) => i !== idx))}
+                                className="absolute top-2 right-2 text-[9px] text-red-400 hover:text-red-300 font-bold transition-colors"
+                              >✕</button>
+                              <div>
+                                <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Nama Sertifikasi</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Google Cloud Professional"
+                                  value={cert.name}
+                                  onChange={(e) => setCvCertifications(prev => prev.map((x, i) => i === idx ? { ...x, name: e.target.value } : x))}
+                                  className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Lembaga Penerbit</label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Google"
+                                    value={cert.issuer}
+                                    onChange={(e) => setCvCertifications(prev => prev.map((x, i) => i === idx ? { ...x, issuer: e.target.value } : x))}
+                                    className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Tahun</label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. 2024"
+                                    value={cert.year}
+                                    onChange={(e) => setCvCertifications(prev => prev.map((x, i) => i === idx ? { ...x, year: e.target.value } : x))}
+                                    className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                      </div>
+                    )}
+
                     {/* Prompt input */}
-                    {templateType !== 'toko-online' && templateType !== 'campaign' && (
+                    {templateType !== 'toko-online' && templateType !== 'campaign' && templateType !== 'cv' && (
                       <div>
                         <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                           {templateType === 'wedding' || templateType === 'birthday' ? 'Preferensi Kutipan / Doa (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
