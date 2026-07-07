@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import {
   User, Mail, Shield, Radio, Save, Check, AlertCircle, Eye, EyeOff,
-  BarChart2, Target, Music2, ExternalLink, Loader2, KeyRound
+  BarChart2, Target, Music2, ExternalLink, Loader2, KeyRound, Palette, LogOut
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -71,9 +71,35 @@ export default function ProfilePage() {
   const { user, session, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
 
-  // Profile data
   const [profileData, setProfileData] = useState(null);
   const [isFetching, setIsFetching] = useState(true);
+
+  // Theme state
+  const [activeTheme, setActiveTheme] = useState('clean');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'clean';
+    setActiveTheme(savedTheme);
+  }, []);
+
+  const handleThemeChange = (newTheme) => {
+    setActiveTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    window.dispatchEvent(new Event('themeChange'));
+  };
+
+  const handleLogout = async () => {
+    const confirmLogout = window.confirm('Apakah Anda yakin ingin keluar dari akun?');
+    if (!confirmLogout) return;
+
+    try {
+      await supabase.auth.signOut();
+      router.push('/login');
+    } catch (e) {
+      alert('Gagal melakukan logout.');
+    }
+  };
 
   // Password reset
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -249,8 +275,18 @@ export default function ProfilePage() {
 
           {/* Balance + Quota */}
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="bg-theme-bg rounded-xl p-3 border border-theme-border">
-              <p className="text-xs text-theme-text-muted mb-1">Saldo Kredit</p>
+            <div className="bg-theme-bg rounded-xl p-3 border border-theme-border relative">
+              <p className="text-xs text-theme-text-muted mb-1 flex justify-between items-center">
+                <span>Saldo Kredit</span>
+                <button
+                  type="button"
+                  onClick={refreshProfile}
+                  className="text-[10px] text-theme-accent hover:underline leading-none p-0.5 rounded hover:bg-theme-card transition-all"
+                  title="Refresh Saldo"
+                >
+                  🔄
+                </button>
+              </p>
               <p className="text-xl font-black text-theme-accent">{balanceCredits.toLocaleString()}</p>
               <p className="text-xs text-theme-text-muted">Credit</p>
             </div>
@@ -259,6 +295,39 @@ export default function ProfilePage() {
               <p className="text-xl font-black text-theme-text">{remainingFree}<span className="text-sm font-normal text-theme-text-muted">/{dailyLimit}</span></p>
               <p className="text-xs text-theme-text-muted">sisa hari ini</p>
             </div>
+          </div>
+        </section>
+
+        {/* ── Theme Selector Card ────────────────────────────────────────── */}
+        <section className="bg-theme-surface border border-theme-border rounded-2xl p-5 mb-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+              <Palette className="h-4 w-4 text-indigo-500" />
+            </div>
+            <h3 className="font-bold text-theme-text">Tema Aplikasi</h3>
+          </div>
+          <p className="text-sm text-theme-text-sec mb-3">
+            Pilih tampilan warna dashboard yang paling nyaman bagi Anda.
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: 'clean', label: 'Clean' },
+              { id: 'retro', label: 'Retro' },
+              { id: 'classic-dark', label: 'Dark' }
+            ].map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => handleThemeChange(t.id)}
+                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer text-center ${
+                  activeTheme === t.id
+                    ? 'bg-theme-accent border-theme-accent text-theme-accent-text font-black shadow-sm'
+                    : 'bg-theme-bg border-theme-border text-theme-text-sec hover:border-theme-text-muted hover:bg-theme-card/30'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </section>
 
@@ -402,6 +471,17 @@ export default function ProfilePage() {
             </button>
           </form>
         </section>
+
+        {/* ── Logout Button ──────────────────────────────────────────────── */}
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={handleLogout}
+            className="w-full bg-red-600/10 hover:bg-red-600/20 text-red-500 hover:text-red-400 border border-red-500/20 font-bold text-xs py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+          >
+            <LogOut className="h-4.5 w-4.5" />
+            <span>Keluar dari Akun</span>
+          </button>
+        </div>
 
       </main>
     </div>

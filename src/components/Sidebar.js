@@ -15,17 +15,22 @@ export default function Sidebar() {
   const [activeTheme, setActiveTheme] = useState('clean');
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'clean';
-    setTimeout(() => {
+    const syncTheme = () => {
+      const savedTheme = localStorage.getItem('theme') || 'clean';
       setActiveTheme(savedTheme);
-    }, 0);
-    document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    };
+
+    syncTheme();
+    window.addEventListener('themeChange', syncTheme);
+    return () => window.removeEventListener('themeChange', syncTheme);
   }, []);
 
   const handleThemeChange = (newTheme) => {
     setActiveTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
+    window.dispatchEvent(new Event('themeChange'));
   };
 
   const handleLogout = async () => {
@@ -61,14 +66,14 @@ export default function Sidebar() {
         {/* Right side: Balance pill + menu */}
         <div className="flex items-center gap-2">
           {/* Balance Pill */}
-          <div className="px-3 py-1.5 rounded-lg text-xs font-bold border transition-theme"
+          <Link href="/topup" className="px-3 py-1.5 rounded-lg text-xs font-bold border transition-theme hover:scale-105 active:scale-95 cursor-pointer block"
             style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)', color: 'var(--theme-accent)' }}>
             {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
-          </div>
+          </Link>
           {/* Hamburger */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-lg transition-theme"
+            className="p-2 rounded-lg transition-theme md:block hidden"
             style={{ color: 'var(--theme-text-sec)' }}
           >
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -105,7 +110,7 @@ export default function Sidebar() {
         </div>
 
         {/* Balance Card */}
-        <div className="m-4 p-4 rounded-xl border transition-theme" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
+        <div className="m-4 p-4 rounded-xl border transition-theme md:block hidden" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--theme-text-muted)' }}>
             <Wallet className="h-3.5 w-3.5" style={{ color: 'var(--theme-accent)' }} />
             <span>Saldo Anda</span>
@@ -123,7 +128,7 @@ export default function Sidebar() {
         </div>
 
         {/* Theme Selector */}
-        <div className="mx-4 mb-4 p-3 rounded-xl border transition-theme" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
+        <div className="mx-4 mb-4 p-3 rounded-xl border transition-theme md:block hidden" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--theme-text-muted)' }}>
             <Palette className="h-3.5 w-3.5" style={{ color: 'var(--theme-accent)' }} />
             <span>Pilih Tema</span>
@@ -175,7 +180,7 @@ export default function Sidebar() {
         </nav>
 
         {/* User + Logout */}
-        <div className="p-4 border-t" style={{ borderColor: 'var(--theme-border)' }}>
+        <div className="p-4 border-t md:block hidden" style={{ borderColor: 'var(--theme-border)' }}>
           <div className="flex items-center gap-3 px-2 py-2 mb-3">
             <div className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold transition-theme"
               style={{ backgroundColor: 'var(--theme-card)', border: '1px solid var(--theme-border-alt)', color: 'var(--theme-text-sec)' }}>
