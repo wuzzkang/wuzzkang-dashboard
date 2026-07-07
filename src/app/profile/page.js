@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
+import Skeleton from '@/components/Skeleton';
 import {
   User, Mail, Shield, Radio, Save, Check, AlertCircle, Eye, EyeOff,
   BarChart2, Target, Music2, ExternalLink, Loader2, KeyRound, Palette, LogOut
@@ -224,14 +225,18 @@ export default function ProfilePage() {
     setVisibleFields((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // ── Guard: not yet loaded ────────────────────────────────────────────────
   if (loading || isFetching) {
     return (
-      <div className="min-h-screen bg-theme-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 text-theme-accent animate-spin" />
-          <p className="text-theme-text-muted text-sm">Memuat profil...</p>
-        </div>
+      <div className="min-h-screen bg-theme-bg transition-theme" style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
+        <Sidebar />
+        <main className="max-w-md mx-auto px-4 pb-24 pt-6">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-theme-text">Profil Saya</h1>
+            <p className="text-theme-text-muted text-sm mt-1">Kelola akun, keamanan, dan pengaturan pelacakan</p>
+          </div>
+          <Skeleton type="profile" count={1} />
+        </main>
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
+import Loading from '@/components/Loading';
 import ImagePickerField from '@/components/ImagePickerField';
 import { Sparkles, ArrowRight, CheckCircle, ExternalLink, Globe, Layout, Smartphone, Laptop, AlertCircle, ChevronRight, X, Search, ShoppingBag, Heart } from 'lucide-react';
 const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg';
@@ -825,11 +826,7 @@ function GenerateContent() {
   };
 
   if (loading || (!user && loading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="h-12 w-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
+    return <Loading fullScreen={true} text="Memuat Akun..." size="lg" />;
   }
 
   // Helper to validate the form before preview generate
@@ -4387,11 +4384,7 @@ function GenerateContent() {
 
 export default function GeneratePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-theme-bg">
-        <div className="h-12 w-12 rounded-full border-4 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-      </div>
-    }>
+    <Suspense fallback={<Loading fullScreen={true} text="Memuat Modul AI..." size="lg" />}>
       <GenerateContent />
     </Suspense>
   );

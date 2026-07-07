@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
+import Skeleton from '@/components/Skeleton';
 import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X } from 'lucide-react';
 
 export default function TopUpPage() {
@@ -219,13 +220,7 @@ export default function TopUpPage() {
     return channels;
   };
 
-  if (loading || (!user && loading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="h-12 w-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
+
 
   const presetAmounts = [100, 250, 500, 1000];
 
@@ -677,10 +672,8 @@ export default function TopUpPage() {
                 Lihat Semua
               </button>
             </div>
-            {isLoadingHistory ? (
-              <div className="py-6 flex items-center justify-center">
-                <RefreshCw className="h-4 w-4 animate-spin text-theme-text-muted" />
-              </div>
+            {loading || isLoadingHistory ? (
+              <Skeleton type="list" count={2} />
             ) : todayTopups.length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-xs text-theme-text-muted">Belum ada riwayat top up hari ini</p>

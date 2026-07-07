@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
-import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search } from 'lucide-react';
 import Link from 'next/link';
+import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search } from 'lucide-react';
+import Skeleton from '@/components/Skeleton';
 
 export default function DashboardPage() {
   const { user, session, loading } = useAuth();
@@ -81,14 +82,6 @@ export default function DashboardPage() {
       getProjects();
     }
   }, [session]);
-
-  if (loading || (!user && loading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="h-12 w-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -216,10 +209,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Content body */}
-        {fetching ? (
-          <div className="h-64 flex items-center justify-center">
-            <div className="h-8 w-8 rounded-full border-2 border-theme-accent/20 border-t-theme-accent animate-spin"></div>
-          </div>
+        {loading || fetching ? (
+          <Skeleton type="card" count={3} />
         ) : error ? (
           <div className="bg-red-500/10 border border-red-500/25 text-red-400 rounded-2xl p-5 text-center text-xs">
             <p>{error}</p>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
+import Skeleton from '@/components/Skeleton';
 import {
   History,
   ArrowUpRight,
@@ -218,13 +219,7 @@ export default function PaymentHistoryPage() {
 
   const filteredList = getFilteredTransactions();
 
-  if (loading || (!user && loading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="h-12 w-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
@@ -372,12 +367,8 @@ export default function PaymentHistoryPage() {
           )}
         </div>
 
-        {/* Loading / Error States */}
-        {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-3">
-            <RefreshCw className="h-8 w-8 animate-spin text-theme-accent" />
-            <span className="text-xs text-theme-text-muted">Memuat catatan transaksi...</span>
-          </div>
+        {loading || isLoading ? (
+          <Skeleton type="list" count={4} />
         ) : error ? (
           <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl p-4 flex gap-2.5 items-start mb-6">
             <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
