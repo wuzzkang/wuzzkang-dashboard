@@ -2566,7 +2566,7 @@ function GenerateContent() {
       <Sidebar />
 
       {/* Main Content Area - Mobile Centered Column */}
-      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
+      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-48 md:pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
           <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Siap Kerja Untukmu</h1>
@@ -4681,7 +4681,7 @@ function GenerateContent() {
           const hasTt  = !!trackingConfig?.tiktok_pixel_id;
           const anyActive = hasFb || hasGa || hasAds || hasTt;
           return (
-            <div className="relative md:fixed md:bottom-[72px] left-0 right-0 max-w-md mx-auto px-4 z-39 mb-3">
+            <div className="relative md:fixed md:bottom-[72px] left-0 right-0 max-w-md mx-auto px-4 z-10 mb-3">
               <div className="bg-theme-surface/90 backdrop-blur-sm border border-theme-border rounded-xl px-3 py-2 flex items-center justify-between text-xs shadow-lg">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-theme-text-muted font-medium mr-0.5">Pixel:</span>
@@ -4695,9 +4695,9 @@ function GenerateContent() {
             </div>
           );
         })()}
-
+ 
         {/* Action Bar at the Bottom */}
-        <div className="relative md:fixed md:bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 border-t border-theme-border p-4 z-40 flex flex-col gap-2 shadow-lg md:shadow-2xl transition-theme mt-auto">
+        <div className="fixed bottom-[84px] md:fixed md:bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 border-t border-theme-border p-4 z-30 flex flex-col gap-2 shadow-lg md:shadow-2xl transition-theme mt-auto">
           {editMode ? (
             <button
               type="submit"
