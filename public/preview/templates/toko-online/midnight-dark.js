@@ -82,13 +82,13 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
     const defaultLogo = '👑';
 
     // WA Link generator for general checkout
-    const waUrlGeneral = `https://api.whatsapp.com/send?phone=${contact.whatsapp.replace(/\D/g, '')}&text=${encodeURIComponent(`Halo ${store.name || 'Toko'},\nsaya tertarik untuk bertanya mengenai katalog eksklusif Anda.`)}`;
+    const waUrlGeneral = `https://wa.me/${contact.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Halo ${store.name || 'Toko'},\nsaya tertarik untuk bertanya mengenai katalog eksklusif Anda.`)}`;
 
     let productsHtml = '';
     products.forEach((prod, index) => {
         const prodPriceFormatted = formatPrice(prod.price);
         const waMsgProduct = `Halo ${store.name || 'Toko'},\n\nSaya ingin memesan produk ini:\n- *Nama Produk*: ${prod.name}\n- *Harga*: ${prodPriceFormatted}\n\nMohon informasi ketersediaan stock dan kelanjutan proses pemesanannya. Terima kasih!`;
-        const waUrlProduct = `https://api.whatsapp.com/send?phone=${contact.whatsapp.replace(/\D/g, '')}&text=${encodeURIComponent(waMsgProduct)}`;
+        const waUrlProduct = `https://wa.me/${contact.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(waMsgProduct)}`;
 
         productsHtml += `
             <div class="product-card-dark rounded-3xl overflow-hidden flex flex-col justify-between">

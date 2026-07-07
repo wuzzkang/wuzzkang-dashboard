@@ -454,7 +454,7 @@ export default function DashboardPage() {
                   const hasParams = shareProject.live_url.includes('?');
                   const personalizedUrl = `${shareProject.live_url}${hasParams ? '&' : '?'}to=${encodeURIComponent(guestName.trim())}`;
                   const waMessage = `Halo ${guestName.trim()},\n\nKami mengundang Anda untuk hadir di acara kami. Silakan buka tautan undangan online berikut untuk info detail:\n\n${personalizedUrl}`;
-                  const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMessage)}`;
+                  const waUrl = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
 
                   return (
                     <div className="space-y-3 pt-3 border-t border-theme-border transition-all duration-200">

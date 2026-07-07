@@ -58,7 +58,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
     }
 
     // WA Link generator for general checkout
-    const waUrlGeneral = `https://api.whatsapp.com/send?phone=${contact.whatsapp ? contact.whatsapp.replace(/\D/g, '') : ''}&text=${encodeURIComponent(`Halo,\nsaya tertarik dengan penawaran Anda: "${hero.headline || ''}".`)}`;
+    const waUrlGeneral = `https://wa.me/${contact.whatsapp ? contact.whatsapp.replace(/\D/g, '') : ''}?text=${encodeURIComponent(`Halo,\nsaya tertarik dengan penawaran Anda: "${hero.headline || ''}".`)}`;
 
     // Compile problems HTML list
     let problemsListHtml = '';
