@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { Sparkles, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { BRAND_NAME } from '@/config/branding';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -99,7 +100,7 @@ export default function LoginPage() {
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <h1 className="text-2xl font-black text-theme-text tracking-tight animate-pulse" style={{ fontFamily: "'Sora', sans-serif" }}>
-            {isForgotPassword ? 'Reset Password' : 'Siluet'}
+            {isForgotPassword ? 'Reset Password' : BRAND_NAME}
           </h1>
           <p className="text-xs text-theme-text-sec mt-1.5 leading-relaxed">
             {isForgotPassword 

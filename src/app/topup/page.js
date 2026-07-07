@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Skeleton from '@/components/Skeleton';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X } from 'lucide-react';
+import { BRAND_NAME } from '@/config/branding';
 
 export default function TopUpPage() {
   const { user, session, profile, loading, refreshProfile } = useAuth();
@@ -427,7 +428,7 @@ export default function TopUpPage() {
       <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
         <div className="mb-6">
           <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Top Up Credit</h1>
-          <p className="text-theme-text-sec text-xs mt-1">Tambah credit Siluet untuk mendeploy website landing page Anda</p>
+          <p className="text-theme-text-sec text-xs mt-1">Tambah credit {BRAND_NAME} untuk mendeploy website landing page Anda</p>
         </div>
 
         <div className="space-y-6">

@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { BRAND_NAME } from "@/config/branding";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Siluet Dashboard",
+  title: `${BRAND_NAME} Dashboard`,
   description: "Generate beautiful dynamic landing pages instantly with AI",
 };
 

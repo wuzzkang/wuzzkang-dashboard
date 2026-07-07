@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette, History, Plus } from 'lucide-react';
+import { BRAND_NAME } from '@/config/branding';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,7 +60,7 @@ export default function Sidebar() {
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <span className="text-base font-black tracking-tight transition-theme" style={{ color: 'var(--theme-text)', fontFamily: "'Sora', sans-serif" }}>
-            Siluet
+            {BRAND_NAME}
           </span>
         </Link>
 
@@ -102,7 +103,7 @@ export default function Sidebar() {
               style={{ background: 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))' }}>
               <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="text-base font-black transition-theme" style={{ color: 'var(--theme-text)', fontFamily: "'Sora', sans-serif" }}>Siluet</span>
+            <span className="text-base font-black transition-theme" style={{ color: 'var(--theme-text)', fontFamily: "'Sora', sans-serif" }}>{BRAND_NAME}</span>
           </div>
           <button onClick={() => setIsOpen(false)} style={{ color: 'var(--theme-text-muted)' }}>
             <X className="h-5 w-5" />

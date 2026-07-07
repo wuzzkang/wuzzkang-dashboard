@@ -491,7 +491,7 @@ export async function render(pageConfig, guestName = '') {
 
                 <!-- ===== FOOTER ===== -->
                 <footer class="cv-footer">
-                    <p>CV dibuat dengan <a href="https://siluet.web.id" target="_blank" rel="noopener noreferrer" style="color:#63b3ed;text-decoration:none;">Wuzzkang</a> &bull; ${currentYear}</p>
+                    <p>CV dibuat dengan <a href="https://siluet.web.id" target="_blank" rel="noopener noreferrer" style="color:#63b3ed;text-decoration:none;">Siluet</a> &bull; ${currentYear}</p>
                 </footer>
 
             </div>
