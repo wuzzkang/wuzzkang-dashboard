@@ -149,6 +149,35 @@ function GenerateContent() {
   // Wedding modular additions
   const [designKey, setDesignKey] = useState('modern-clean');
   const [previewDesignKey, setPreviewDesignKey] = useState(null);
+
+  const closePreviewModal = () => {
+    setPreviewDesignKey(null);
+    if (typeof window !== 'undefined' && window.history.state?.isPreviewModal) {
+      window.history.back();
+    }
+  };
+
+  // Handle Back Button closure for the Design Preview Modal
+  useEffect(() => {
+    if (!previewDesignKey) return;
+
+    // Push a custom state to the history stack when the preview is opened
+    window.history.pushState({ isPreviewModal: true }, '');
+
+    const handlePopState = (event) => {
+      // If the popstate is fired (e.g. user pressed browser back or mobile back)
+      if (previewDesignKey) {
+        // Prevent going back by closing the modal instead
+        setPreviewDesignKey(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [previewDesignKey]);
+
   const [groomImage, setGroomImage] = useState(DEFAULT_GROOM_AVATAR);
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
   const [storyList, setStoryList] = useState([]);
@@ -4743,7 +4772,7 @@ function GenerateContent() {
                 <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan landing page</p>
               </div>
               <button
-                onClick={() => setPreviewDesignKey(null)}
+                onClick={closePreviewModal}
                 className="p-2 text-theme-text-sec hover:text-theme-text bg-theme-bg/50 hover:bg-theme-bg rounded-xl transition-colors"
               >
                 <X className="h-4 w-4" />
@@ -5035,7 +5064,7 @@ function GenerateContent() {
             <div className="p-4 border-t border-theme-border bg-theme-bg flex justify-between items-center">
               <span className="text-[10px] text-theme-text-muted">Desain responsif untuk HP & Desktop</span>
               <button
-                onClick={() => setPreviewDesignKey(null)}
+                onClick={closePreviewModal}
                 className="px-4 py-2 bg-theme-card hover:bg-theme-surface text-theme-text rounded-xl text-xs font-semibold transition-colors"
               >
                 Tutup Preview
