@@ -4321,11 +4321,32 @@ function GenerateContent() {
                               type="text"
                               placeholder={cvSkills.length === 0 ? 'e.g. JavaScript, React, Node.js...' : ''}
                               value={cvSkillsInput}
-                              onChange={(e) => setCvSkillsInput(e.target.value)}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val.endsWith(',')) {
+                                  const newSkill = val.slice(0, -1).trim();
+                                  if (newSkill && !cvSkills.includes(newSkill)) {
+                                    setCvSkills(prev => [...prev, newSkill]);
+                                  }
+                                  setCvSkillsInput('');
+                                } else if (val.includes(',')) {
+                                  const parts = val.split(',').map(s => s.trim()).filter(Boolean);
+                                  setCvSkills(prev => {
+                                    const next = [...prev];
+                                    parts.forEach(p => {
+                                      if (!next.includes(p)) next.push(p);
+                                    });
+                                    return next;
+                                  });
+                                  setCvSkillsInput('');
+                                } else {
+                                  setCvSkillsInput(val);
+                                }
+                              }}
                               onKeyDown={(e) => {
-                                if ((e.key === 'Enter' || e.key === ',') && cvSkillsInput.trim()) {
+                                if (e.key === 'Enter' && cvSkillsInput.trim()) {
                                   e.preventDefault();
-                                  const newSkill = cvSkillsInput.trim().replace(/,$/, '');
+                                  const newSkill = cvSkillsInput.trim();
                                   if (newSkill && !cvSkills.includes(newSkill)) {
                                     setCvSkills(prev => [...prev, newSkill]);
                                   }
