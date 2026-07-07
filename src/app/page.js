@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
@@ -22,6 +22,40 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [maxProjectEdits, setMaxProjectEdits] = useState(0);
+
+  // Sync back button / popstate with share modal state
+  const prevShareModalRef = useRef(false);
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (shareModalOpen) {
+        setShareModalOpen(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [shareModalOpen]);
+
+  useEffect(() => {
+    if (shareModalOpen) {
+      if (!window.history.state || window.history.state.modalId !== 'share-modal') {
+        window.history.pushState({ modalId: 'share-modal' }, '');
+      }
+    }
+  }, [shareModalOpen]);
+
+  useEffect(() => {
+    if (!shareModalOpen && prevShareModalRef.current) {
+      if (typeof window !== 'undefined' && window.history.state?.modalId === 'share-modal') {
+        window.history.back();
+      }
+    }
+    prevShareModalRef.current = shareModalOpen;
+  }, [shareModalOpen]);
+
 
   // Fetch systemSettings for max edits config
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
@@ -27,6 +27,59 @@ export default function TopUpPage() {
   const [transactions, setTransactions] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isQrisZoomed, setIsQrisZoomed] = useState(false);
+
+  // Modal / Detail close handlers to handle popstate / browser back button
+  const prevActiveTxRef = useRef(null);
+  const prevQrisZoomRef = useRef(false);
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (isQrisZoomed) {
+        setIsQrisZoomed(false);
+      } else if (activeTransaction) {
+        setActiveTransaction(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [activeTransaction, isQrisZoomed]);
+
+  useEffect(() => {
+    if (activeTransaction) {
+      if (!window.history.state || window.history.state.modalId !== 'active-tx') {
+        window.history.pushState({ modalId: 'active-tx' }, '');
+      }
+    }
+  }, [activeTransaction]);
+
+  useEffect(() => {
+    if (!activeTransaction && prevActiveTxRef.current) {
+      if (typeof window !== 'undefined' && window.history.state?.modalId === 'active-tx') {
+        window.history.back();
+      }
+    }
+    prevActiveTxRef.current = activeTransaction;
+  }, [activeTransaction]);
+
+  useEffect(() => {
+    if (isQrisZoomed) {
+      if (!window.history.state || window.history.state.modalId !== 'qris-zoom') {
+        window.history.pushState({ modalId: 'qris-zoom' }, '');
+      }
+    }
+  }, [isQrisZoomed]);
+
+  useEffect(() => {
+    if (!isQrisZoomed && prevQrisZoomRef.current) {
+      if (typeof window !== 'undefined' && window.history.state?.modalId === 'qris-zoom') {
+        window.history.back();
+      }
+    }
+    prevQrisZoomRef.current = isQrisZoomed;
+  }, [isQrisZoomed]);
 
   // Redirect if not logged in
   useEffect(() => {

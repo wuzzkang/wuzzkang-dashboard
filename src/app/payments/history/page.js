@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
@@ -45,6 +45,70 @@ export default function PaymentHistoryPage() {
   const [selectedTx, setSelectedTx] = useState(null);
   const [isQrisZoomed, setIsQrisZoomed] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Modal / Detail close handlers to handle popstate / browser back button
+  const handleCloseDetail = () => {
+    setSelectedTx(null);
+  };
+
+  const handleCloseQris = () => {
+    setIsQrisZoomed(false);
+  };
+
+  // Sync back button / popstate with modal state
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (isQrisZoomed) {
+        setIsQrisZoomed(false);
+      } else if (selectedTx) {
+        setSelectedTx(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [selectedTx, isQrisZoomed]);
+
+  const prevSelectedTxRef = useRef(null);
+  const prevQrisZoomRef = useRef(false);
+
+  useEffect(() => {
+    if (selectedTx) {
+      if (!window.history.state || window.history.state.modalId !== 'tx-detail') {
+        window.history.pushState({ modalId: 'tx-detail' }, '');
+      }
+    }
+    prevSelectedTxRef.current = selectedTx;
+  }, [selectedTx]);
+
+  useEffect(() => {
+    if (!selectedTx && prevSelectedTxRef.current) {
+      if (typeof window !== 'undefined' && window.history.state?.modalId === 'tx-detail') {
+        window.history.back();
+      }
+    }
+    prevSelectedTxRef.current = selectedTx;
+  }, [selectedTx]);
+
+  useEffect(() => {
+    if (isQrisZoomed) {
+      if (!window.history.state || window.history.state.modalId !== 'qris-zoom') {
+        window.history.pushState({ modalId: 'qris-zoom' }, '');
+      }
+    }
+    prevQrisZoomRef.current = isQrisZoomed;
+  }, [isQrisZoomed]);
+
+  useEffect(() => {
+    if (!isQrisZoomed && prevQrisZoomRef.current) {
+      if (typeof window !== 'undefined' && window.history.state?.modalId === 'qris-zoom') {
+        window.history.back();
+      }
+    }
+    prevQrisZoomRef.current = isQrisZoomed;
+  }, [isQrisZoomed]);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -492,7 +556,7 @@ export default function PaymentHistoryPage() {
       {/* Transaction Details Modal/Overlay */}
       {selectedTx && (
         <div 
-          onClick={() => setSelectedTx(null)}
+          onClick={handleCloseDetail}
           className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300 animate-fadeIn"
         >
           <div 
@@ -510,7 +574,7 @@ export default function PaymentHistoryPage() {
                 </p>
               </div>
               <button
-                onClick={() => setSelectedTx(null)}
+                onClick={handleCloseDetail}
                 className="p-1.5 rounded-full hover:bg-theme-card/60 text-theme-text-sec transition-colors"
                 title="Tutup"
               >
@@ -703,7 +767,7 @@ export default function PaymentHistoryPage() {
             <div className="w-full mt-1">
               <button
                 type="button"
-                onClick={() => setSelectedTx(null)}
+                onClick={handleCloseDetail}
                 className="w-full py-3 px-4 bg-theme-card border border-theme-border/60 hover:border-theme-text-muted text-theme-text rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-[0.98]"
               >
                 Tutup
@@ -716,7 +780,7 @@ export default function PaymentHistoryPage() {
       {/* QRIS Zoom Modal Overlay in details */}
       {isQrisZoomed && selectedTx && (
         <div 
-          onClick={() => setIsQrisZoomed(false)}
+          onClick={handleCloseQris}
           className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-all duration-300 cursor-zoom-out animate-fadeIn"
         >
           <div 
@@ -725,13 +789,13 @@ export default function PaymentHistoryPage() {
           >
             {/* Close button */}
             <button
-              onClick={() => setIsQrisZoomed(false)}
+              onClick={handleCloseQris}
               className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
               title="Tutup"
             >
               <X className="h-4.5 w-4.5" />
             </button>
-
+ 
             <div className="text-center mt-2">
               <h3 className="text-base font-black tracking-tight text-slate-900" style={{ fontFamily: "'Sora', sans-serif" }}>
                 Scan Kode QRIS
@@ -740,7 +804,7 @@ export default function PaymentHistoryPage() {
                 Order ID: {selectedTx.order_id}
               </p>
             </div>
-
+ 
             {/* QRIS Large Image */}
             <div className="bg-white p-2 rounded-2xl border border-slate-200 flex items-center justify-center shadow-inner">
               <img 
@@ -749,11 +813,11 @@ export default function PaymentHistoryPage() {
                 className="w-[350px] h-[350px] object-contain"
               />
             </div>
-
+ 
             <div className="w-full mt-1">
               <button
                 type="button"
-                onClick={() => setIsQrisZoomed(false)}
+                onClick={handleCloseQris}
                 className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200/60 cursor-pointer active:scale-[0.98]"
               >
                 Tutup
