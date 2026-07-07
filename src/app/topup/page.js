@@ -228,6 +228,15 @@ export default function TopUpPage() {
   }
 
   const presetAmounts = [100, 250, 500, 1000];
+
+  // Filter today's top-up transactions only
+  const todayTopups = transactions.filter((tx) => {
+    const isTopup = tx.type === 'topup';
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const isToday = new Date(tx.created_at).getTime() >= todayStart.getTime();
+    return isTopup && isToday;
+  });
   const paymentChannels = [
     { code: 'BCA', name: 'BCA Virtual Account' },
     { code: 'MANDIRI', name: 'Mandiri Virtual Account' },
@@ -291,6 +300,10 @@ export default function TopUpPage() {
 
   const handleCancelPayment = async () => {
     if (!activeTransaction) return;
+
+    const confirmCancel = window.confirm('Apakah Anda yakin ingin membatalkan tagihan pembayaran ini?');
+    if (!confirmCancel) return;
+
     setIsSubmitting(true);
     setError('');
 
@@ -655,99 +668,126 @@ export default function TopUpPage() {
 
           {/* Riwayat Transaksi Card */}
           <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 animate-fadeIn">
-            <h3 className="text-xs font-bold text-theme-text mb-3" style={{ fontFamily: "'Sora', sans-serif" }}>Riwayat Transaksi</h3>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-xs font-bold text-theme-text" style={{ fontFamily: "'Sora', sans-serif" }}>Riwayat Top Up Hari Ini</h3>
+              <button
+                onClick={() => router.push('/payments/history')}
+                className="text-[10px] font-bold text-theme-accent hover:underline"
+              >
+                Lihat Semua
+              </button>
+            </div>
             {isLoadingHistory ? (
               <div className="py-6 flex items-center justify-center">
                 <RefreshCw className="h-4 w-4 animate-spin text-theme-text-muted" />
               </div>
-            ) : transactions.length === 0 ? (
-              <p className="text-center text-xs text-theme-text-muted py-4">Belum ada riwayat transaksi</p>
+            ) : todayTopups.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-xs text-theme-text-muted">Belum ada riwayat top up hari ini</p>
+                <button
+                  onClick={() => router.push('/payments/history')}
+                  className="mt-3 text-[10px] font-bold text-theme-accent hover:underline bg-theme-accent/10 py-1.5 px-3 rounded-lg border border-theme-accent/20 transition-all hover:bg-theme-accent/20"
+                >
+                  Lihat Seluruh Riwayat Transaksi
+                </button>
+              </div>
             ) : (
-              <div className="space-y-3 max-h-72 overflow-y-auto pr-1 no-scrollbar">
-                {transactions.map((tx) => {
-                  const isTopup = tx.type === 'topup';
-                  const isManual = tx.metadata?.mode === 'image';
-                  const channelName = tx.metadata?.channel || (isTopup ? 'Top Up' : 'Deployment');
-                  const cashVal = tx.metadata?.cash_amount;
-                  const dateStr = new Date(tx.created_at).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  });
+              <div className="space-y-3">
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1 no-scrollbar">
+                  {todayTopups.map((tx) => {
+                    const isTopup = tx.type === 'topup';
+                    const isManual = tx.metadata?.mode === 'image';
+                    const channelName = tx.metadata?.channel || (isTopup ? 'Top Up' : 'Deployment');
+                    const cashVal = tx.metadata?.cash_amount;
+                    const dateStr = new Date(tx.created_at).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
 
-                  // Status details
-                  let statusColor = 'text-theme-text-sec bg-theme-bg border-theme-border';
-                  if (tx.status === 'PAID' || tx.status === 'SUCCESS') {
-                    statusColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-                  } else if (tx.status === 'PENDING') {
-                    statusColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                  } else if (tx.status === 'EXPIRED') {
-                    statusColor = 'text-theme-text-muted bg-theme-bg border-theme-border';
-                  } else if (tx.status === 'FAILED') {
-                    statusColor = 'text-red-400 bg-red-500/10 border-red-500/20';
-                  }
+                    // Status details
+                    let statusColor = 'text-theme-text-sec bg-theme-bg border-theme-border';
+                    if (tx.status === 'PAID' || tx.status === 'SUCCESS') {
+                      statusColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                    } else if (tx.status === 'PENDING') {
+                      statusColor = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                    } else if (tx.status === 'EXPIRED') {
+                      statusColor = 'text-theme-text-muted bg-theme-bg border-theme-border';
+                    } else if (tx.status === 'FAILED') {
+                      statusColor = 'text-red-400 bg-red-500/10 border-red-500/20';
+                    }
 
-                  return (
-                    <div key={tx.id} className="bg-theme-bg/30 border border-theme-border/60 rounded-xl p-3 space-y-2.5 transition-all hover:border-theme-border">
-                      <div className="flex justify-between items-start gap-2">
-                        <div>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-bold text-theme-text">
-                              {isManual ? 'QRIS (Manual)' : `${channelName}`}
-                            </span>
-                            {tx.va_number && tx.va_number !== tx.order_id && (
-                              <span className="font-mono text-[9px] text-theme-text-sec bg-theme-bg px-1 py-0.5 rounded border border-theme-border">
-                                {tx.va_number}
+                    return (
+                      <div key={tx.id} className="bg-theme-bg/30 border border-theme-border/60 rounded-xl p-3 space-y-2.5 transition-all hover:border-theme-border">
+                        <div className="flex justify-between items-start gap-2">
+                          <div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-bold text-theme-text">
+                                {isManual ? 'QRIS (Manual)' : `${channelName}`}
                               </span>
+                              {tx.va_number && tx.va_number !== tx.order_id && (
+                                <span className="font-mono text-[9px] text-theme-text-sec bg-theme-bg px-1 py-0.5 rounded border border-theme-border">
+                                  {tx.va_number}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-theme-text-muted block mt-0.5">{dateStr}</span>
+                          </div>
+                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border ${statusColor}`}>
+                            {tx.status}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs pt-1 border-t border-theme-border/30">
+                          <span className="text-theme-text-sec font-medium">
+                            {cashVal ? `Rp ${cashVal.toLocaleString('id-ID')}` : '-'}
+                          </span>
+                          <span className="font-black text-emerald-400">
+                            +{tx.amount.toLocaleString('id-ID')} Credit
+                          </span>
+                        </div>
+
+                        {/* Interactive Actions for PENDING status */}
+                        {tx.status === 'PENDING' && isTopup && (
+                          <div className="pt-2 border-t border-theme-border/20 flex gap-2">
+                            {isManual ? (
+                              tx.metadata?.confirm_payment_url && (
+                                <a
+                                  href={tx.metadata.confirm_payment_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="w-full text-center bg-emerald-600/20 hover:bg-emerald-600/35 border border-emerald-500/30 text-emerald-400 font-bold text-[10px] py-1.5 px-3 rounded-lg transition-all"
+                                >
+                                  Lanjut Konfirmasi WA
+                                </a>
+                              )
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setActiveTransaction(tx);
+                                  setChannel(tx.metadata?.channel || 'BCA');
+                                }}
+                                className="w-full text-center bg-theme-accent/20 hover:bg-theme-accent/35 border border-theme-accent/30 text-theme-accent font-bold text-[10px] py-1.5 px-3 rounded-lg transition-all"
+                              >
+                                Lihat Cara Bayar (VA)
+                              </button>
                             )}
                           </div>
-                          <span className="text-[10px] text-theme-text-muted block mt-0.5">{dateStr}</span>
-                        </div>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border ${statusColor}`}>
-                          {tx.status}
-                        </span>
+                        )}
                       </div>
+                    );
+                  })}
+                </div>
 
-                      <div className="flex justify-between items-center text-xs pt-1 border-t border-theme-border/30">
-                        <span className="text-theme-text-sec font-medium">
-                          {cashVal ? `Rp ${cashVal.toLocaleString('id-ID')}` : '-'}
-                        </span>
-                        <span className={`font-black ${isTopup ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {isTopup ? `+${tx.amount.toLocaleString('id-ID')}` : `-${Math.abs(tx.amount).toLocaleString('id-ID')}`} Credit
-                        </span>
-                      </div>
-
-                      {/* Interactive Actions for PENDING status */}
-                      {tx.status === 'PENDING' && isTopup && (
-                        <div className="pt-2 border-t border-theme-border/20 flex gap-2">
-                          {isManual ? (
-                            tx.metadata?.confirm_payment_url && (
-                              <a
-                                href={tx.metadata.confirm_payment_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full text-center bg-emerald-600/20 hover:bg-emerald-600/35 border border-emerald-500/30 text-emerald-400 font-bold text-[10px] py-1.5 px-3 rounded-lg transition-all"
-                              >
-                                Lanjut Konfirmasi WA
-                              </a>
-                            )
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setActiveTransaction(tx);
-                                setChannel(tx.metadata?.channel || 'BCA');
-                              }}
-                              className="w-full text-center bg-theme-accent/20 hover:bg-theme-accent/35 border border-theme-accent/30 text-theme-accent font-bold text-[10px] py-1.5 px-3 rounded-lg transition-all"
-                            >
-                              Lihat Cara Bayar (VA)
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                <div className="pt-2 border-t border-theme-border/20">
+                  <button
+                    onClick={() => router.push('/payments/history')}
+                    className="w-full text-center py-2.5 px-3 bg-theme-card border border-theme-border hover:border-theme-text-muted text-theme-text rounded-xl text-[10px] font-bold transition-all"
+                  >
+                    Lihat Seluruh Riwayat Transaksi
+                  </button>
+                </div>
               </div>
             )}
           </div>

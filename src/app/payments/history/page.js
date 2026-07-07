@@ -35,7 +35,7 @@ export default function PaymentHistoryPage() {
   // Filtering states
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'topup' | 'deployment'
-  const [dateFilter, setDateFilter] = useState('all'); // 'all' | 'today' | 'week' | 'month' | 'custom'
+  const [dateFilter, setDateFilter] = useState('today'); // 'today' | 'week' | 'month' | 'custom'
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [dateValidationError, setDateValidationError] = useState('');
@@ -53,12 +53,50 @@ export default function PaymentHistoryPage() {
   }, [user, loading, router]);
 
   // Fetch transaction history
-  const fetchHistory = async () => {
+  const fetchHistory = async (filter = dateFilter, start = startDate, end = endDate) => {
     if (!session) return;
+
+    // Construct parameters
+    let apiStart = '';
+    let apiEnd = '';
+    const now = new Date();
+
+    if (filter === 'today') {
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      apiStart = todayStart.toISOString();
+    } else if (filter === 'week') {
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      apiStart = oneWeekAgo.toISOString();
+    } else if (filter === 'month') {
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      apiStart = oneMonthAgo.toISOString();
+    } else if (filter === 'custom' && start && end && !dateValidationError) {
+      const startD = new Date(start);
+      startD.setHours(0, 0, 0, 0);
+      apiStart = startD.toISOString();
+      const endD = new Date(end);
+      endD.setHours(23, 59, 59, 999);
+      apiEnd = endD.toISOString();
+    } else if (filter === 'custom') {
+      // Don't fetch yet if custom ranges are incomplete or invalid
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError('');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/history`, {
+
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/payments/history`;
+      const params = new URLSearchParams();
+      if (apiStart) params.append('startDate', apiStart);
+      if (apiEnd) params.append('endDate', apiEnd);
+
+      const queryString = params.toString();
+      if (queryString) {
+        url = `${url}?${queryString}`;
+      }
+
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -82,8 +120,8 @@ export default function PaymentHistoryPage() {
   };
 
   useEffect(() => {
-    fetchHistory();
-  }, [session]);
+    fetchHistory(dateFilter, startDate, endDate);
+  }, [session, dateFilter, startDate, endDate, dateValidationError]);
 
   // Date Range Validation (max 1 month / 30 days)
   useEffect(() => {
@@ -112,6 +150,10 @@ export default function PaymentHistoryPage() {
   // Cancel pending transaction in history detail
   const handleCancelPayment = async (txId) => {
     if (!session || !txId) return;
+
+    const confirmCancel = window.confirm('Apakah Anda yakin ingin membatalkan tagihan pembayaran ini?');
+    if (!confirmCancel) return;
+
     setIsCancelling(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${txId}/cancel`, {
@@ -123,7 +165,7 @@ export default function PaymentHistoryPage() {
 
       if (response.ok) {
         // Refresh local items
-        await fetchHistory();
+        await fetchHistory(dateFilter, startDate, endDate);
         // Update selected item in detail view
         setSelectedTx(prev => prev ? { ...prev, status: 'EXPIRED' } : null);
         await refreshProfile();
@@ -169,30 +211,6 @@ export default function PaymentHistoryPage() {
       list = list.filter((tx) => tx.type === 'topup');
     } else if (activeTab === 'deployment') {
       list = list.filter((tx) => tx.type === 'deployment');
-    }
-
-    // 3. Date Preset & Custom Filter
-    const now = new Date();
-    
-    if (dateFilter === 'today') {
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      list = list.filter((tx) => new Date(tx.created_at).getTime() >= todayStart);
-    } else if (dateFilter === 'week') {
-      const oneWeekAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000;
-      list = list.filter((tx) => new Date(tx.created_at).getTime() >= oneWeekAgo);
-    } else if (dateFilter === 'month') {
-      const oneMonthAgo = now.getTime() - 30 * 24 * 60 * 60 * 1000;
-      list = list.filter((tx) => new Date(tx.created_at).getTime() >= oneMonthAgo);
-    } else if (dateFilter === 'custom' && startDate && endDate && !dateValidationError) {
-      const start = new Date(startDate);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-      
-      list = list.filter((tx) => {
-        const txTime = new Date(tx.created_at).getTime();
-        return txTime >= start.getTime() && txTime <= end.getTime();
-      });
     }
 
     return list;
@@ -278,9 +296,8 @@ export default function PaymentHistoryPage() {
           {/* Date presets grid */}
           <div>
             <span className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">Rentang Waktu</span>
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5">
               {[
-                { id: 'all', label: 'Semua' },
                 { id: 'today', label: 'Hari Ini' },
                 { id: 'week', label: '7 Hari' },
                 { id: 'month', label: '30 Hari' },
@@ -306,7 +323,7 @@ export default function PaymentHistoryPage() {
           {/* Trigger to toggle custom date fields */}
           <div className="pt-1">
             <button
-              onClick={() => setDateFilter(dateFilter === 'custom' ? 'all' : 'custom')}
+              onClick={() => setDateFilter(dateFilter === 'custom' ? 'today' : 'custom')}
               className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                 dateFilter === 'custom' ? 'text-theme-accent' : 'text-theme-text-sec hover:text-theme-text'
               }`}
