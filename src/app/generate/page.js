@@ -281,6 +281,10 @@ function GenerateContent() {
   const [cvSkills, setCvSkills] = useState([]);
   const [cvLanguages, setCvLanguages] = useState([{ language: '', level: '' }]);
   const [cvCertifications, setCvCertifications] = useState([]);
+ 
+  // CV AI loader states
+  const [isGeneratingCvSummary, setIsGeneratingCvSummary] = useState(false);
+  const [isGeneratingCvExperienceDesc, setIsGeneratingCvExperienceDesc] = useState({});
 
   // Toko Online upload & AI loader states
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -1165,33 +1169,46 @@ function GenerateContent() {
 
   const handleAIAssist = async (fieldType, index = null) => {
     if (!session?.access_token) return;
-
+ 
     const remainingFree = profile?.remainingFree ?? 0;
     const cost = profile?.ai_generate_cost ?? 1;
-
+ 
     if (remainingFree === 0) {
       const confirmCharge = window.confirm(
         `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya ${cost} Credit yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
       );
       if (!confirmCharge) return;
     }
-
+ 
     // Determine context data
     const context = {
       storeName: storeName,
       storeTagline: storeTagline,
+      profileName: cvName,
+      profileTitle: cvTitle,
+      profileSummary: cvSummary,
     };
     if (index !== null) {
-      context.productName = tokoProducts[index].name;
-      context.productPrice = tokoProducts[index].price;
+      if (templateType === 'cv') {
+        context.company = cvExperiences[index]?.company;
+        context.position = cvExperiences[index]?.position;
+        context.description = cvExperiences[index]?.description;
+      } else {
+        context.productName = tokoProducts[index].name;
+        context.productPrice = tokoProducts[index].price;
+      }
     }
-
+ 
     if (fieldType === 'store_description') setIsGeneratingStoreDesc(true);
     if (fieldType === 'store_quote') setIsGeneratingStoreQuote(true);
     if (fieldType === 'product_description') {
       setIsGeneratingProductDesc(prev => ({ ...prev, [index]: true }));
     }
-
+    if (fieldType === 'cv_summary') setIsGeneratingCvSummary(true);
+    if (fieldType === 'cv_experience_description') {
+      setIsGeneratingCvExperienceDesc(prev => ({ ...prev, [index]: true }));
+    }
+ 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
         method: 'POST',
@@ -1201,33 +1218,33 @@ function GenerateContent() {
         },
         body: JSON.stringify({ fieldType, context }),
       });
-
+ 
       const result = await response.json();
       if (!response.ok || !result.success) {
         throw new Error(result.error || 'Gagal mengirim tugas copywriting ke antrean.');
       }
-
+ 
       const jobId = result.jobId;
       let attempts = 0;
       let finalContent = null;
-
+ 
       // Poll the job status endpoint every 5 seconds
       while (attempts < 60) {
         await new Promise((resolve) => setTimeout(resolve, 5000));
-
+ 
         const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/status`, {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
         });
-
+ 
         if (!statusRes.ok) {
           if (statusRes.status === 404) {
             throw new Error('Pekerjaan generate tidak ditemukan di antrean.');
           }
           throw new Error('Gagal memeriksa status pekerjaan copywriting.');
         }
-
+ 
         const jobData = await statusRes.json();
         if (jobData.state === 'completed') {
           finalContent = jobData.result?.content;
@@ -1237,15 +1254,23 @@ function GenerateContent() {
         }
         attempts++;
       }
-
+ 
       if (!finalContent) {
         throw new Error('Waktu tunggu pembuatan copywriting AI habis (timeout).');
       }
-
+ 
       if (fieldType === 'store_description') setStoreDescription(finalContent);
       if (fieldType === 'store_quote') setTokoQuote(finalContent);
       if (fieldType === 'product_description') {
         setTokoProducts(prev => {
+          const next = [...prev];
+          next[index].description = finalContent;
+          return next;
+        });
+      }
+      if (fieldType === 'cv_summary') setCvSummary(finalContent);
+      if (fieldType === 'cv_experience_description') {
+        setCvExperiences(prev => {
           const next = [...prev];
           next[index].description = finalContent;
           return next;
@@ -1260,6 +1285,10 @@ function GenerateContent() {
       if (fieldType === 'store_quote') setIsGeneratingStoreQuote(false);
       if (fieldType === 'product_description') {
         setIsGeneratingProductDesc(prev => ({ ...prev, [index]: false }));
+      }
+      if (fieldType === 'cv_summary') setIsGeneratingCvSummary(false);
+      if (fieldType === 'cv_experience_description') {
+        setIsGeneratingCvExperienceDesc(prev => ({ ...prev, [index]: false }));
       }
     }
   };
@@ -1429,6 +1458,30 @@ function GenerateContent() {
         type="button"
         disabled={isLoading || !campaignBrief.trim()}
         onClick={() => handleAICampaignAssist(fieldType)}
+        className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
+      >
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
+      </button>
+    );
+  };
+
+  const renderAICVButton = (fieldType, isLoading, index = null) => {
+    const remainingFree = profile?.remainingFree ?? 15;
+    const cost = profile?.ai_generate_cost ?? 100;
+    const isFree = remainingFree > 0;
+
+    let isDisabled = isLoading;
+    if (fieldType === 'cv_summary') {
+      isDisabled = isDisabled || !cvName || !cvTitle;
+    } else if (fieldType === 'cv_experience_description') {
+      isDisabled = isDisabled || !cvExperiences[index]?.company || !cvExperiences[index]?.position;
+    }
+
+    return (
+      <button
+        type="button"
+        disabled={isDisabled}
+        onClick={() => handleAIAssist(fieldType, index)}
         className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
       >
         {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
@@ -1668,7 +1721,80 @@ function GenerateContent() {
         activeStoreBannerUrl = null;
       }
 
-      if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'cv') {
+      if (templateType === 'cv') {
+        // --- DIRECT DRAFT SAVE FOR CV (NO AUTOMATIC AI OVERWRITE) ---
+        setIsGenerating(true);
+        const compiledPageData = {
+          meta: {
+            title: cvName ? `CV — ${cvName}` : 'Curriculum Vitae',
+            theme: designKey || 'professional-dark',
+            template_type: 'cv',
+            design_key: designKey || 'professional-dark',
+          },
+          content: {
+            profile: {
+              name: cvName,
+              title: cvTitle,
+              summary: cvSummary,
+              photo_url: cvPhotoUrl || null,
+              email: cvEmail,
+              phone: cvPhone,
+              location: cvLocation,
+              linkedin_url: cvLinkedin || null,
+              github_url: cvGithub || null,
+              portfolio_url: cvPortfolio || null,
+            },
+            experiences: cvExperiences.filter(e => e.company && e.position && e.period),
+            educations: cvEducations.filter(e => e.institution && e.degree && e.period),
+            skills: cvSkills,
+            languages: cvLanguages.filter(l => l.language && l.level),
+            certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
+          }
+        };
+
+        const saveEndpoint = projectId 
+          ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
+          : `${process.env.NEXT_PUBLIC_API_URL}/projects/draft`;
+        
+        const savePayload = projectId 
+          ? { pageData: compiledPageData }
+          : { name, template_type: templateType, pageData: compiledPageData };
+
+        setPageData(compiledPageData);
+        const suggestedSlug = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+        setSlug(suggestedSlug);
+        setActiveTab('preview');
+
+        try {
+          const saveResponse = await fetch(saveEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify(savePayload),
+          });
+
+          const saveResult = await saveResponse.json();
+          if (saveResponse.ok && saveResult.success) {
+            if (!projectId) {
+              setProjectId(saveResult.data.id || saveResult.data.projectId);
+            }
+          } else {
+            console.warn('[CV Save] Failed to persist project draft to DB:', saveResult.error);
+            setError('Peringatan: Hasil preview berhasil dibuat namun gagal disimpan ke database. Coba kembali nanti.');
+          }
+        } catch (saveErr) {
+          console.error('[CV Save] Error persisting draft:', saveErr);
+          setError('Terjadi kesalahan saat menyimpan draf preview.');
+        } finally {
+          setIsGenerating(false);
+        }
+
+      } else if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday' || templateType === 'toko-online') {
         // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
         setAiProgressStatus('queued');
         setAiProgressDetail(
@@ -3950,7 +4076,10 @@ function GenerateContent() {
                           </div>
 
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Ringkasan Profesional *</label>
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="block text-[8px] font-semibold text-theme-text-sec">Ringkasan Profesional *</label>
+                              {renderAICVButton('cv_summary', isGeneratingCvSummary)}
+                            </div>
                             <textarea
                               rows={3}
                               required
@@ -4076,7 +4205,10 @@ function GenerateContent() {
                                 />
                               </div>
                               <div>
-                                <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Deskripsi Singkat (Opsional)</label>
+                                <div className="flex justify-between items-center mb-1">
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec">Deskripsi Singkat (Opsional)</label>
+                                  {renderAICVButton('cv_experience_description', isGeneratingCvExperienceDesc[idx] || false, idx)}
+                                </div>
                                 <textarea
                                   rows={2}
                                   placeholder="Tanggung jawab utama dan pencapaian..."
