@@ -2538,12 +2538,22 @@ function GenerateContent() {
                     {/* Nama Halaman / Acara */}
                     <div>
                       <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
-                        Nama Halaman / Acara
+                        {templateType === 'wedding' ? 'Nama Undangan / Pernikahan' :
+                         templateType === 'birthday' ? 'Nama Acara Ulang Tahun' :
+                         templateType === 'toko-online' ? 'Nama Toko Online' :
+                         templateType === 'campaign' ? 'Nama Campaign / Halaman Penjualan' :
+                         templateType === 'cv' ? 'Nama CV / Resume' : 'Nama Halaman / Acara'}
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder={templateType === 'wedding' ? "Contoh: Pernikahan Budi & Riri" : "Contoh: Kopi Seru Nusantara"}
+                        placeholder={
+                          templateType === 'wedding' ? 'Contoh: Pernikahan Budi & Riri' :
+                          templateType === 'birthday' ? 'Contoh: Ulang Tahun Kayla - Ke-17' :
+                          templateType === 'toko-online' ? 'Contoh: Serasi Gadget Store' :
+                          templateType === 'campaign' ? 'Contoh: Blueprint Copywriting AI' :
+                          templateType === 'cv' ? 'Contoh: CV Rian Prasetya - Senior Developer' : 'Contoh: Halaman Keren Saya'
+                        }
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         disabled={isGenerating}
