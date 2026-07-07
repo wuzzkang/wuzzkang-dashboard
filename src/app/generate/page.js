@@ -3870,6 +3870,13 @@ function GenerateContent() {
                                 <span className="text-[10px] font-bold">Professional Dark</span>
                                 <span className="text-[8px] opacity-70">ATS-Friendly</span>
                               </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('professional-dark')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -4744,6 +4751,7 @@ function GenerateContent() {
                   const isBirthday = ['cute-balloon', 'elegant-gold'].includes(previewDesignKey);
                   const isTokoOnline = ['modern-clean', 'midnight-dark'].includes(previewDesignKey);
                   const isCampaign = ['neon-conversion', 'clean-trust'].includes(previewDesignKey);
+                  const isCv = previewDesignKey === 'professional-dark';
                   const isGold = previewDesignKey === 'elegant-gold';
                   const isMidnight = previewDesignKey === 'midnight-dark';
 
@@ -4893,6 +4901,57 @@ function GenerateContent() {
                         contact: {
                           whatsapp: '6281234567890'
                         }
+                      }
+                    };
+                  } else if (isCv) {
+                    mockData = {
+                      meta: {
+                        title: 'CV — Rian Prasetya',
+                        theme: 'professional-dark',
+                        template_type: 'cv',
+                        design_key: 'professional-dark'
+                      },
+                      content: {
+                        profile: {
+                          name: 'Rian Prasetya',
+                          title: 'Senior Fullstack Engineer',
+                          summary: 'Highly skilled and results-driven Fullstack Developer with expertise in building robust web applications using Node.js, Express, React, and TypeScript. Proven ability to deliver scalable backend solutions and dynamic, responsive frontend user interfaces.',
+                          photo_url: null,
+                          email: 'rian.prasetya@example.com',
+                          phone: '6281234567890',
+                          location: 'Jakarta, Indonesia',
+                          linkedin_url: 'https://linkedin.com/in/rianprasetya',
+                          github_url: 'https://github.com/rianprasetya',
+                          portfolio_url: 'https://rian.dev'
+                        },
+                        experiences: [
+                          {
+                            company: 'PT Tech Solution',
+                            position: 'Backend Developer',
+                            period: '2023 - Present',
+                            description: 'Developed and maintained robust RESTful APIs using Express.js and PostgreSQL, facilitating seamless data exchange and application functionality.\nDesigned and implemented efficient database schemas in PostgreSQL to support high-volume transactions and ensure data integrity.'
+                          }
+                        ],
+                        educations: [
+                          {
+                            institution: 'Institut Teknologi Bandung',
+                            degree: 'S1 Teknik Informatika',
+                            period: '2019 - 2023',
+                            gpa: '3.85'
+                          }
+                        ],
+                        skills: ['Node.js', 'Express', 'React', 'TypeScript', 'PostgreSQL', 'ATS Optimization'],
+                        languages: [
+                          { language: 'Bahasa Indonesia', level: 'Native' },
+                          { language: 'English', level: 'Professional' }
+                        ],
+                        certifications: [
+                          {
+                            name: 'Google Cloud Professional Cloud Architect',
+                            issuer: 'Google Cloud',
+                            year: '2024'
+                          }
+                        ]
                       }
                     };
                   } else {
