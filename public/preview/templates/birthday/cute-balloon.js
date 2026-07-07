@@ -186,11 +186,11 @@ export async function render(pageConfig, guestName = 'Tamu Undangan') {
                 <div style="position:absolute; bottom:10px; right:15px; font-size:34px; opacity:0.5;" class="balloon-float">🎁</div>
 
                 <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; font-weight:800; color:#E8537A; margin-bottom:6px;">🎈 Kamu Diundang! 🎈</div>
-                <h1 class="cb-title" style="font-size:36px; color:#D63060; margin:0 0 6px; line-height:1.2; text-shadow:2px 2px 0px rgba(255,100,100,0.15);">Pesta Ulang Tahun</h1>
+                <h1 class="cb-title" style="font-size:36px; color:#D63060; margin:0 0 16px; line-height:1.2; text-shadow:2px 2px 0px rgba(255,100,100,0.15);">Pesta Ulang Tahun</h1>
                 <div style="display:inline-block; position:relative;">
                     <div style="font-size:17px; font-weight:800; color:#5B3680; font-family:'Nunito',sans-serif;">${celebrant.nickname || celebrant.name?.split(' ')[0] || 'Si Kecil'}</div>
                     <!-- Age badge -->
-                    <div class="age-badge" style="position:absolute; top:-28px; right:-38px; width:54px; height:54px; background:linear-gradient(135deg,#FF6B6B,#FFD93D); border-radius:50%; border:3px solid white; box-shadow:0 4px 12px rgba(255,107,107,0.4); display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                    <div class="age-badge" style="position:absolute; top:-18px; left:calc(100% + 6px); width:54px; height:54px; background:linear-gradient(135deg,#FF6B6B,#FFD93D); border-radius:50%; border:3px solid white; box-shadow:0 4px 12px rgba(255,107,107,0.4); display:flex; flex-direction:column; align-items:center; justify-content:center;">
                         <div class="cb-title" style="font-size:20px; color:white; line-height:1;">${celebrant.age || '?'}</div>
                         <div style="font-size:7px; color:rgba(255,255,255,0.9); font-weight:700; font-family:'Nunito',sans-serif;">TAHUN</div>
                     </div>
