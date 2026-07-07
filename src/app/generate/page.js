@@ -2315,7 +2315,7 @@ function GenerateContent() {
           {/* Tab 1: Edit Form */}
           {(!pageData || activeTab === 'edit') && (
             <div className="w-full flex-grow flex flex-col">
-              <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col overflow-y-auto shrink-0 mb-6 max-h-[62vh] scrollbar-thin">
+              <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col md:overflow-y-auto shrink-0 mb-6 md:max-h-[62vh] scrollbar-thin">
                 <div className="space-y-5">
                   <div className="pb-2 border-b border-theme-border">
                     <h3 className="text-sm font-bold text-theme-text tracking-wide" style={{ fontFamily: "'Sora', sans-serif" }}>Detail Landing Page</h3>
@@ -3878,7 +3878,7 @@ function GenerateContent() {
           const hasTt  = !!trackingConfig?.tiktok_pixel_id;
           const anyActive = hasFb || hasGa || hasAds || hasTt;
           return (
-            <div className="fixed bottom-[72px] left-0 right-0 max-w-md mx-auto px-4 z-39">
+            <div className="relative md:fixed md:bottom-[72px] left-0 right-0 max-w-md mx-auto px-4 z-39 mb-3">
               <div className="bg-theme-surface/90 backdrop-blur-sm border border-theme-border rounded-xl px-3 py-2 flex items-center justify-between text-xs shadow-lg">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-theme-text-muted font-medium mr-0.5">Pixel:</span>
@@ -3893,8 +3893,8 @@ function GenerateContent() {
           );
         })()}
 
-        {/* Fixed Sticky Action Bar at the Bottom */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 backdrop-blur-md border-t border-theme-border p-4 z-40 flex flex-col gap-2 shadow-2xl transition-theme">
+        {/* Action Bar at the Bottom */}
+        <div className="relative md:fixed md:bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 border-t border-theme-border p-4 z-40 flex flex-col gap-2 shadow-lg md:shadow-2xl transition-theme mt-auto">
           {editMode ? (
             <button
               type="submit"

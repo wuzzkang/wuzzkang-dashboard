@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette, History } from 'lucide-react';
+import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette, History, Plus } from 'lucide-react';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -151,7 +151,7 @@ export default function Sidebar() {
         </div>
 
         {/* Nav Links */}
-        <nav className="flex-grow px-4 space-y-1">
+        <nav className="flex-grow px-4 space-y-1 md:block hidden">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -201,6 +201,60 @@ export default function Sidebar() {
           </button>
         </div>
       </aside>
+      {/* Bottom Navigation for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t transition-theme"
+        style={{ 
+          backgroundColor: 'var(--theme-surface)', 
+          borderColor: 'var(--theme-border)',
+          boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.06)'
+        }}>
+        <div className="max-w-md mx-auto flex items-center justify-around h-16 relative px-2">
+          {/* Home */}
+          <Link href="/" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
+            style={{ color: pathname === '/' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+            <LayoutDashboard className="h-5 w-5" />
+            <span className="text-[9px] font-bold mt-1">Home</span>
+          </Link>
+
+          {/* History */}
+          <Link href="/payments/history" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
+            style={{ color: pathname === '/payments/history' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+            <History className="h-5 w-5" />
+            <span className="text-[9px] font-bold mt-1">History</span>
+          </Link>
+
+          {/* Landing Page Center FAB */}
+          <div className="flex-1 flex justify-center relative h-16">
+            <Link href="/generate" className="absolute -top-5 flex items-center justify-center h-14 w-14 rounded-full shadow-lg transition-transform active:scale-90 border-4"
+              style={{
+                background: 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))',
+                borderColor: 'var(--theme-surface)',
+                color: '#ffffff'
+              }}
+              title="Buat Halaman"
+            >
+              <Plus className="h-7 w-7 stroke-[3px]" />
+            </Link>
+            <span className="text-[9px] font-bold mt-[42px]" style={{ color: pathname === '/generate' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+              Landing Page
+            </span>
+          </div>
+
+          {/* Top-up */}
+          <Link href="/topup" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
+            style={{ color: pathname === '/topup' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+            <CreditCard className="h-5 w-5" />
+            <span className="text-[9px] font-bold mt-1">Top-up</span>
+          </Link>
+
+          {/* Profil */}
+          <Link href="/profile" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
+            style={{ color: pathname === '/profile' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+            <User className="h-5 w-5" />
+            <span className="text-[9px] font-bold mt-1">Profil</span>
+          </Link>
+        </div>
+      </div>
     </>
   );
 }

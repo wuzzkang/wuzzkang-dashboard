@@ -355,15 +355,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Sticky Mobile Fab Button for Creating New Landing Page */}
-        <div className="fixed bottom-6 right-6 z-40 max-w-md mx-auto pointer-events-none w-full pr-12 flex justify-end">
-          <Link
-            href="/generate"
-            className="pointer-events-auto h-12 w-12 rounded-full bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
-          >
-            <Plus className="h-6 w-6 font-bold" />
-          </Link>
-        </div>
+
 
         {/* Share Modal */}
         {shareModalOpen && shareProject && (
