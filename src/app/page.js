@@ -28,7 +28,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const handlePopState = (event) => {
-      if (shareModalOpen) {
+      const currentModalId = window.history.state?.modalId;
+      if (!currentModalId) {
         setShareModalOpen(false);
       }
     };
@@ -37,7 +38,7 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [shareModalOpen]);
+  }, []);
 
   useEffect(() => {
     if (shareModalOpen) {

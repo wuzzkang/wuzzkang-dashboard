@@ -60,10 +60,13 @@ export default function PaymentHistoryPage() {
   // Sync back button / popstate with modal state
   useEffect(() => {
     const handlePopState = (event) => {
-      if (isQrisZoomed) {
+      const currentModalId = window.history.state?.modalId;
+
+      if (!currentModalId) {
         setIsQrisZoomed(false);
-      } else if (selectedTx) {
         setSelectedTx(null);
+      } else if (currentModalId === 'tx-detail') {
+        setIsQrisZoomed(false);
       }
     };
 
@@ -71,7 +74,7 @@ export default function PaymentHistoryPage() {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [selectedTx, isQrisZoomed]);
+  }, []);
 
   const prevSelectedTxRef = useRef(null);
   const prevQrisZoomRef = useRef(false);

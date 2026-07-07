@@ -34,12 +34,19 @@ export default function TopUpPage() {
   const prevActiveTxRef = useRef(null);
   const prevQrisZoomRef = useRef(false);
 
+  const handleCloseQris = () => {
+    setIsQrisZoomed(false);
+  };
+
   useEffect(() => {
     const handlePopState = (event) => {
-      if (isQrisZoomed) {
+      const currentModalId = window.history.state?.modalId;
+
+      if (!currentModalId) {
         setIsQrisZoomed(false);
-      } else if (activeTransaction) {
         setActiveTransaction(null);
+      } else if (currentModalId === 'active-tx') {
+        setIsQrisZoomed(false);
       }
     };
 
@@ -47,7 +54,7 @@ export default function TopUpPage() {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [activeTransaction, isQrisZoomed]);
+  }, []);
 
   useEffect(() => {
     if (activeTransaction) {
