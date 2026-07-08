@@ -977,6 +977,13 @@ function GenerateContent() {
   const handleUploadImage = async (file, target) => {
     if (!file) return;
 
+    const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE_BYTES) {
+      setError('Ukuran file terlalu besar. Batas maksimal adalah 5MB.');
+      alert('Ukuran file terlalu besar. Batas maksimal adalah 5MB.');
+      return;
+    }
+
     const isGroom = target === 'groom';
     const isBride = target === 'bride';
     const isStory = target === 'story';
@@ -1012,23 +1019,40 @@ function GenerateContent() {
         }
       }
 
-      console.log(`[Dashboard] Uploading file via backend API: ${fileToUpload.name}`);
-      const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, {
+      console.log(`[Dashboard] Requesting signed upload URL for: ${fileToUpload.name}`);
+      const urlResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload-url`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': fileToUpload.type || 'application/octet-stream',
-          'x-file-name': fileToUpload.name || 'image.jpg'
+        },
+        body: JSON.stringify({
+          fileName: fileToUpload.name || 'image.jpg',
+          mimeType: fileToUpload.type || 'image/jpeg'
+        })
+      });
+
+      const urlResult = await urlResponse.json();
+      if (!urlResponse.ok || !urlResult.success) {
+        throw new Error(urlResult.error || 'Gagal mendapatkan URL unggah bertanda tangan dari API.');
+      }
+
+      const { signedUrl, publicUrl } = urlResult;
+      console.log(`[Dashboard] Uploading file directly to signed URL...`);
+
+      const uploadResponse = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': fileToUpload.type || 'application/octet-stream'
         },
         body: fileToUpload
       });
 
-      const uploadResult = await uploadResponse.json();
-      if (!uploadResponse.ok || !uploadResult.success) {
-        throw new Error(uploadResult.error || 'Gagal mengunggah foto via API.');
+      if (!uploadResponse.ok) {
+        throw new Error('Gagal mengunggah file langsung ke storage.');
       }
 
-      const publicUrl = uploadResult.url;
+      console.log(`[Dashboard] Upload successful. Public URL: ${publicUrl}`);
 
       if (isGroom) setGroomImage(publicUrl);
       if (isBride) setBrideImage(publicUrl);
