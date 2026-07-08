@@ -999,6 +999,7 @@ function GenerateContent() {
     const isBanner = target === 'banner' || target === 'storeBanner';
     const isProduct = target.startsWith('product-');
     const productIndex = isProduct ? parseInt(target.split('-')[1]) : null;
+    const isCv = target === 'cv' || target === 'cvPhoto';
 
     if (isGroom) setIsUploadingGroomImage(true);
     if (isBride) setIsUploadingBrideImage(true);
@@ -1010,6 +1011,7 @@ function GenerateContent() {
     if (isLogo) setIsUploadingLogo(true);
     if (isBanner) setIsUploadingBanner(true);
     if (isProduct) setIsUploadingProductIndex(productIndex);
+    if (isCv) setIsUploadingCvPhoto(true);
 
     try {
       let fileToUpload = file;
@@ -1075,6 +1077,7 @@ function GenerateContent() {
       if (isCelebrant) setCelebrantImage(publicUrl);
       if (isLogo) setStoreLogoUrl(publicUrl);
       if (isBanner) setStoreBannerUrl(publicUrl);
+      if (isCv) setCvPhotoUrl(publicUrl);
       if (isProduct) {
         setTokoProducts(prev => {
           const next = [...prev];
@@ -1095,6 +1098,7 @@ function GenerateContent() {
       if (isCelebrant) setIsUploadingCelebrantImage(false);
       if (isLogo) setIsUploadingLogo(false);
       if (isBanner) setIsUploadingBanner(false);
+      if (isCv) setIsUploadingCvPhoto(false);
       if (isProduct) setIsUploadingProductIndex(null);
     }
   };
@@ -4094,6 +4098,36 @@ function GenerateContent() {
                         {/* === PROFIL === */}
                         <div className="space-y-3">
                           <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">1. Data Profil</div>
+
+                          {/* Foto Profil CV */}
+                          <div className="flex gap-2.5 items-center bg-theme-bg/30 p-2.5 rounded-xl border border-theme-border">
+                            <div className="w-12 h-12 rounded-full overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[9px] text-theme-text-muted">
+                              {cvPhotoUrl ? <img src={cvPhotoUrl} className="w-full h-full object-cover" alt="Foto Profil" /> : 'No Photo'}
+                            </div>
+                            <div className="flex-grow flex flex-col gap-1">
+                              <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Foto Profil CV (Opsional)</label>
+                              <div className="flex gap-1.5">
+                                <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-2.5 rounded-xl text-center cursor-pointer transition-colors">
+                                  {isUploadingCvPhoto ? 'Mengunggah...' : 'Upload Foto Profil'}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => handleUploadImage(e.target.files[0], 'cv')}
+                                  />
+                                </label>
+                                {cvPhotoUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setCvPhotoUrl('')}
+                                    className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold py-1.5 px-2.5 rounded-xl transition-colors cursor-pointer"
+                                  >
+                                    Hapus
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
 
                           <div className="grid grid-cols-2 gap-2.5">
                             <div>
