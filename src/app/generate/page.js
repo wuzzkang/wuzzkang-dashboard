@@ -977,10 +977,14 @@ function GenerateContent() {
   const handleUploadImage = async (file, target) => {
     if (!file) return;
 
-    const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-    if (file.size > MAX_SIZE_BYTES) {
-      setError('Ukuran file terlalu besar. Batas maksimal adalah 5MB.');
-      alert('Ukuran file terlalu besar. Batas maksimal adalah 5MB.');
+    const maxUploadMB = parseInt(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB, 10) || 5;
+    const MAX_SIZE_BYTES = maxUploadMB * 1024 * 1024;
+    const isImage = file.type.startsWith('image/');
+
+    // Immediately reject non-images exceeding size limit
+    if (!isImage && file.size > MAX_SIZE_BYTES) {
+      setError(`Ukuran file terlalu besar. Batas maksimal adalah ${maxUploadMB}MB.`);
+      alert(`Ukuran file terlalu besar. Batas maksimal adalah ${maxUploadMB}MB.`);
       return;
     }
 
@@ -1009,7 +1013,10 @@ function GenerateContent() {
 
     try {
       let fileToUpload = file;
-      if (file.type.startsWith('image/')) {
+      if (isImage) {
+        if (file.size > MAX_SIZE_BYTES) {
+          console.log(`[Dashboard] File size (${(file.size / 1024 / 1024).toFixed(1)} MB) exceeds limit. System will automatically resize/compress image...`);
+        }
         try {
           console.log(`[Dashboard] Compressing ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`);
           fileToUpload = await compressImage(file);
@@ -1017,6 +1024,11 @@ function GenerateContent() {
         } catch (compError) {
           console.error('[Dashboard] Compression failed, uploading original:', compError);
         }
+      }
+
+      // Check size limit post-compression/resizing
+      if (fileToUpload.size > MAX_SIZE_BYTES) {
+        throw new Error(`Ukuran file setelah kompresi/resize (${(fileToUpload.size / 1024 / 1024).toFixed(1)} MB) masih melebihi batas maksimal ${maxUploadMB}MB.`);
       }
 
       console.log(`[Dashboard] Requesting signed upload URL for: ${fileToUpload.name}`);
