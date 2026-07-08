@@ -1001,6 +1001,15 @@ function GenerateContent() {
     const productIndex = isProduct ? parseInt(target.split('-')[1]) : null;
     const isCv = target === 'cv' || target === 'cvPhoto';
 
+    let category = 'other';
+    if (isGroom || isBride || isCelebrant) category = 'avatar';
+    else if (isPrewedding || isCampaignHero || isBanner) category = 'background';
+    else if (isGallery) category = 'gallery';
+    else if (isStory) category = 'story';
+    else if (isLogo) category = 'logo';
+    else if (isProduct) category = 'product';
+    else if (isCv) category = 'cv';
+
     if (isGroom) setIsUploadingGroomImage(true);
     if (isBride) setIsUploadingBrideImage(true);
     if (isStory) setIsUploadingStoryImage(true);
@@ -1042,7 +1051,8 @@ function GenerateContent() {
         },
         body: JSON.stringify({
           fileName: fileToUpload.name || 'image.jpg',
-          mimeType: fileToUpload.type || 'image/jpeg'
+          mimeType: fileToUpload.type || 'image/jpeg',
+          category: category
         })
       });
 
@@ -1099,7 +1109,51 @@ function GenerateContent() {
       if (isLogo) setIsUploadingLogo(false);
       if (isBanner) setIsUploadingBanner(false);
       if (isCv) setIsUploadingCvPhoto(false);
-      if (isProduct) setIsUploadingProductIndex(null);
+    }
+  };
+
+  const handleDeleteImage = async (imageUrl) => {
+    if (!imageUrl) return;
+
+    let path = '';
+    try {
+      const bucketMarker = '/wuzzkang-bucket/';
+      const markerIdx = imageUrl.indexOf(bucketMarker);
+      if (markerIdx === -1) {
+        console.warn(`[Dashboard] Image URL is not stored in our Supabase bucket: ${imageUrl}`);
+        return;
+      }
+      path = imageUrl.substring(markerIdx + bucketMarker.length);
+      const queryIdx = path.indexOf('?');
+      if (queryIdx !== -1) {
+        path = path.substring(0, queryIdx);
+      }
+    } catch (parseErr) {
+      console.error('[Dashboard] Error parsing image storage path:', parseErr);
+      return;
+    }
+
+    if (!path) return;
+
+    console.log(`[Dashboard] Requesting server deletion for path: "${path}"`);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ path })
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        console.warn(`[Dashboard] Storage deletion failed: ${result.error || 'Unknown error'}`);
+      } else {
+        console.log(`[Dashboard] Successfully deleted from storage: ${path}`);
+      }
+    } catch (err) {
+      console.error('[Dashboard] Error calling delete media API:', err);
     }
   };
 
@@ -2977,7 +3031,12 @@ function GenerateContent() {
                           checkboxLabel="Gunakan Foto Cover / Background Prewedding"
                           unsplashQuery=""
                           imageUrl={preweddingPhotoUrl}
-                          onImageChange={setPreweddingPhotoUrl}
+                          onImageChange={(val) => {
+                            if (!val && preweddingPhotoUrl && preweddingSource === 'upload') {
+                              handleDeleteImage(preweddingPhotoUrl);
+                            }
+                            setPreweddingPhotoUrl(val);
+                          }}
                           apiToken={session?.access_token}
                           apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
                           isEnabled={generatePrewedding}
@@ -2999,7 +3058,10 @@ function GenerateContent() {
                                 <img src={url} className="w-full h-full object-cover" alt="Gallery preview" />
                                 <button
                                   type="button"
-                                  onClick={() => setGalleryList(galleryList.filter((_, i) => i !== idx))}
+                                  onClick={() => {
+                                    handleDeleteImage(url);
+                                    setGalleryList(galleryList.filter((_, i) => i !== idx));
+                                  }}
                                   className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-opacity"
                                 >
                                   Hapus
@@ -3037,7 +3099,12 @@ function GenerateContent() {
                                 <span className="truncate text-theme-text font-bold">{story.date} - {story.title}</span>
                                 <button
                                   type="button"
-                                  onClick={() => setStoryList(storyList.filter((_, i) => i !== sIdx))}
+                                  onClick={() => {
+                                    if (story.image_url) {
+                                      handleDeleteImage(story.image_url);
+                                    }
+                                    setStoryList(storyList.filter((_, i) => i !== sIdx));
+                                  }}
                                   className="text-red-400 hover:text-red-300 font-bold ml-2 text-[9px]"
                                 >
                                   Hapus
@@ -3523,7 +3590,12 @@ function GenerateContent() {
                           checkboxLabel="Gunakan Foto Background / Banner Hero Section"
                           unsplashQuery="shopping,store,commercial,product"
                           imageUrl={storeBannerUrl}
-                          onImageChange={setStoreBannerUrl}
+                          onImageChange={(val) => {
+                            if (!val && storeBannerUrl && storeBannerSource === 'upload') {
+                              handleDeleteImage(storeBannerUrl);
+                            }
+                            setStoreBannerUrl(val);
+                          }}
                           apiToken={session?.access_token}
                           apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
                           isEnabled={generateStoreBanner}
@@ -3822,7 +3894,12 @@ function GenerateContent() {
                             checkboxLabel="Gunakan Foto Background Hero Section"
                             unsplashQuery="business,workspace,marketing,success"
                             imageUrl={campaignHeroImage}
-                            onImageChange={setCampaignHeroImage}
+                            onImageChange={(val) => {
+                              if (!val && campaignHeroImage && campaignHeroImageSource === 'upload') {
+                                handleDeleteImage(campaignHeroImage);
+                              }
+                              setCampaignHeroImage(val);
+                            }}
                             apiToken={session?.access_token}
                             apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
                             isEnabled={generateCampaignHero}
@@ -4119,7 +4196,10 @@ function GenerateContent() {
                                 {cvPhotoUrl && (
                                   <button
                                     type="button"
-                                    onClick={() => setCvPhotoUrl('')}
+                                    onClick={() => {
+                                      handleDeleteImage(cvPhotoUrl);
+                                      setCvPhotoUrl('');
+                                    }}
                                     className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold py-1.5 px-2.5 rounded-xl transition-colors cursor-pointer"
                                   >
                                     Hapus
@@ -4719,7 +4799,7 @@ function GenerateContent() {
                   </div>
                 )}
 
-                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign') ? (
+                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv') ? (
                   <iframe
                     ref={iframeRef}
                     src="/preview/index.html"
