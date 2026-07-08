@@ -1078,17 +1078,46 @@ function GenerateContent() {
 
       console.log(`[Dashboard] Upload successful. Public URL: ${publicUrl}`);
 
-      if (isGroom) setGroomImage(publicUrl);
-      if (isBride) setBrideImage(publicUrl);
-      if (isStory) setNewStoryImage(publicUrl);
-      if (isPrewedding) setPreweddingPhotoUrl(publicUrl);
+      if (isGroom) {
+        if (groomImage) handleDeleteImage(groomImage);
+        setGroomImage(publicUrl);
+      }
+      if (isBride) {
+        if (brideImage) handleDeleteImage(brideImage);
+        setBrideImage(publicUrl);
+      }
+      if (isStory) {
+        if (newStoryImage) handleDeleteImage(newStoryImage);
+        setNewStoryImage(publicUrl);
+      }
+      if (isPrewedding) {
+        if (preweddingPhotoUrl) handleDeleteImage(preweddingPhotoUrl);
+        setPreweddingPhotoUrl(publicUrl);
+      }
       if (isGallery) setGalleryList(prev => [...prev, publicUrl]);
-      if (isCampaignHero) setCampaignHeroImage(publicUrl);
-      if (isCelebrant) setCelebrantImage(publicUrl);
-      if (isLogo) setStoreLogoUrl(publicUrl);
-      if (isBanner) setStoreBannerUrl(publicUrl);
-      if (isCv) setCvPhotoUrl(publicUrl);
+      if (isCampaignHero) {
+        if (campaignHeroImage) handleDeleteImage(campaignHeroImage);
+        setCampaignHeroImage(publicUrl);
+      }
+      if (isCelebrant) {
+        if (celebrantImage) handleDeleteImage(celebrantImage);
+        setCelebrantImage(publicUrl);
+      }
+      if (isLogo) {
+        if (storeLogoUrl) handleDeleteImage(storeLogoUrl);
+        setStoreLogoUrl(publicUrl);
+      }
+      if (isBanner) {
+        if (storeBannerUrl) handleDeleteImage(storeBannerUrl);
+        setStoreBannerUrl(publicUrl);
+      }
+      if (isCv) {
+        if (cvPhotoUrl) handleDeleteImage(cvPhotoUrl);
+        setCvPhotoUrl(publicUrl);
+      }
       if (isProduct) {
+        const oldProductImageUrl = tokoProducts[productIndex]?.image_url;
+        if (oldProductImageUrl) handleDeleteImage(oldProductImageUrl);
         setTokoProducts(prev => {
           const next = [...prev];
           next[productIndex].image_url = publicUrl;
@@ -1113,7 +1142,7 @@ function GenerateContent() {
   };
 
   const handleDeleteImage = async (imageUrl) => {
-    if (!imageUrl) return;
+    if (!imageUrl || imageUrl.includes('/defaults/')) return;
 
     let path = '';
     try {
@@ -2960,6 +2989,18 @@ function GenerateContent() {
                                 />
                               </label>
                               {renderAIAvatarButton('groom', isGeneratingGroomImage)}
+                              {groomImage && groomImage !== DEFAULT_GROOM_AVATAR && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleDeleteImage(groomImage);
+                                    setGroomImage(DEFAULT_GROOM_AVATAR);
+                                  }}
+                                  className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold px-2 rounded transition-colors cursor-pointer"
+                                >
+                                  Hapus
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -3021,6 +3062,18 @@ function GenerateContent() {
                                 />
                               </label>
                               {renderAIAvatarButton('bride', isGeneratingBrideImage)}
+                              {brideImage && brideImage !== DEFAULT_BRIDE_AVATAR && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleDeleteImage(brideImage);
+                                    setBrideImage(DEFAULT_BRIDE_AVATAR);
+                                  }}
+                                  className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold px-2 rounded transition-colors cursor-pointer"
+                                >
+                                  Hapus
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -3407,6 +3460,18 @@ function GenerateContent() {
                                 />
                               </label>
                               {renderAIAvatarButton('celebrant', isGeneratingCelebrantImage)}
+                              {celebrantImage && celebrantImage !== DEFAULT_GROOM_AVATAR && celebrantImage !== DEFAULT_BRIDE_AVATAR && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleDeleteImage(celebrantImage);
+                                    setCelebrantImage(celebrantGender === 'female' ? DEFAULT_BRIDE_AVATAR : DEFAULT_GROOM_AVATAR);
+                                  }}
+                                  className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold px-2 rounded transition-colors cursor-pointer"
+                                >
+                                  Hapus
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -3571,15 +3636,29 @@ function GenerateContent() {
                               <div className="w-8 h-8 rounded-lg overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[10px]">
                                 {storeLogoUrl ? <img src={storeLogoUrl} className="w-full h-full object-cover" /> : '🛒'}
                               </div>
-                              <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-2 rounded text-center cursor-pointer transition-all">
-                                {isUploadingLogo ? 'Uploading...' : 'Upload'}
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => handleUploadImage(e.target.files[0], 'logo')}
-                                />
-                              </label>
+                              <div className="flex-grow flex gap-1">
+                                <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-2 rounded text-center cursor-pointer transition-all">
+                                  {isUploadingLogo ? 'Uploading...' : 'Upload'}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => handleUploadImage(e.target.files[0], 'logo')}
+                                  />
+                                </label>
+                                {storeLogoUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleDeleteImage(storeLogoUrl);
+                                      setStoreLogoUrl('');
+                                    }}
+                                    className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold px-2 rounded transition-all cursor-pointer"
+                                  >
+                                    Hapus
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -3628,7 +3707,11 @@ function GenerateContent() {
                                 {tokoProducts.length > 1 && (
                                   <button
                                     type="button"
-                                    onClick={() => setTokoProducts(prev => prev.filter((_, idx) => idx !== index))}
+                                    onClick={() => {
+                                      const prod = tokoProducts[index];
+                                      if (prod?.image_url) handleDeleteImage(prod.image_url);
+                                      setTokoProducts(prev => prev.filter((_, idx) => idx !== index));
+                                    }}
                                     className="text-[9px] font-bold text-red-400 hover:text-red-500 flex items-center gap-0.5"
                                   >
                                     Hapus
@@ -3693,15 +3776,33 @@ function GenerateContent() {
                                 <div className="w-8 h-8 rounded-lg overflow-hidden border border-theme-border bg-theme-surface flex-shrink-0 flex items-center justify-center text-[10px]">
                                   {product.image_url ? <img src={product.image_url} className="w-full h-full object-cover" /> : '📦'}
                                 </div>
-                                <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-all">
-                                  {isUploadingProductIndex === index ? 'Uploading...' : 'Upload Foto Produk'}
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={(e) => handleUploadImage(e.target.files[0], `product-${index}`)}
-                                  />
-                                </label>
+                                <div className="flex-grow flex gap-1">
+                                  <label className="flex-grow bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1 px-2 rounded text-center cursor-pointer transition-all">
+                                    {isUploadingProductIndex === index ? 'Uploading...' : 'Upload Foto Produk'}
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => handleUploadImage(e.target.files[0], `product-${index}`)}
+                                    />
+                                  </label>
+                                  {product.image_url && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleDeleteImage(product.image_url);
+                                        setTokoProducts(prev => {
+                                          const next = [...prev];
+                                          next[index].image_url = '';
+                                          return next;
+                                        });
+                                      }}
+                                      className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold px-2 rounded transition-all cursor-pointer"
+                                    >
+                                      Hapus
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           ))}

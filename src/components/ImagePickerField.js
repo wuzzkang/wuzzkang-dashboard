@@ -247,6 +247,13 @@ export default function ImagePickerField({
                   <div className="relative w-full h-32 rounded-lg overflow-hidden border border-theme-border bg-theme-surface">
                     <img src={imageUrl} className="w-full h-full object-cover" alt="Foto Upload" />
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => onImageChange && onImageChange('')}
+                    className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer"
+                  >
+                    🗑️ Hapus Foto Terupload
+                  </button>
                 </>
               ) : (
                 <div className="text-[9px] text-theme-text-muted leading-relaxed">
