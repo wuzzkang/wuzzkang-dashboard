@@ -340,6 +340,32 @@ function GenerateContent() {
   // Tracking pixel states (loaded from user profile, read-only in this view)
   const [trackingConfig, setTrackingConfig] = useState(null);
 
+  // Derives a clean, context-aware slug suggestion from the active form state.
+  // Called after AI generation completes to pre-fill the slug input field.
+  // Each template type maps to its most meaningful content fields.
+  const buildSlugSuggestion = () => {
+    let raw = '';
+    if (templateType === 'wedding' && groomNickname && brideNickname) {
+      raw = `${groomNickname}-${brideNickname}`;
+    } else if (templateType === 'birthday' && celebrantNickname) {
+      raw = `${celebrantNickname}-ultah`;
+    } else if (templateType === 'toko-online' && storeName) {
+      raw = storeName;
+    } else if (templateType === 'campaign' && campaignHeadline) {
+      raw = campaignHeadline.substring(0, 25);
+    } else if (templateType === 'cv' && cvName) {
+      raw = `${cvName}-cv`;
+    } else {
+      raw = name; // fallback to project name
+    }
+    return raw
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-') // replace non-alphanumeric with dash
+      .replace(/-+/g, '-')          // collapse consecutive dashes
+      .replace(/(^-|-$)/g, '')      // trim leading/trailing dashes
+      .substring(0, 40);            // max 40 chars (leaves room for 6-char UUID suffix)
+  };
+
   // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
@@ -2484,12 +2510,8 @@ function GenerateContent() {
           setProjectId(result.data.projectId);
           setPageData(result.data.pageData);
 
-          // Suggest slug based on name
-          const suggestedSlug = name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '');
-          setSlug(suggestedSlug);
+          // Suggest slug based on meaningful content from the generated page
+          setSlug(buildSlugSuggestion());
           setActiveTab('preview');
         } else {
           setError(result.error ? Object.values(result.error).flat().join(', ') : 'Gagal menghasilkan landing page.');
@@ -4803,11 +4825,24 @@ function GenerateContent() {
                         required
                         placeholder="nama-toko-anda"
                         value={slug}
-                        onChange={(e) => setSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                        onChange={(e) => setSlug(
+                          e.target.value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9-]/g, '')
+                            .replace(/-+/g, '-')
+                        )}
                         disabled={isPublishing}
                         className="block w-full pl-8 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
                       />
                     </div>
+                    {slug && (
+                      <p className="text-[10px] text-theme-text-muted mt-1.5 pl-1">
+                        URL Anda:{' '}
+                        <span className="font-mono text-theme-text-sec">
+                          .../?slug={slug}-<span className="opacity-40">xxxxxx</span>
+                        </span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Coupon Code Section */}
