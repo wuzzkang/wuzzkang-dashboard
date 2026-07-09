@@ -13,6 +13,20 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { profile, refreshProfile } = useAuth();
+
+  // Tab navigation helper:
+  // - Going to Home        → replace (Home tidak perlu numpuk di history)
+  // - From Home to others  → push   (agar Home tersimpan, back bisa kembali ke Home)
+  // - Between non-Home     → replace (tidak numpuk sesama tab)
+  const navigateTab = (href) => {
+    if (href === '/') {
+      router.replace('/');
+    } else if (pathname === '/') {
+      router.push(href);
+    } else {
+      router.replace(href);
+    }
+  };
   const [activeTheme, setActiveTheme] = useState('clean');
 
   useEffect(() => {
@@ -216,22 +230,33 @@ export default function Sidebar() {
         }}>
         <div className="max-w-md mx-auto flex items-center justify-around h-16 relative px-2">
           {/* Home */}
-          <Link href="/" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
-            style={{ color: pathname === '/' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+          <button
+            type="button"
+            onClick={() => navigateTab('/')}
+            className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 bg-transparent border-0 cursor-pointer"
+            style={{ color: pathname === '/' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}
+          >
             <LayoutDashboard className="h-5 w-5" />
             <span className="text-[9px] font-bold mt-1">Home</span>
-          </Link>
+          </button>
 
           {/* History */}
-          <Link href="/payments/history" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
-            style={{ color: pathname === '/payments/history' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+          <button
+            type="button"
+            onClick={() => navigateTab('/payments/history')}
+            className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 bg-transparent border-0 cursor-pointer"
+            style={{ color: pathname === '/payments/history' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}
+          >
             <History className="h-5 w-5" />
             <span className="text-[9px] font-bold mt-1">History</span>
-          </Link>
+          </button>
 
           {/* Landing Page Center FAB */}
           <div className="flex-1 flex justify-center relative h-16">
-            <Link href="/generate" className="absolute -top-5 flex items-center justify-center h-14 w-14 rounded-full shadow-lg transition-transform active:scale-90 border-4"
+            <button
+              type="button"
+              onClick={() => navigateTab('/generate')}
+              className="absolute -top-5 flex items-center justify-center h-14 w-14 rounded-full shadow-lg transition-transform active:scale-90 border-4 cursor-pointer"
               style={{
                 background: 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))',
                 borderColor: 'var(--theme-surface)',
@@ -240,25 +265,33 @@ export default function Sidebar() {
               title="Buat Halaman"
             >
               <Plus className="h-7 w-7 stroke-[3px]" />
-            </Link>
+            </button>
             <span className="text-[9px] font-bold mt-[42px]" style={{ color: pathname === '/generate' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
               Landing Page
             </span>
           </div>
 
           {/* Top-up */}
-          <Link href="/topup" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
-            style={{ color: pathname === '/topup' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+          <button
+            type="button"
+            onClick={() => navigateTab('/topup')}
+            className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 bg-transparent border-0 cursor-pointer"
+            style={{ color: pathname === '/topup' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}
+          >
             <CreditCard className="h-5 w-5" />
             <span className="text-[9px] font-bold mt-1">Top-up</span>
-          </Link>
+          </button>
 
           {/* Profil */}
-          <Link href="/profile" className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95"
-            style={{ color: pathname === '/profile' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}>
+          <button
+            type="button"
+            onClick={() => navigateTab('/profile')}
+            className="flex flex-col items-center justify-center flex-1 py-1 transition-all active:scale-95 bg-transparent border-0 cursor-pointer"
+            style={{ color: pathname === '/profile' ? 'var(--theme-accent)' : 'var(--theme-text-muted)' }}
+          >
             <User className="h-5 w-5" />
             <span className="text-[9px] font-bold mt-1">Profil</span>
-          </Link>
+          </button>
         </div>
       </div>
     </>
