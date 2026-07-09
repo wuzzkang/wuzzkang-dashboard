@@ -120,6 +120,7 @@ function GenerateContent() {
   const [products, setProducts] = useState([]);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   // Wedding form states
   const [groomName, setGroomName] = useState('');
@@ -177,6 +178,13 @@ function GenerateContent() {
       window.removeEventListener('popstate', handlePopState);
     };
   }, [previewDesignKey]);
+
+  // Reset scroll indicator when template modal is opened or category is changed
+  useEffect(() => {
+    if (isTemplateModalOpen) {
+      setShowScrollIndicator(true);
+    }
+  }, [isTemplateModalOpen, selectedCategory]);
 
   const [groomImage, setGroomImage] = useState(DEFAULT_GROOM_AVATAR);
   const [brideImage, setBrideImage] = useState(DEFAULT_BRIDE_AVATAR);
@@ -5016,13 +5024,17 @@ function GenerateContent() {
       {/* Template Selection Modal */}
       {isTemplateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-theme-bg/85 backdrop-blur-md animate-fadeIn">
-          <div className="bg-theme-surface border border-theme-border rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+          <div className="bg-theme-surface border border-theme-border rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] relative">
 
             {/* Modal Header */}
-            <div className="p-6 border-b border-theme-border flex justify-between items-center bg-theme-surface/50">
+            <div className="p-6 border-b border-theme-border flex justify-between items-center bg-theme-surface/50 shrink-0">
               <div>
-                <h3 className="text-lg font-bold text-theme-text">Galeri Template & Layanan</h3>
-                <p className="text-xs text-theme-text-muted mt-1">Pilih tipe landing page yang ingin Anda rancang</p>
+                <h3 className="text-lg font-bold text-theme-text flex items-center gap-2">
+                  <span>Galeri Template & Layanan</span>
+                </h3>
+                <p className="text-xs text-theme-text-muted mt-1">
+                  Pilih tipe landing page yang ingin Anda rancang.
+                </p>
               </div>
               <button
                 onClick={() => setIsTemplateModalOpen(false)}
@@ -5033,7 +5045,7 @@ function GenerateContent() {
             </div>
 
             {/* Modal Filters */}
-            <div className="px-6 py-4 bg-theme-surface/20 border-b border-theme-border flex gap-2 overflow-x-auto scrollbar-none">
+            <div className="px-6 py-4 bg-theme-surface/20 border-b border-theme-border flex gap-2 overflow-x-auto scrollbar-none shrink-0">
               <button
                 onClick={() => setSelectedCategory('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === 'all' ? 'bg-theme-accent text-theme-accent-text' : 'bg-theme-card text-theme-text-sec hover:text-theme-text'
@@ -5065,89 +5077,112 @@ function GenerateContent() {
             </div>
 
             {/* Modal Content - Product Cards Grid */}
-            <div className="p-6 overflow-y-auto space-y-4 flex-grow bg-theme-surface/30">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {displayProducts
-                  .filter(p => {
-                    if (selectedCategory === 'all') return true;
-                    return p.unit === selectedCategory;
-                  })
-                  .map(product => {
-                    const isSelected = templateType === product.id;
-                    const isActive = product.is_active;
+            {(() => {
+              const filteredProducts = displayProducts.filter(p => {
+                if (selectedCategory === 'all') return true;
+                return p.unit === selectedCategory;
+              });
 
-                    return (
-                      <div
-                        key={product.id}
-                        onClick={() => {
-                          if (isActive) {
-                            setTemplateType(product.id);
-                            setIsTemplateModalOpen(false);
-                            // Clear page data when changing template types to refresh state
-                            setPageData(null);
-                            // Reset designKey based on product type
-                            if (product.id === 'toko-online') setDesignKey('modern-clean');
-                            else if (product.id === 'wedding') setDesignKey('sage-green');
-                            else if (product.id === 'birthday') setDesignKey('cute-balloon');
-                          }
-                        }}
-                        className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${!isActive
-                          ? 'bg-theme-surface/40 border-theme-border opacity-60 cursor-not-allowed select-none'
-                          : isSelected
-                            ? 'bg-theme-accent/10 border-theme-accent shadow-lg shadow-theme-accent/5 cursor-pointer scale-[1.01]'
-                            : 'bg-theme-bg border-theme-border hover:border-theme-accent hover:bg-theme-surface/10 cursor-pointer hover:scale-[1.01]'
-                          }`}
-                      >
-                        {/* Glow effect on hover if active */}
-                        {isActive && (
-                          <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -z-10 transition-opacity duration-300 ${isSelected ? 'bg-theme-accent/10 opacity-100' : 'bg-theme-accent/5 opacity-0 group-hover:opacity-100'
-                            }`} />
-                        )}
+              return (
+                <>
+                  <div
+                    onScroll={(e) => {
+                      if (e.currentTarget.scrollTop > 20) {
+                        setShowScrollIndicator(false);
+                      }
+                    }}
+                    className="p-6 overflow-y-auto space-y-4 flex-grow bg-theme-surface/30"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {filteredProducts.map(product => {
+                        const isSelected = templateType === product.id;
+                        const isActive = product.is_active;
 
-                        <div>
-                          <div className="flex justify-between items-start mb-4">
-                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl shadow-sm ${isSelected ? 'bg-theme-accent/20 text-theme-accent' : 'bg-theme-card text-theme-text-sec'
-                              }`}>
-                              {getProductIcon(product.id)}
+                        return (
+                          <div
+                            key={product.id}
+                            onClick={() => {
+                              if (isActive) {
+                                setTemplateType(product.id);
+                                setIsTemplateModalOpen(false);
+                                // Clear page data when changing template types to refresh state
+                                setPageData(null);
+                                // Reset designKey based on product type
+                                if (product.id === 'toko-online') setDesignKey('modern-clean');
+                                else if (product.id === 'wedding') setDesignKey('sage-green');
+                                else if (product.id === 'birthday') setDesignKey('cute-balloon');
+                              }
+                            }}
+                            className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${!isActive
+                              ? 'bg-theme-surface/40 border-theme-border opacity-60 cursor-not-allowed select-none'
+                              : isSelected
+                                ? 'bg-theme-accent/10 border-theme-accent shadow-lg shadow-theme-accent/5 cursor-pointer scale-[1.01]'
+                                : 'bg-theme-bg border-theme-border hover:border-theme-accent hover:bg-theme-surface/10 cursor-pointer hover:scale-[1.01]'
+                              }`}
+                          >
+                            {/* Glow effect on hover if active */}
+                            {isActive && (
+                              <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl -z-10 transition-opacity duration-300 ${isSelected ? 'bg-theme-accent/10 opacity-100' : 'bg-theme-accent/5 opacity-0 group-hover:opacity-100'
+                                }`} />
+                            )}
+
+                            <div>
+                              <div className="flex justify-between items-start mb-4">
+                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl shadow-sm ${isSelected ? 'bg-theme-accent/20 text-theme-accent' : 'bg-theme-card text-theme-text-sec'
+                                  }`}>
+                                  {getProductIcon(product.id)}
+                                </div>
+
+                                {/* Inactive / Maintenance Badge */}
+                                {!isActive ? (
+                                  <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded">
+                                    Pemeliharaan
+                                  </span>
+                                ) : (
+                                  isSelected && (
+                                    <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-theme-accent/20 border border-theme-accent/30 text-theme-accent rounded">
+                                      Selected
+                                    </span>
+                                  )
+                                )}
+                              </div>
+
+                              <h4 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors">
+                                {product.name}
+                              </h4>
+                              <p className="text-xs text-theme-text-muted mt-1.5 leading-relaxed">
+                                {product.description || getProductDefaultDescription(product.id)}
+                              </p>
                             </div>
 
-                            {/* Inactive / Maintenance Badge */}
-                            {!isActive ? (
-                              <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded">
-                                Pemeliharaan
+                            {/* Price Info */}
+                            <div className="mt-6 pt-4 border-t border-theme-border flex justify-between items-center">
+                              <span className="text-[10px] text-theme-text-muted uppercase tracking-wider font-semibold">Biaya Publikasi</span>
+                              <span className="text-xs font-bold text-theme-text">
+                                {product.cost?.toLocaleString('id-ID') || '100'} Credit
                               </span>
-                            ) : (
-                              isSelected && (
-                                <span className="text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 bg-theme-accent/20 border border-theme-accent/30 text-theme-accent rounded">
-                                  Selected
-                                </span>
-                              )
-                            )}
+                            </div>
                           </div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-                          <h4 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors">
-                            {product.name}
-                          </h4>
-                          <p className="text-xs text-theme-text-muted mt-1.5 leading-relaxed">
-                            {product.description || getProductDefaultDescription(product.id)}
-                          </p>
-                        </div>
-
-                        {/* Price Info */}
-                        <div className="mt-6 pt-4 border-t border-theme-border flex justify-between items-center">
-                          <span className="text-[10px] text-theme-text-muted uppercase tracking-wider font-semibold">Biaya Publikasi</span>
-                          <span className="text-xs font-bold text-theme-text">
-                            {product.cost?.toLocaleString('id-ID') || '100'} Credit
-                          </span>
-                        </div>
+                  {/* Scroll indicator overlay */}
+                  {showScrollIndicator && filteredProducts.length > 2 && (
+                    <div className="absolute bottom-[92px] left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-bounce">
+                      <div className="bg-theme-accent/95 backdrop-blur-md text-white px-4 py-2 rounded-full shadow-2xl border border-white/10 flex items-center gap-1.5 text-xs font-bold transition-all duration-300">
+                        <span>Lihat Pilihan Lain</span>
+                        <span>⬇</span>
                       </div>
-                    );
-                  })}
-              </div>
-            </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-theme-border bg-theme-bg flex justify-end">
+            <div className="p-6 border-t border-theme-border bg-theme-bg flex justify-end shrink-0">
               <button
                 onClick={() => setIsTemplateModalOpen(false)}
                 className="px-5 py-2.5 bg-theme-card hover:bg-theme-surface text-theme-text rounded-xl text-xs font-semibold transition-colors"
