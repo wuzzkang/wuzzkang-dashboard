@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import Link from 'next/link';
-import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search } from 'lucide-react';
+import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search, Link2, Loader2, Trash2, ChevronRight } from 'lucide-react';
 import Skeleton from '@/components/Skeleton';
 
 export default function DashboardPage() {
@@ -23,6 +23,19 @@ export default function DashboardPage() {
   const [filterType, setFilterType] = useState('all');
   const [maxProjectEdits, setMaxProjectEdits] = useState(0);
 
+  // Domain modal state
+  const [domainModalOpen, setDomainModalOpen] = useState(false);
+  const [domainProject, setDomainProject] = useState(null);
+  const [subdomainInput, setSubdomainInput] = useState('');
+  const [subdomainChecking, setSubdomainChecking] = useState(false);
+  const [subdomainAvailable, setSubdomainAvailable] = useState(null); // null | true | false
+  const [subdomainClaiming, setSubdomainClaiming] = useState(false);
+  const [subdomainReleasing, setSubdomainReleasing] = useState(false);
+  const [domainClaimCost, setDomainClaimCost] = useState(null);
+  const [domainError, setDomainError] = useState('');
+  const [domainSuccess, setDomainSuccess] = useState('');
+  const checkDebounceRef = useRef(null);
+
   // Sync back button / popstate with share modal state
   const prevShareModalRef = useRef(false);
 
@@ -31,6 +44,7 @@ export default function DashboardPage() {
       const currentModalId = window.history.state?.modalId;
       if (!currentModalId) {
         setShareModalOpen(false);
+        setDomainModalOpen(false);
       }
     };
 
@@ -118,6 +132,160 @@ export default function DashboardPage() {
     }
   }, [session]);
 
+  // Fetch subdomain pricing when domain modal opens
+  useEffect(() => {
+    if (!domainModalOpen || !session || domainClaimCost !== null) return;
+    const fetchPricing = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/domains/pricing`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success) setDomainClaimCost(result.data.cost);
+        }
+      } catch (e) {
+        // silently ignore, will show default
+      }
+    };
+    fetchPricing();
+  }, [domainModalOpen, session]);
+
+  // Auto-check subdomain availability with debounce
+  useEffect(() => {
+    if (!subdomainInput || subdomainInput.length < 3 || domainProject?.custom_domain) {
+      setSubdomainAvailable(null);
+      return;
+    }
+
+    setSubdomainChecking(true);
+    setSubdomainAvailable(null);
+
+    if (checkDebounceRef.current) clearTimeout(checkDebounceRef.current);
+
+    checkDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/domains/check?name=${encodeURIComponent(subdomainInput)}`,
+          { headers: { Authorization: `Bearer ${session.access_token}` } }
+        );
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success) {
+            setSubdomainAvailable(result.data.available);
+          }
+        }
+      } catch (e) {
+        // silently ignore
+      } finally {
+        setSubdomainChecking(false);
+      }
+    }, 500);
+
+    return () => {
+      if (checkDebounceRef.current) clearTimeout(checkDebounceRef.current);
+    };
+  }, [subdomainInput, session]);
+
+  const openDomainModal = (project) => {
+    setDomainProject(project);
+    setSubdomainInput('');
+    setSubdomainAvailable(null);
+    setSubdomainChecking(false);
+    setSubdomainClaiming(false);
+    setSubdomainReleasing(false);
+    setDomainError('');
+    setDomainSuccess('');
+    setDomainModalOpen(true);
+  };
+
+  const closeDomainModal = () => {
+    setDomainModalOpen(false);
+    setDomainProject(null);
+  };
+
+  const handleClaimSubdomain = async () => {
+    if (!domainProject || !subdomainInput || !subdomainAvailable) return;
+    setSubdomainClaiming(true);
+    setDomainError('');
+    setDomainSuccess('');
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/domains/claim-subdomain`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_id: domainProject.id,
+          subdomain_name: subdomainInput,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        setDomainError(result.error || 'Gagal mengklaim subdomain.');
+        return;
+      }
+
+      // Update local state
+      const fullDomain = result.data.domain;
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === domainProject.id
+            ? { ...p, custom_domain: fullDomain, domain_type: 'subdomain' }
+            : p
+        )
+      );
+      setDomainProject((prev) => ({ ...prev, custom_domain: fullDomain, domain_type: 'subdomain' }));
+      setDomainSuccess(`Subdomain ${fullDomain} berhasil diklaim!`);
+    } catch (e) {
+      setDomainError('Terjadi kesalahan jaringan.');
+    } finally {
+      setSubdomainClaiming(false);
+    }
+  };
+
+  const handleReleaseSubdomain = async () => {
+    if (!domainProject) return;
+    setSubdomainReleasing(true);
+    setDomainError('');
+    setDomainSuccess('');
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/domains/${domainProject.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        setDomainError(result.error || 'Gagal menghapus subdomain.');
+        return;
+      }
+
+      // Update local state
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === domainProject.id
+            ? { ...p, custom_domain: null, domain_type: 'none' }
+            : p
+        )
+      );
+      setDomainProject((prev) => ({ ...prev, custom_domain: null, domain_type: 'none' }));
+      setDomainSuccess('Subdomain berhasil dihapus. Credit tidak dikembalikan.');
+      setSubdomainInput('');
+      setSubdomainAvailable(null);
+    } catch (e) {
+      setDomainError('Terjadi kesalahan jaringan.');
+    } finally {
+      setSubdomainReleasing(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'deployed':
@@ -177,6 +345,33 @@ export default function DashboardPage() {
     }
     return matchesSearch && templateType === filterType;
   });
+
+  // Subdomain input display badge
+  const renderSubdomainStatus = () => {
+    if (!subdomainInput || subdomainInput.length < 3) return null;
+    if (subdomainChecking) {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] text-theme-text-muted">
+          <Loader2 className="h-3 w-3 animate-spin" /> Mengecek...
+        </span>
+      );
+    }
+    if (subdomainAvailable === true) {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
+          <CheckCircle className="h-3 w-3" /> Tersedia
+        </span>
+      );
+    }
+    if (subdomainAvailable === false) {
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] text-red-400 font-bold">
+          <X className="h-3 w-3" /> Sudah digunakan
+        </span>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
@@ -307,6 +502,27 @@ export default function DashboardPage() {
                             </a>
                           </div>
                         )}
+
+                        {/* Custom domain info row */}
+                        {project.status === 'deployed' && (
+                          <button
+                            onClick={() => openDomainModal(project)}
+                            className="flex items-center gap-2 w-full text-left group/domain"
+                          >
+                            <Link2 className="h-3.5 w-3.5 flex-shrink-0 text-theme-text-muted group-hover/domain:text-theme-accent transition-colors" />
+                            {project.custom_domain ? (
+                              <span className="flex items-center gap-1.5 flex-1 min-w-0">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                                <span className="text-emerald-400 font-bold truncate">{project.custom_domain}</span>
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1.5 flex-1">
+                                <span className="text-theme-text-muted">Tambah subdomain</span>
+                                <ChevronRight className="h-3 w-3 text-theme-text-muted group-hover/domain:text-theme-accent transition-colors" />
+                              </span>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -342,6 +558,19 @@ export default function DashboardPage() {
                               )
                             )}
                           </div>
+
+                          {/* Domain button row */}
+                          <button
+                            onClick={() => openDomainModal(project)}
+                            className={`w-full flex items-center justify-center gap-1.5 font-bold text-xs py-2.5 px-4 rounded-xl transition-all border ${
+                              project.custom_domain
+                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+                                : 'bg-theme-card border-theme-border text-theme-text-sec hover:border-theme-accent hover:text-theme-accent'
+                            }`}
+                          >
+                            <Link2 className="h-3.5 w-3.5" />
+                            <span>{project.custom_domain ? `🟢 ${project.custom_domain}` : '🌐 Subdomain'}</span>
+                          </button>
 
                           {(templateType === 'wedding' || templateType === 'birthday') && (
                             <button
@@ -511,6 +740,159 @@ export default function DashboardPage() {
                   );
                 })()}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Domain Modal */}
+        {domainModalOpen && domainProject && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div className="bg-theme-card border border-theme-border rounded-3xl w-full max-w-xs p-5 shadow-2xl relative text-theme-text animate-in fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
+              {/* Close button */}
+              <button
+                onClick={closeDomainModal}
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-theme-border/50 text-theme-text-muted hover:text-theme-text transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="flex items-center gap-2 mb-1">
+                <Link2 className="h-4 w-4 text-theme-accent" />
+                <h3 className="text-sm font-bold tracking-tight text-theme-text pr-6" style={{ fontFamily: "'Sora', sans-serif" }}>
+                  Custom Subdomain
+                </h3>
+              </div>
+              <p className="text-[10px] text-theme-text-sec mb-4 truncate">{domainProject.name}</p>
+
+              {/* Pricing badge */}
+              {domainClaimCost !== null && !domainProject.custom_domain && (
+                <div className="flex items-center gap-1.5 mb-4 px-3 py-2 rounded-xl bg-theme-accent/10 border border-theme-accent/20">
+                  <span className="text-[10px] text-theme-text-sec">Biaya klaim:</span>
+                  <span className="text-xs font-black text-theme-accent">{domainClaimCost} credit</span>
+                  <span className="text-[10px] text-theme-text-muted ml-auto">sekali bayar</span>
+                </div>
+              )}
+
+              {/* Success/Error messages */}
+              {domainSuccess && (
+                <div className="mb-3 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] flex items-start gap-1.5">
+                  <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                  <span>{domainSuccess}</span>
+                </div>
+              )}
+              {domainError && (
+                <div className="mb-3 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-[11px] flex items-start gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                  <span>{domainError}</span>
+                </div>
+              )}
+
+              {/* ACTIVE domain state */}
+              {domainProject.custom_domain ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider font-bold text-theme-text-muted mb-1">
+                      Domain Aktif
+                    </label>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        readOnly
+                        value={`https://${domainProject.custom_domain}`}
+                        onClick={(e) => e.target.select()}
+                        className="flex-grow bg-theme-surface border border-emerald-500/30 rounded-xl px-2.5 py-2 text-xs text-emerald-400 font-bold focus:outline-none truncate"
+                      />
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`https://${domainProject.custom_domain}`);
+                        }}
+                        className="p-2 rounded-xl border border-theme-border bg-theme-card hover:bg-theme-surface text-theme-text-muted hover:text-theme-text transition-all flex-shrink-0"
+                        title="Salin"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-theme-text-muted mt-1.5">Domain aktif dan dapat diakses oleh pengunjung.</p>
+                  </div>
+
+                  <a
+                    href={`https://${domainProject.custom_domain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-1.5 bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text font-bold text-xs py-2.5 px-4 rounded-xl transition-all"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>Buka Domain</span>
+                  </a>
+
+                  <div className="pt-2 border-t border-theme-border">
+                    <p className="text-[10px] text-theme-text-muted mb-2">⚠️ Menghapus subdomain bersifat permanen. Credit tidak dikembalikan.</p>
+                    <button
+                      onClick={handleReleaseSubdomain}
+                      disabled={subdomainReleasing}
+                      className="w-full flex items-center justify-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 font-bold text-xs py-2.5 px-4 rounded-xl transition-all disabled:opacity-50"
+                    >
+                      {subdomainReleasing ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                      <span>{subdomainReleasing ? 'Menghapus...' : 'Hapus Subdomain'}</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* CLAIM form */
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider font-bold text-theme-text-muted mb-1.5">
+                      Nama Subdomain
+                    </label>
+                    <div className="flex items-center gap-0 rounded-xl border border-theme-border overflow-hidden focus-within:border-theme-accent transition-colors"
+                      style={{ backgroundColor: 'var(--theme-surface)' }}>
+                      <input
+                        type="text"
+                        placeholder="contoh: tokobudi"
+                        value={subdomainInput}
+                        onChange={(e) => setSubdomainInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                        maxLength={15}
+                        className="flex-1 bg-transparent px-3 py-2 text-xs text-theme-text focus:outline-none"
+                        autoComplete="off"
+                        autoCapitalize="none"
+                      />
+                      <span className="px-2 py-2 text-[10px] text-theme-text-muted bg-theme-card border-l border-theme-border whitespace-nowrap">
+                        .siluet.web.id
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <div>{renderSubdomainStatus()}</div>
+                      <span className="text-[10px] text-theme-text-muted">{subdomainInput.length}/15</span>
+                    </div>
+                    <p className="text-[10px] text-theme-text-muted mt-0.5">Min. 3 karakter. Hanya huruf kecil, angka, dan tanda hubung.</p>
+                  </div>
+
+                  <button
+                    onClick={handleClaimSubdomain}
+                    disabled={!subdomainAvailable || subdomainClaiming || subdomainChecking}
+                    className="w-full flex items-center justify-center gap-1.5 bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-bold text-xs py-3 px-4 rounded-xl shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {subdomainClaiming ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Mengklaim...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Link2 className="h-3.5 w-3.5" />
+                        <span>
+                          Klaim Subdomain
+                          {domainClaimCost !== null && ` — ${domainClaimCost} credit`}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
