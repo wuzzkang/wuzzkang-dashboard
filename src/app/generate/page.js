@@ -318,6 +318,7 @@ function GenerateContent() {
 
   // App states
   const [projectId, setProjectId] = useState(null);
+  const [projectStatus, setProjectStatus] = useState('draft');
   const [pageData, setPageData] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -413,6 +414,7 @@ function GenerateContent() {
             const project = result.data;
             setName(project.name);
             setProjectId(project.id);
+            setProjectStatus(project.status || 'draft');
             setEditCount(project.edit_count || 0);
             setSuccessUrl(project.live_url || '');
             let pageConfig = project.page_data;
@@ -1954,12 +1956,23 @@ function GenerateContent() {
         }
 
         const saveEndpoint = projectId 
-          ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
+          ? (projectStatus === 'deployed'
+              ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
+              : `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/draft`)
           : `${process.env.NEXT_PUBLIC_API_URL}/projects/draft`;
         
-        const savePayload = projectId 
-          ? { pageData: compiledPageData }
-          : { name, template_type: templateType, pageData: compiledPageData };
+        const saveMethod = projectId
+          ? (projectStatus === 'deployed' ? 'POST' : 'PUT')
+          : 'POST';
+
+        let savePayload;
+        if (!projectId) {
+          savePayload = { name, template_type: templateType, pageData: compiledPageData };
+        } else if (projectStatus === 'deployed') {
+          savePayload = { pageData: compiledPageData };
+        } else {
+          savePayload = { name, pageData: compiledPageData };
+        }
 
         setPageData(compiledPageData);
         const suggestedSlug = name
@@ -1971,7 +1984,7 @@ function GenerateContent() {
 
         try {
           const saveResponse = await fetch(saveEndpoint, {
-            method: 'POST',
+            method: saveMethod,
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${session.access_token}`,
@@ -1983,6 +1996,7 @@ function GenerateContent() {
           if (saveResponse.ok && saveResult.success) {
             if (!projectId) {
               setProjectId(saveResult.data.id || saveResult.data.projectId);
+              setProjectStatus('draft');
             }
           } else {
             console.warn('[Preview Save] Failed to persist project draft to DB:', saveResult.error);
@@ -2390,12 +2404,23 @@ function GenerateContent() {
         // Create or update project record in DB with completed pageData
         // (Persist generated project so dashboard preview and publish routes work)
         const saveEndpoint = projectId 
-          ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
+          ? (projectStatus === 'deployed'
+              ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
+              : `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/draft`)
           : `${process.env.NEXT_PUBLIC_API_URL}/projects/draft`;
         
-        const savePayload = projectId 
-          ? { pageData: compiledPageData }
-          : { name, template_type: templateType, pageData: compiledPageData };
+        const saveMethod = projectId
+          ? (projectStatus === 'deployed' ? 'POST' : 'PUT')
+          : 'POST';
+
+        let savePayload;
+        if (!projectId) {
+          savePayload = { name, template_type: templateType, pageData: compiledPageData };
+        } else if (projectStatus === 'deployed') {
+          savePayload = { pageData: compiledPageData };
+        } else {
+          savePayload = { name, pageData: compiledPageData };
+        }
 
         // Set pageData and switch to preview FIRST so user sees result
         // regardless of whether save to DB succeeds (defensive UX)
@@ -2409,7 +2434,7 @@ function GenerateContent() {
         setActiveTab('preview');
 
         const saveResponse = await fetch(saveEndpoint, {
-          method: 'POST',
+          method: saveMethod,
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.access_token}`,
@@ -2421,6 +2446,7 @@ function GenerateContent() {
         if (saveResponse.ok && saveResult.success) {
           if (!projectId) {
             setProjectId(saveResult.data.id || saveResult.data.projectId);
+            setProjectStatus('draft');
           }
         } else {
           // Save failed — log warning but don't throw so user can still see & publish the preview
