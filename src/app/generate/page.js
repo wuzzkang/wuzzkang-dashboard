@@ -652,6 +652,7 @@ function GenerateContent() {
     } else if (templateType === 'campaign') {
       metaTitle = campaignHeadline || 'Campaign Halaman';
       assembledContent = {
+        brief: campaignBrief || null,
         hero: {
           headline: campaignHeadline,
           subheadline: campaignSubheadline,
