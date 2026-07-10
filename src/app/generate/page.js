@@ -652,7 +652,7 @@ function GenerateContent() {
         quote: tokoQuote || null
       };
     } else if (templateType === 'campaign') {
-      metaTitle = campaignHeadline || 'Campaign Halaman';
+      metaTitle = name || 'Campaign Halaman';
       assembledContent = {
         brief: campaignBrief || null,
         hero: {
@@ -1961,7 +1961,7 @@ function GenerateContent() {
         } else if (templateType === 'campaign') {
           compiledPageData = {
             meta: {
-              title: campaignHeadline || 'Campaign Halaman',
+              title: name || 'Campaign Halaman',
               theme: designKey,
               template_type: 'campaign',
               design_key: designKey,
