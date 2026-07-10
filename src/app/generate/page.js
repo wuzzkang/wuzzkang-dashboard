@@ -299,6 +299,7 @@ function GenerateContent() {
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingProductIndex, setIsUploadingProductIndex] = useState(null);
   const [isGeneratingStoreDesc, setIsGeneratingStoreDesc] = useState(false);
+  const [isGeneratingStoreTagline, setIsGeneratingStoreTagline] = useState(false);
   const [isGeneratingStoreQuote, setIsGeneratingStoreQuote] = useState(false);
   const [isGeneratingProductDesc, setIsGeneratingProductDesc] = useState({});
 
@@ -1341,6 +1342,7 @@ function GenerateContent() {
     const context = {
       storeName: storeName,
       storeTagline: storeTagline,
+      storeDescription: storeDescription,
       profileName: cvName,
       profileTitle: cvTitle,
       profileSummary: cvSummary,
@@ -1356,6 +1358,7 @@ function GenerateContent() {
       }
     }
  
+    if (fieldType === 'store_tagline') setIsGeneratingStoreTagline(true);
     if (fieldType === 'store_description') setIsGeneratingStoreDesc(true);
     if (fieldType === 'store_quote') setIsGeneratingStoreQuote(true);
     if (fieldType === 'product_description') {
@@ -1416,6 +1419,7 @@ function GenerateContent() {
         throw new Error('Waktu tunggu pembuatan copywriting AI habis (timeout).');
       }
  
+      if (fieldType === 'store_tagline') setStoreTagline(finalContent);
       if (fieldType === 'store_description') setStoreDescription(finalContent);
       if (fieldType === 'store_quote') setTokoQuote(finalContent);
       if (fieldType === 'product_description') {
@@ -1438,6 +1442,7 @@ function GenerateContent() {
       console.error('[Dashboard] Field assist failed:', err);
       alert('Terjadi kesalahan jaringan saat memanggil AI.');
     } finally {
+      if (fieldType === 'store_tagline') setIsGeneratingStoreTagline(false);
       if (fieldType === 'store_description') setIsGeneratingStoreDesc(false);
       if (fieldType === 'store_quote') setIsGeneratingStoreQuote(false);
       if (fieldType === 'product_description') {
@@ -1570,7 +1575,9 @@ function GenerateContent() {
     const isFree = remainingFree > 0;
 
     let isDisabled = isLoading;
-    if (fieldType === 'store_description' || fieldType === 'store_quote') {
+    if (fieldType === 'store_tagline') {
+      isDisabled = isDisabled || !storeName;
+    } else if (fieldType === 'store_description' || fieldType === 'store_quote') {
       isDisabled = isDisabled || !storeName || !storeTagline;
     } else if (fieldType === 'product_description') {
       isDisabled = isDisabled || !storeName || !tokoProducts[index]?.name;
@@ -1878,36 +1885,73 @@ function GenerateContent() {
         activeStoreBannerUrl = null;
       }
 
-      if (templateType === 'cv') {
-        // --- DIRECT DRAFT SAVE FOR CV (NO AUTOMATIC AI OVERWRITE) ---
+      if (templateType === 'cv' || templateType === 'toko-online') {
+        // --- DIRECT DRAFT SAVE FOR CV & TOKO ONLINE (NO AUTOMATIC AI OVERWRITE) ---
         setIsGenerating(true);
-        const compiledPageData = {
-          meta: {
-            title: cvName ? `CV — ${cvName}` : 'Curriculum Vitae',
-            theme: designKey || 'professional-dark',
-            template_type: 'cv',
-            design_key: designKey || 'professional-dark',
-          },
-          content: {
-            profile: {
-              name: cvName,
-              title: cvTitle,
-              summary: cvSummary,
-              photo_url: cvPhotoUrl || null,
-              email: cvEmail,
-              phone: cvPhone,
-              location: cvLocation,
-              linkedin_url: cvLinkedin || null,
-              github_url: cvGithub || null,
-              portfolio_url: cvPortfolio || null,
+        let compiledPageData;
+
+        if (templateType === 'cv') {
+          compiledPageData = {
+            meta: {
+              title: cvName ? `CV — ${cvName}` : 'Curriculum Vitae',
+              theme: designKey || 'professional-dark',
+              template_type: 'cv',
+              design_key: designKey || 'professional-dark',
             },
-            experiences: cvExperiences.filter(e => e.company && e.position && e.period),
-            educations: cvEducations.filter(e => e.institution && e.degree && e.period),
-            skills: cvSkills,
-            languages: cvLanguages.filter(l => l.language && l.level),
-            certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
-          }
-        };
+            content: {
+              profile: {
+                name: cvName,
+                title: cvTitle,
+                summary: cvSummary,
+                photo_url: cvPhotoUrl || null,
+                email: cvEmail,
+                phone: cvPhone,
+                location: cvLocation,
+                linkedin_url: cvLinkedin || null,
+                github_url: cvGithub || null,
+                portfolio_url: cvPortfolio || null,
+              },
+              experiences: cvExperiences.filter(e => e.company && e.position && e.period),
+              educations: cvEducations.filter(e => e.institution && e.degree && e.period),
+              skills: cvSkills,
+              languages: cvLanguages.filter(l => l.language && l.level),
+              certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
+            }
+          };
+        } else {
+          compiledPageData = {
+            meta: {
+              title: storeName || 'Toko Online',
+              theme: designKey,
+              template_type: 'toko-online',
+              design_key: designKey,
+            },
+            content: {
+              design_key: designKey,
+              store: {
+                name: storeName,
+                tagline: storeTagline,
+                description: storeDescription || null,
+                logo_url: storeLogoUrl || null,
+                banner_url: generateStoreBanner ? (activeStoreBannerUrl || null) : null
+              },
+              products: tokoProducts.map(p => ({
+                name: p.name,
+                price: p.price,
+                description: p.description || null,
+                image_url: p.image_url || null
+              })),
+              contact: {
+                whatsapp: tokoWhatsapp,
+                instagram: tokoInstagram || null,
+                shopee_url: tokoShopee || null,
+                tokopedia_url: tokoTokopedia || null,
+                address: tokoAddress || null
+              },
+              quote: tokoQuote || null
+            }
+          };
+        }
 
         const saveEndpoint = projectId 
           ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
@@ -1941,17 +1985,17 @@ function GenerateContent() {
               setProjectId(saveResult.data.id || saveResult.data.projectId);
             }
           } else {
-            console.warn('[CV Save] Failed to persist project draft to DB:', saveResult.error);
+            console.warn('[Preview Save] Failed to persist project draft to DB:', saveResult.error);
             setError('Peringatan: Hasil preview berhasil dibuat namun gagal disimpan ke database. Coba kembali nanti.');
           }
         } catch (saveErr) {
-          console.error('[CV Save] Error persisting draft:', saveErr);
+          console.error('[Preview Save] Error persisting draft:', saveErr);
           setError('Terjadi kesalahan saat menyimpan draf preview.');
         } finally {
           setIsGenerating(false);
         }
 
-      } else if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday' || templateType === 'toko-online') {
+      } else if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday') {
         // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
         setAiProgressStatus('queued');
         setAiProgressDetail(
@@ -3631,7 +3675,10 @@ function GenerateContent() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Tagline Toko</label>
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="block text-[8px] font-semibold text-theme-text-sec">Tagline Toko</label>
+                              {renderAITokoButton('store_tagline', isGeneratingStoreTagline)}
+                            </div>
                             <input
                               type="text"
                               required
