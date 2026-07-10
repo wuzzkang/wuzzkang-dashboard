@@ -1179,6 +1179,7 @@ function GenerateContent() {
       if (isCelebrant) setIsUploadingCelebrantImage(false);
       if (isLogo) setIsUploadingLogo(false);
       if (isBanner) setIsUploadingBanner(false);
+      if (isProduct) setIsUploadingProductIndex(null);
       if (isCv) setIsUploadingCvPhoto(false);
     }
   };
