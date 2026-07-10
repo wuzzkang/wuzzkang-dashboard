@@ -110,6 +110,8 @@ function GenerateContent() {
   const editMode = searchParams.get('editMode') === 'true';
   const [editCount, setEditCount] = useState(0);
   const iframeRef = useRef(null);
+  const hasSavedRef = useRef(false);
+  const uploadedImagesRef = useRef([]);
   const [iframeReady, setIframeReady] = useState(false);
 
   // Input states
@@ -595,6 +597,23 @@ function GenerateContent() {
       fetchDraft();
     }
   }, [session, draftId]);
+
+  // Auto-cleanup unsaved uploaded images when component unmounts (navigating away)
+  useEffect(() => {
+    // Reset values on mount
+    hasSavedRef.current = false;
+    uploadedImagesRef.current = [];
+
+    return () => {
+      // Unmount cleanup logic: delete all newly uploaded images if changes were not saved
+      if (!hasSavedRef.current && uploadedImagesRef.current.length > 0) {
+        console.log('[Cleanup] User navigated away without saving. Deleting unsaved uploads:', uploadedImagesRef.current);
+        uploadedImagesRef.current.forEach(url => {
+          executeDeleteImage(url);
+        });
+      }
+    };
+  }, []);
 
   // Auto-update pageData in editMode to refresh the iframe live preview in real-time
   useEffect(() => {
@@ -1120,6 +1139,7 @@ function GenerateContent() {
       }
 
       console.log(`[Dashboard] Upload successful. Public URL: ${publicUrl}`);
+      uploadedImagesRef.current.push(publicUrl);
 
       if (isGroom) {
         if (groomImage) handleDeleteImage(groomImage);
@@ -2113,6 +2133,8 @@ function GenerateContent() {
 
           const saveResult = await saveResponse.json();
           if (saveResponse.ok && saveResult.success) {
+            hasSavedRef.current = true;
+            uploadedImagesRef.current = [];
             if (!projectId) {
               setProjectId(saveResult.data.id || saveResult.data.projectId);
               setProjectStatus('draft');
@@ -2121,6 +2143,7 @@ function GenerateContent() {
               pendingDeleteImages.forEach(url => executeDeleteImage(url));
               setPendingDeleteImages([]);
             }
+            hasSavedRef.current = false;
           } else {
             // Save failed — log warning but don't throw so user can still see & publish the preview
             console.warn('[Preview Save] Failed to persist project draft to DB:', saveResult.error);
@@ -2164,6 +2187,8 @@ function GenerateContent() {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        hasSavedRef.current = true;
+        uploadedImagesRef.current = [];
         if (pendingDeleteImages.length > 0) {
           pendingDeleteImages.forEach(url => executeDeleteImage(url));
           setPendingDeleteImages([]);
@@ -2210,6 +2235,8 @@ function GenerateContent() {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        hasSavedRef.current = true;
+        uploadedImagesRef.current = [];
         if (pendingDeleteImages.length > 0) {
           pendingDeleteImages.forEach(url => executeDeleteImage(url));
           setPendingDeleteImages([]);
