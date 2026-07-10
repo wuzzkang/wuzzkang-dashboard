@@ -113,6 +113,7 @@ function GenerateContent() {
   const hasSavedRef = useRef(false);
   const uploadedImagesRef = useRef([]);
   const sessionRef = useRef(session);
+  const originalPageDataRef = useRef(null);
   const [iframeReady, setIframeReady] = useState(false);
 
   // Input states
@@ -430,6 +431,7 @@ function GenerateContent() {
                 console.error('Gagal parsing page_data string:', e);
               }
             }
+            originalPageDataRef.current = pageConfig;
             setPageData(pageConfig);
 
             // Deduce a clean default slug from project name or use already existing slug
@@ -1261,6 +1263,42 @@ function GenerateContent() {
       }
     } catch (err) {
       console.error('[Dashboard] Error calling delete media API:', err);
+    }
+  };
+
+  const cleanupOrphanedAssets = (oldData, newData) => {
+    if (!oldData) return;
+
+    const extractUrls = (obj) => {
+      const urls = new Set();
+      const traverse = (val) => {
+        if (!val) return;
+        if (typeof val === 'string') {
+          if (val.includes('/wuzzkang-bucket/') && !val.includes('/defaults/')) {
+            urls.add(val);
+          }
+        } else if (Array.isArray(val)) {
+          val.forEach(traverse);
+        } else if (typeof val === 'object') {
+          Object.values(val).forEach(traverse);
+        }
+      };
+      traverse(obj);
+      return urls;
+    };
+
+    try {
+      const oldUrls = extractUrls(oldData);
+      const newUrls = extractUrls(newData);
+
+      oldUrls.forEach(url => {
+        if (!newUrls.has(url)) {
+          console.log('[Cleanup] Replaced or removed asset detected. Deleting from storage:', url);
+          executeDeleteImage(url);
+        }
+      });
+    } catch (err) {
+      console.error('[Cleanup] Error processing orphaned assets:', err);
     }
   };
 
@@ -2141,6 +2179,8 @@ function GenerateContent() {
           if (saveResponse.ok && saveResult.success) {
             hasSavedRef.current = true;
             uploadedImagesRef.current = [];
+            cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
+            originalPageDataRef.current = compiledPageData;
             if (!projectId) {
               setProjectId(saveResult.data.id || saveResult.data.projectId);
               setProjectStatus('draft');
@@ -2195,6 +2235,8 @@ function GenerateContent() {
       if (response.ok && result.success) {
         hasSavedRef.current = true;
         uploadedImagesRef.current = [];
+        cleanupOrphanedAssets(originalPageDataRef.current, pageData);
+        originalPageDataRef.current = pageData;
         if (pendingDeleteImages.length > 0) {
           pendingDeleteImages.forEach(url => executeDeleteImage(url));
           setPendingDeleteImages([]);
@@ -2243,6 +2285,8 @@ function GenerateContent() {
       if (response.ok && result.success) {
         hasSavedRef.current = true;
         uploadedImagesRef.current = [];
+        cleanupOrphanedAssets(originalPageDataRef.current, pageData);
+        originalPageDataRef.current = pageData;
         if (pendingDeleteImages.length > 0) {
           pendingDeleteImages.forEach(url => executeDeleteImage(url));
           setPendingDeleteImages([]);
