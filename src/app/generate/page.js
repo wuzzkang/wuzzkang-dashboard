@@ -262,6 +262,7 @@ function GenerateContent() {
   const [campaignUrgency, setCampaignUrgency] = useState('');
   const [campaignClosingCta, setCampaignClosingCta] = useState('Dapatkan Sekarang!');
   const [campaignWhatsapp, setCampaignWhatsapp] = useState('');
+  const [campaignCtaUrl, setCampaignCtaUrl] = useState('');
   const [campaignBrief, setCampaignBrief] = useState('');
 
   // Campaign AI loader states
@@ -557,6 +558,7 @@ function GenerateContent() {
               setCampaignUrgency(content.closing?.urgency || '');
               setCampaignClosingCta(content.closing?.cta_text || 'Dapatkan Sekarang!');
               setCampaignWhatsapp(content.contact?.whatsapp || '');
+              setCampaignCtaUrl(content.contact?.cta_url || '');
               setDesignKey(pageConfig.meta?.design_key || 'neon-conversion');
             } else if (pageConfig && pageConfig.meta?.template_type === 'cv') {
               setTemplateType('cv');
@@ -677,7 +679,8 @@ function GenerateContent() {
           cta_text: campaignClosingCta
         },
         contact: {
-          whatsapp: campaignWhatsapp
+          whatsapp: campaignWhatsapp,
+          cta_url: campaignCtaUrl || null
         }
       };
     } else if (templateType === 'wedding') {
@@ -809,6 +812,7 @@ function GenerateContent() {
     campaignUrgency,
     campaignClosingCta,
     campaignWhatsapp,
+    campaignCtaUrl,
     campaignHeroImage,
     generateCampaignHero,
     preweddingPhotoUrl,
@@ -1989,7 +1993,8 @@ function GenerateContent() {
                 cta_text: campaignClosingCta
               },
               contact: {
-                whatsapp: campaignWhatsapp || ''
+                whatsapp: campaignWhatsapp || '',
+                cta_url: campaignCtaUrl || null
               }
             }
           };
@@ -3644,7 +3649,7 @@ function GenerateContent() {
 
                         {/* CONTACT SECTION FORM */}
                         <div className="space-y-2.5">
-                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">2. Kontak WhatsApp</div>
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">2. Kontak & Tujuan CTA</div>
                           <div>
                             <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">WhatsApp Checkout (Format: 628xxx)</label>
                             <input
@@ -3655,6 +3660,19 @@ function GenerateContent() {
                               onChange={(e) => setCampaignWhatsapp(e.target.value)}
                               className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                             />
+                          </div>
+                          <div>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Link Kustom Tujuan Tombol CTA (Opsional)</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. https://shopee.co.id/toko-saya"
+                              value={campaignCtaUrl}
+                              onChange={(e) => setCampaignCtaUrl(e.target.value)}
+                              className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                            />
+                            <p className="text-[7.5px] text-theme-text-muted mt-1 leading-normal">
+                              Jika diisi, klik tombol CTA akan mengarah ke link ini (misal Shopee, Tokopedia, dll). Jika dikosongkan, tombol otomatis mengarah ke WhatsApp di atas.
+                            </p>
                           </div>
                         </div>
 
