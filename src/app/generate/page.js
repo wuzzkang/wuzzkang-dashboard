@@ -1887,8 +1887,8 @@ function GenerateContent() {
         activeStoreBannerUrl = null;
       }
 
-      if (templateType === 'cv' || templateType === 'toko-online') {
-        // --- DIRECT DRAFT SAVE FOR CV & TOKO ONLINE (NO AUTOMATIC AI OVERWRITE) ---
+      if (true) {
+        // --- DIRECT DRAFT SAVE FOR ALL TEMPLATE TYPES ---
         setIsGenerating(true);
         let compiledPageData;
 
@@ -1920,7 +1920,7 @@ function GenerateContent() {
               certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
             }
           };
-        } else {
+        } else if (templateType === 'toko-online') {
           compiledPageData = {
             meta: {
               title: storeName || 'Toko Online',
@@ -1953,267 +1953,77 @@ function GenerateContent() {
               quote: tokoQuote || null
             }
           };
-        }
-
-        const saveEndpoint = projectId 
-          ? (projectStatus === 'deployed'
-              ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
-              : `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/draft`)
-          : `${process.env.NEXT_PUBLIC_API_URL}/projects/draft`;
-        
-        const saveMethod = projectId
-          ? (projectStatus === 'deployed' ? 'POST' : 'PUT')
-          : 'POST';
-
-        let savePayload;
-        if (!projectId) {
-          savePayload = { name, template_type: templateType, pageData: compiledPageData };
-        } else if (projectStatus === 'deployed') {
-          savePayload = { pageData: compiledPageData };
-        } else {
-          savePayload = { name, pageData: compiledPageData };
-        }
-
-        setPageData(compiledPageData);
-        const suggestedSlug = name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '');
-        setSlug(suggestedSlug);
-        setActiveTab('preview');
-
-        try {
-          const saveResponse = await fetch(saveEndpoint, {
-            method: saveMethod,
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify(savePayload),
-          });
-
-          const saveResult = await saveResponse.json();
-          if (saveResponse.ok && saveResult.success) {
-            if (!projectId) {
-              setProjectId(saveResult.data.id || saveResult.data.projectId);
-              setProjectStatus('draft');
-            }
-          } else {
-            console.warn('[Preview Save] Failed to persist project draft to DB:', saveResult.error);
-            setError('Peringatan: Hasil preview berhasil dibuat namun gagal disimpan ke database. Coba kembali nanti.');
-          }
-        } catch (saveErr) {
-          console.error('[Preview Save] Error persisting draft:', saveErr);
-          setError('Terjadi kesalahan saat menyimpan draf preview.');
-        } finally {
-          setIsGenerating(false);
-        }
-
-      } else if (templateType === 'wedding' || templateType === 'campaign' || templateType === 'birthday') {
-        // --- NEW ASYNCHRONOUS AI PLATFORM WORKFLOW ---
-        setAiProgressStatus('queued');
-        setAiProgressDetail(
-          templateType === 'wedding' 
-            ? 'Menyiapkan payload undangan...' 
-            : (templateType === 'birthday' 
-                ? 'Menyiapkan payload ulang tahun...' 
-                : (templateType === 'toko-online' 
-                    ? 'Menyiapkan payload toko online...' 
-                    : (templateType === 'cv' ? 'Menyiapkan payload CV...' : 'Menyiapkan payload campaign...')))
-        );
-
-        // Generate random idempotency key
-        const idempotencyKey = crypto.randomUUID 
-          ? crypto.randomUUID() 
-          : 'idemp-' + Math.random().toString(36).substring(2, 15) + '-' + Date.now().toString(36);
-
-        let executePayload;
-
-        if (templateType === 'wedding') {
-          // Prep assets
-          const inputAssets = [];
-          if (groomImage && groomImage !== DEFAULT_GROOM_AVATAR) {
-            inputAssets.push({ url: groomImage, role: 'groom' });
-          }
-          if (brideImage && brideImage !== DEFAULT_BRIDE_AVATAR) {
-            inputAssets.push({ url: brideImage, role: 'bride' });
-          }
-          // Backend validation requires at least 1 input asset
-          if (inputAssets.length === 0) {
-            inputAssets.push({ url: DEFAULT_GROOM_AVATAR, role: 'groom' });
-          }
-
-          executePayload = {
-            idempotencyKey,
-            projectId: projectId || null,
-            templateType: 'wedding',
-            styleKey: designKey === 'sage-green' || designKey === 'Sage Green' ? 'prewedding' : (designKey === 'floral-pink' ? 'artistic' : 'prewedding'),
-            inputAssets,
-            inputContext: {
-              groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother },
-              bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother },
-              quote: prompt || '',
-              theme: designKey,
-            },
-            previewOnly: true,
-            async: true
-          };
-        } else if (templateType === 'birthday') {
-          // Prep assets if any
-          const inputAssets = [];
-          if (celebrantImage && celebrantImage !== DEFAULT_GROOM_AVATAR) {
-            inputAssets.push({ url: celebrantImage, role: 'celebrant' });
-          }
-
-          executePayload = {
-            idempotencyKey,
-            projectId: projectId || null,
-            templateType: 'birthday',
-            styleKey: 'default',
-            inputAssets,
-            inputContext: {
-              celebrantName,
-              celebrantAge,
-              eventDate: birthdayDate,
-              eventLocation: birthdayLocation,
-              theme: designKey,
-              quote: prompt || ''
-            },
-            previewOnly: true,
-            async: true
-          };
-        } else if (templateType === 'toko-online') {
-          executePayload = {
-            idempotencyKey,
-            projectId: projectId || null,
-            templateType: 'toko-online',
-            styleKey: 'default',
-            inputAssets: [],
-            inputContext: {
-              storeName: storeName || name,
-              storeDescription: storeDescription || '',
-              products: tokoProducts.map(p => ({
-                name: p.name,
-                price: p.price,
-                description: p.description || ''
-              }))
-            },
-            previewOnly: true,
-            async: true
-          };
-        } else if (templateType === 'cv') {
-          executePayload = {
-            idempotencyKey,
-            projectId: projectId || null,
-            templateType: 'cv',
-            styleKey: 'default',
-            inputAssets: [],
-            inputContext: {
-              profile: {
-                name: cvName,
-                title: cvTitle,
-                summary: cvSummary
-              },
-              experiences: cvExperiences.map(e => ({
-                company: e.company,
-                position: e.position,
-                period: e.period,
-                description: e.description || ''
-              })),
-              educations: cvEducations.map(e => ({
-                institution: e.institution,
-                degree: e.degree,
-                period: e.period,
-                gpa: e.gpa || ''
-              })),
-              skills: cvSkills
-            },
-            previewOnly: true,
-            async: true
-          };
-        } else {
-          // campaign template payload
-          executePayload = {
-            idempotencyKey,
-            projectId: projectId || null,
-            templateType: 'campaign',
-            styleKey: 'persuasive', // maps to campaign tone style
-            inputAssets: [],
-            inputContext: {
-              campaignName: name,
-              campaignBrief: campaignBrief || '',
-              targetAudience: '', // empty default, can be populated if form field added later
-            },
-            previewOnly: true,
-            async: true
-          };
-        }
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/ai/execute`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify(executePayload),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Gagal mengirimkan tugas ke platform AI.');
-        }
-
-        const { taskId } = result.data;
-        console.log(`[AI Platform] Task submitted successfully. Task ID: ${taskId}`);
-
-        // Start polling until completion
-        const resultJsonUrl = await pollTaskStatus(taskId);
-        console.log(`[AI Platform] Task completed. Loading results from: ${resultJsonUrl}`);
-
-        // Fetch the generated copywriting JSON config from storage
-        console.log('[AI Platform] Fetching result JSON from:', resultJsonUrl);
-        const configResponse = await fetch(resultJsonUrl);
-        console.log('[AI Platform] Result JSON fetch status:', configResponse.status, configResponse.ok);
-        if (!configResponse.ok) {
-          throw new Error('Gagal memuat konfigurasi teks hasil pemrosesan AI.');
-        }
-        const aiConfig = await configResponse.json();
-        console.log('[AI Platform] aiConfig received:', Object.keys(aiConfig || {}));
-
-        let compiledPageData;
-
-        if (templateType === 'wedding') {
-          // Merge AI config results with original form values to match expected template schema
+        } else if (templateType === 'campaign') {
           compiledPageData = {
             meta: {
-              title: `Undangan Pernikahan ${groomNickname} & ${brideNickname}`,
+              title: campaignHeadline || 'Campaign Halaman',
+              theme: designKey,
+              template_type: 'campaign',
+              design_key: designKey,
+            },
+            content: {
+              design_key: designKey,
+              brief: campaignBrief || null,
+              hero: {
+                headline: campaignHeadline,
+                subheadline: campaignSubheadline,
+                cta_text: campaignCtaText,
+                image_url: generateCampaignHero ? (activeCampaignHeroImage || null) : null
+              },
+              problems: {
+                title: campaignProblemsTitle,
+                list: campaignProblemsList.filter(Boolean)
+              },
+              solutions: {
+                title: campaignSolutionsTitle,
+                intro: campaignSolutionsIntro,
+                benefits: campaignBenefits
+              },
+              social_proof: {
+                testimonials: campaignTestimonials,
+                guarantee: campaignGuarantee || null
+              },
+              closing: {
+                urgency: campaignUrgency,
+                cta_text: campaignClosingCta
+              },
+              contact: {
+                whatsapp: campaignWhatsapp || ''
+              }
+            }
+          };
+        } else if (templateType === 'wedding') {
+          compiledPageData = {
+            meta: {
+              title: `Undangan Pernikahan ${groomNickname || 'Groom'} & ${brideNickname || 'Bride'}`,
               theme: designKey,
               template_type: 'wedding',
               design_key: designKey,
             },
             content: {
               design_key: designKey,
-              groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage },
-              bride: { name: brideName, nickname: brideNickname, father: brideFather, mother: brideMother, image_url: brideImage },
-              prewedding_photo_url: activePreweddingPhotoUrl || null,
+              groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage || null },
+              bride: { name: brideName, nickname: brideNickname, father: brideMother, mother: brideMother, image_url: brideImage || null },
+              prewedding_photo_url: generatePrewedding ? (activePreweddingPhotoUrl || null) : null,
               story: storyList.length > 0 ? storyList : null,
               akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
               resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
               gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
-              // AI generated copywriting elements
-              banner_tagline: aiConfig.banner_tagline,
-              invitation_intro: aiConfig.invitation_intro,
-              closing_message: aiConfig.closing_message,
-              style_palette: aiConfig.style_palette,
-              scene_description: aiConfig.scene_description,
-              quote: aiConfig.invitation_intro || 'Semoga menjadi keluarga sakinah mawaddah warahmah.',
+              gallery: galleryList.length > 0 ? galleryList : null,
+              quote: pageData?.content?.quote || 'Semoga menjadi keluarga sakinah mawaddah warahmah.',
+              last_generated_prewedding_url: activePreweddingPhotoUrl || pageData?.content?.last_generated_prewedding_url || null,
+              prewedding_generate_count: preweddingGenerateCount,
+              banner_tagline: pageData?.content?.banner_tagline || null,
+              invitation_intro: pageData?.content?.invitation_intro || null,
+              closing_message: pageData?.content?.closing_message || null,
+              style_palette: pageData?.content?.style_palette || null,
+              scene_description: pageData?.content?.scene_description || null,
             }
           };
         } else if (templateType === 'birthday') {
           compiledPageData = {
             meta: {
-              title: `Undangan Ulang Tahun ${celebrantNickname || celebrantName}`,
+              title: `Undangan Ulang Tahun ${celebrantNickname || celebrantName || 'Celebrant'}`,
               theme: designKey,
               template_type: 'birthday',
               design_key: designKey,
@@ -2239,170 +2049,13 @@ function GenerateContent() {
                 account_number: birthdayGiftAccount,
                 account_holder: birthdayGiftHolder || ''
               } : null,
-              // Map invitation_intro to quote for compatibility with existing birthday LP template
-              quote: aiConfig.invitation_intro || 'Selamat hari lahir! Semoga panjang umur, sehat selalu.',
-              banner_tagline: aiConfig.banner_tagline || null,
-              closing_message: aiConfig.closing_message || null,
+              quote: pageData?.content?.quote || 'Selamat hari lahir! Semoga panjang umur, sehat selalu.',
+              banner_tagline: pageData?.content?.banner_tagline || null,
+              closing_message: pageData?.content?.closing_message || null,
             }
           };
-        } else if (templateType === 'toko-online') {
-          compiledPageData = {
-            meta: {
-              title: storeName || 'Toko Online',
-              theme: designKey,
-              template_type: 'toko-online',
-              design_key: designKey,
-            },
-            content: {
-              design_key: designKey,
-              store: {
-                name: storeName,
-                tagline: aiConfig.store_tagline || storeTagline,
-                description: aiConfig.store_description || storeDescription || null,
-                logo_url: storeLogoUrl || null,
-                banner_url: generateStoreBanner ? (activeStoreBannerUrl || null) : null
-              },
-              products: tokoProducts.map((p, idx) => {
-                const aiProduct = aiConfig.products?.[idx];
-                return {
-                  name: aiProduct?.name || p.name,
-                  price: p.price,
-                  description: aiProduct?.description || p.description || null,
-                  image_url: p.image_url || null
-                };
-              }),
-              contact: {
-                whatsapp: tokoWhatsapp,
-                instagram: tokoInstagram || null,
-                shopee_url: tokoShopee || null,
-                tokopedia_url: tokoTokopedia || null,
-                address: tokoAddress || null
-              },
-              quote: tokoQuote || null
-            }
-          };
-
-          // Also populate React state variables to reflect the generated values in form inputs instantly
-          if (aiConfig.store_tagline) setStoreTagline(aiConfig.store_tagline);
-          if (aiConfig.store_description) setStoreDescription(aiConfig.store_description);
-          if (aiConfig.products && Array.isArray(aiConfig.products)) {
-            setTokoProducts(tokoProducts.map((p, idx) => {
-              const aiProduct = aiConfig.products[idx];
-              return {
-                name: aiProduct?.name || p.name,
-                price: p.price,
-                description: aiProduct?.description || p.description || null,
-                image_url: p.image_url || null
-              };
-            }));
-          }
-        } else if (templateType === 'cv') {
-          compiledPageData = {
-            meta: {
-              title: cvName ? `CV — ${cvName}` : 'Curriculum Vitae',
-              theme: designKey || 'professional-dark',
-              template_type: 'cv',
-              design_key: designKey || 'professional-dark',
-            },
-            content: {
-              profile: {
-                name: cvName,
-                title: cvTitle,
-                summary: aiConfig.profile?.summary || cvSummary,
-                photo_url: cvPhotoUrl || null,
-                email: cvEmail,
-                phone: cvPhone,
-                location: cvLocation,
-                linkedin_url: cvLinkedin || null,
-                github_url: cvGithub || null,
-                portfolio_url: cvPortfolio || null,
-              },
-              experiences: cvExperiences.map((exp, idx) => {
-                const aiExp = aiConfig.experiences?.[idx];
-                return {
-                  company: exp.company,
-                  position: exp.position,
-                  period: exp.period,
-                  description: aiExp?.description || exp.description || null
-                };
-              }),
-              educations: cvEducations.filter(e => e.institution && e.degree && e.period),
-              skills: cvSkills,
-              languages: cvLanguages.filter(l => l.language && l.level),
-              certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
-            }
-          };
-
-          // Also populate React state variables to reflect the generated values in form inputs instantly
-          if (aiConfig.profile?.summary) setCvSummary(aiConfig.profile.summary);
-          if (aiConfig.experiences && Array.isArray(aiConfig.experiences)) {
-            setCvExperiences(cvExperiences.map((exp, idx) => {
-              const aiExp = aiConfig.experiences[idx];
-              return {
-                company: exp.company,
-                position: exp.position,
-                period: exp.period,
-                description: aiExp?.description || exp.description || null
-              };
-            }));
-          }
-        } else {
-          // campaign template output compiled
-          compiledPageData = {
-            meta: {
-              title: name,
-              theme: designKey,
-              template_type: 'campaign',
-              design_key: designKey,
-            },
-            content: {
-              design_key: designKey,
-              brief: campaignBrief || null,
-              hero: {
-                headline: aiConfig.hero?.headline || '',
-                subheadline: aiConfig.hero?.subheadline || '',
-                cta_text: aiConfig.hero?.cta_text || 'Dapatkan Sekarang!',
-                image_url: activeCampaignHeroImage || null
-              },
-              problems: {
-                title: aiConfig.problems?.title || 'Hambatan Utama Anda',
-                list: (aiConfig.problems?.list || []).filter(Boolean)
-              },
-              solutions: {
-                title: aiConfig.benefits?.title || 'Solusi Kami',
-                intro: aiConfig.benefits?.intro || '',
-                benefits: aiConfig.benefits?.benefits || []
-              },
-              social_proof: {
-                testimonials: aiConfig.testimonials?.testimonials || [],
-                guarantee: campaignGuarantee || null
-              },
-              closing: {
-                urgency: aiConfig.urgency?.urgency || '',
-                cta_text: aiConfig.urgency?.cta_text || 'Dapatkan Sekarang!'
-              },
-              contact: {
-                whatsapp: campaignWhatsapp || ''
-              }
-            }
-          };
-
-          // Also populate React state variables to reflect the generated values in form inputs instantly
-          setCampaignHeadline(aiConfig.hero?.headline || '');
-          setCampaignSubheadline(aiConfig.hero?.subheadline || '');
-          setCampaignCtaText(aiConfig.hero?.cta_text || 'Dapatkan Sekarang!');
-          setCampaignProblemsTitle(aiConfig.problems?.title || 'Hambatan Utama Anda');
-          setCampaignProblemsList(aiConfig.problems?.list || ['', '', '']);
-          setCampaignSolutionsTitle(aiConfig.benefits?.title || 'Solusi Kami');
-          setCampaignSolutionsIntro(aiConfig.benefits?.intro || '');
-          setCampaignBenefits(aiConfig.benefits?.benefits || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
-          setCampaignTestimonials(aiConfig.testimonials?.testimonials || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
-          setCampaignUrgency(aiConfig.urgency?.urgency || '');
-          setCampaignClosingCta(aiConfig.urgency?.cta_text || 'Dapatkan Sekarang!');
         }
 
-        // Create or update project record in DB with completed pageData
-        // (Persist generated project so dashboard preview and publish routes work)
         const saveEndpoint = projectId 
           ? (projectStatus === 'deployed'
               ? `${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`
@@ -2424,7 +2077,6 @@ function GenerateContent() {
 
         // Set pageData and switch to preview FIRST so user sees result
         // regardless of whether save to DB succeeds (defensive UX)
-        console.log('[AI Platform] Setting pageData and switching to preview tab...');
         setPageData(compiledPageData);
         const suggestedSlug = name
           .toLowerCase()
@@ -2433,158 +2085,32 @@ function GenerateContent() {
         setSlug(suggestedSlug);
         setActiveTab('preview');
 
-        const saveResponse = await fetch(saveEndpoint, {
-          method: saveMethod,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify(savePayload),
-        });
+        try {
+          const saveResponse = await fetch(saveEndpoint, {
+            method: saveMethod,
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify(savePayload),
+          });
 
-        const saveResult = await saveResponse.json();
-        if (saveResponse.ok && saveResult.success) {
-          if (!projectId) {
-            setProjectId(saveResult.data.id || saveResult.data.projectId);
-            setProjectStatus('draft');
-          }
-        } else {
-          // Save failed — log warning but don't throw so user can still see & publish the preview
-          console.warn('[AI Platform] Failed to persist project draft to DB:', saveResult.error);
-          setError('Peringatan: Hasil preview berhasil dibuat namun gagal disimpan ke database. Coba kembali nanti.');
-        }
-
-      } else {
-        // --- LEGACY SYNCHRONOUS WORKFLOW FOR OTHER TEMPLATE TYPES ---
-        const payload = { name, prompt: prompt || '', template_type: templateType };
-        if (projectId) {
-          payload.projectId = projectId;
-        }
-        if (templateType === 'birthday') {
-          payload.birthday_details = {
-            design_key: designKey,
-            celebrant: {
-              name: celebrantName,
-              nickname: celebrantNickname,
-              age: celebrantAge,
-              parent_name: celebrantParents || null,
-              image_url: celebrantImage || null,
-              gender: celebrantGender
-            },
-            event: {
-              date: birthdayDate,
-              time: birthdayTime,
-              location: birthdayLocation,
-              maps_url: birthdayMaps || null
-            },
-            gift: birthdayGiftBank && birthdayGiftAccount ? {
-              bank_name: birthdayGiftBank,
-              account_number: birthdayGiftAccount,
-              account_holder: birthdayGiftHolder || ''
-            } : null
-          };
-        }
-        if (templateType === 'toko-online') {
-          payload.toko_online_details = {
-            design_key: designKey,
-            store: {
-              name: storeName,
-              tagline: storeTagline,
-              description: storeDescription || null,
-              logo_url: storeLogoUrl || null,
-              banner_url: storeBannerUrl || null
-            },
-            products: tokoProducts.map(p => ({
-              name: p.name,
-              price: p.price,
-              description: p.description || null,
-              image_url: p.image_url || null
-            })),
-            contact: {
-              whatsapp: tokoWhatsapp,
-              instagram: tokoInstagram || null,
-              shopee_url: tokoShopee || null,
-              tokopedia_url: tokoTokopedia || null,
-              address: tokoAddress || null
-            },
-            quote: tokoQuote || null
-          };
-        }
-        if (templateType === 'campaign') {
-          payload.campaign_details = {
-            design_key: designKey,
-            brief: campaignBrief || null,
-            hero: {
-              headline: campaignHeadline,
-              subheadline: campaignSubheadline,
-              cta_text: campaignCtaText,
-              image_url: activeCampaignHeroImage || null
-            },
-            problems: {
-              title: campaignProblemsTitle,
-              list: campaignProblemsList.filter(Boolean)
-            },
-            solutions: {
-              title: campaignSolutionsTitle,
-              intro: campaignSolutionsIntro,
-              benefits: campaignBenefits
-            },
-            social_proof: {
-              testimonials: campaignTestimonials,
-              guarantee: campaignGuarantee || null
-            },
-            closing: {
-              urgency: campaignUrgency,
-              cta_text: campaignClosingCta
-            },
-            contact: {
-              whatsapp: campaignWhatsapp
+          const saveResult = await saveResponse.json();
+          if (saveResponse.ok && saveResult.success) {
+            if (!projectId) {
+              setProjectId(saveResult.data.id || saveResult.data.projectId);
+              setProjectStatus('draft');
             }
-          };
-        }
-        if (templateType === 'cv') {
-          payload.cv_details = {
-            design_key: designKey || 'professional-dark',
-            profile: {
-              name: cvName,
-              title: cvTitle,
-              summary: cvSummary,
-              photo_url: cvPhotoUrl || null,
-              email: cvEmail,
-              phone: cvPhone,
-              location: cvLocation,
-              linkedin_url: cvLinkedin || null,
-              github_url: cvGithub || null,
-              portfolio_url: cvPortfolio || null,
-            },
-            experiences: cvExperiences.filter(e => e.company && e.position && e.period),
-            educations: cvEducations.filter(e => e.institution && e.degree && e.period),
-            skills: cvSkills,
-            languages: cvLanguages.filter(l => l.language && l.level),
-            certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
-          };
-        }
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          setProjectId(result.data.projectId);
-          setPageData(result.data.pageData);
-
-          // Suggest slug based on meaningful content from the generated page
-          setSlug(buildSlugSuggestion());
-          setActiveTab('preview');
-        } else {
-          setError(result.error ? Object.values(result.error).flat().join(', ') : 'Gagal menghasilkan landing page.');
+          } else {
+            // Save failed — log warning but don't throw so user can still see & publish the preview
+            console.warn('[Preview Save] Failed to persist project draft to DB:', saveResult.error);
+            setError('Peringatan: Hasil preview berhasil dibuat namun gagal disimpan ke database. Coba kembali nanti.');
+          }
+        } catch (saveErr) {
+          console.error('[Preview Save] Error persisting draft:', saveErr);
+          setError('Terjadi kesalahan saat menyimpan draf preview.');
+        } finally {
+          setIsGenerating(false);
         }
       }
 
@@ -2612,7 +2138,7 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ pageData }),
+        body: JSON.stringify({ name, pageData }),
       });
 
       const result = await response.json();
