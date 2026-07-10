@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import Link from 'next/link';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search, Link2, Loader2, Trash2, ChevronRight } from 'lucide-react';
 import Skeleton from '@/components/Skeleton';
 
@@ -17,6 +18,8 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareProject, setShareProject] = useState(null);
+  const [isDeleteSubdomainOpen, setIsDeleteSubdomainOpen] = useState(false);
+  const [subdomainToDelete, setSubdomainToDelete] = useState(null);
   const [guestName, setGuestName] = useState('');
   const [copied, setCopied] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -250,14 +253,15 @@ export default function DashboardPage() {
     }
   };
 
-  const handleReleaseSubdomain = async () => {
-    if (!domainProject) return;
+  const handleReleaseSubdomain = async (projectParam = null) => {
+    const targetProject = projectParam || domainProject;
+    if (!targetProject) return;
     setSubdomainReleasing(true);
     setDomainError('');
     setDomainSuccess('');
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/domains/${domainProject.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/domains/${targetProject.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -265,24 +269,39 @@ export default function DashboardPage() {
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        setDomainError(result.error || 'Gagal menghapus subdomain.');
+        if (projectParam) {
+          alert(result.error || 'Gagal menghapus subdomain.');
+        } else {
+          setDomainError(result.error || 'Gagal menghapus subdomain.');
+        }
         return;
       }
 
       // Update local state
       setProjects((prev) =>
         prev.map((p) =>
-          p.id === domainProject.id
+          p.id === targetProject.id
             ? { ...p, custom_domain: null, domain_type: 'none' }
             : p
         )
       );
-      setDomainProject((prev) => ({ ...prev, custom_domain: null, domain_type: 'none' }));
-      setDomainSuccess('Subdomain berhasil dihapus. Credit tidak dikembalikan.');
-      setSubdomainInput('');
-      setSubdomainAvailable(null);
+      if (domainProject?.id === targetProject.id) {
+        setDomainProject((prev) => ({ ...prev, custom_domain: null, domain_type: 'none' }));
+      }
+      
+      if (projectParam) {
+        alert('Subdomain berhasil dihapus. Credit tidak dikembalikan.');
+      } else {
+        setDomainSuccess('Subdomain berhasil dihapus. Credit tidak dikembalikan.');
+        setSubdomainInput('');
+        setSubdomainAvailable(null);
+      }
     } catch (e) {
-      setDomainError('Terjadi kesalahan jaringan.');
+      if (projectParam) {
+        alert('Terjadi kesalahan jaringan.');
+      } else {
+        setDomainError('Terjadi kesalahan jaringan.');
+      }
     } finally {
       setSubdomainReleasing(false);
     }
@@ -512,29 +531,44 @@ export default function DashboardPage() {
 
                         {/* Custom domain info row */}
                         {project.status === 'deployed' && (
-                          <button
-                            onClick={() => openDomainModal(project)}
-                            className="flex items-center gap-2 w-full text-left group/domain"
-                          >
-                            <Link2 className="h-3.5 w-3.5 flex-shrink-0 text-theme-text-muted group-hover/domain:text-theme-accent transition-colors" />
-                            {project.custom_domain ? (
-                              <span className="flex items-center gap-1.5 flex-1 min-w-0">
-                                <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${subdomainActive ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                <span className={`${subdomainActive ? 'text-emerald-400' : 'text-red-400'} font-bold truncate`}>
-                                  {project.custom_domain} {!subdomainActive && '(Nonaktif)'}
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => openDomainModal(project)}
+                              className="flex items-center gap-2 text-left group/domain min-w-0"
+                            >
+                              <Link2 className="h-3.5 w-3.5 flex-shrink-0 text-theme-text-muted group-hover/domain:text-theme-accent transition-colors" />
+                              {project.custom_domain ? (
+                                <span className="flex items-center gap-1.5 min-w-0">
+                                  <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${subdomainActive ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                  <span className={`${subdomainActive ? 'text-emerald-400' : 'text-red-400'} font-bold truncate`}>
+                                    {project.custom_domain} {!subdomainActive && '(Nonaktif)'}
+                                  </span>
                                 </span>
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-1.5 flex-1">
-                                <span className="text-theme-text-muted">Tambah subdomain</span>
-                                <ChevronRight className="h-3 w-3 text-theme-text-muted group-hover/domain:text-theme-accent transition-colors" />
-                              </span>
+                              ) : (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="text-theme-text-muted">Tambah subdomain</span>
+                                  <ChevronRight className="h-3 w-3 text-theme-text-muted group-hover/domain:text-theme-accent transition-colors" />
+                                </span>
+                              )}
+                            </button>
+                            {project.custom_domain && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSubdomainToDelete(project);
+                                  setIsDeleteSubdomainOpen(true);
+                                }}
+                                className="p-1 rounded-lg text-theme-text-sec hover:bg-red-500/10 hover:text-red-400 transition-colors flex-shrink-0"
+                                title="Hapus Subdomain"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
                             )}
-                          </button>
+                          </div>
                         )}
                       </div>
                     </div>
-
+ 
                     <div className="mt-5 pt-4 border-t border-theme-border flex flex-col gap-2">
                       {project.status === 'deployed' ? (
                         <div className="flex flex-col gap-2 w-full">
@@ -567,19 +601,6 @@ export default function DashboardPage() {
                               )
                             )}
                           </div>
-
-                          {/* Domain button row */}
-                          <button
-                            onClick={() => openDomainModal(project)}
-                            className={`w-full flex items-center justify-center gap-1.5 font-bold text-xs py-2.5 px-4 rounded-xl transition-all border ${
-                              project.custom_domain
-                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
-                                : 'bg-theme-card border-theme-border text-theme-text-sec hover:border-theme-accent hover:text-theme-accent'
-                            }`}
-                          >
-                            <Link2 className="h-3.5 w-3.5" />
-                            <span>{project.custom_domain ? `🟢 ${project.custom_domain}` : '🌐 Subdomain'}</span>
-                          </button>
 
                           {(templateType === 'wedding' || templateType === 'birthday') && (
                             <button
@@ -915,6 +936,26 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        <ConfirmDialog
+          isOpen={isDeleteSubdomainOpen}
+          title="Hapus Subdomain"
+          message={`Apakah Anda yakin ingin menghapus subdomain ${subdomainToDelete?.custom_domain}? Tindakan ini bersifat permanen dan credit tidak dikembalikan.`}
+          confirmLabel="Hapus"
+          cancelLabel="Batal"
+          variant="danger"
+          onConfirm={() => {
+            if (subdomainToDelete) {
+              handleReleaseSubdomain(subdomainToDelete);
+            }
+            setIsDeleteSubdomainOpen(false);
+            setSubdomainToDelete(null);
+          }}
+          onCancel={() => {
+            setIsDeleteSubdomainOpen(false);
+            setSubdomainToDelete(null);
+          }}
+        />
       </main>
     </div>
   );
