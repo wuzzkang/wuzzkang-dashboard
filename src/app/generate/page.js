@@ -112,6 +112,7 @@ function GenerateContent() {
   const iframeRef = useRef(null);
   const hasSavedRef = useRef(false);
   const uploadedImagesRef = useRef([]);
+  const sessionRef = useRef(session);
   const [iframeReady, setIframeReady] = useState(false);
 
   // Input states
@@ -597,6 +598,11 @@ function GenerateContent() {
       fetchDraft();
     }
   }, [session, draftId]);
+
+  // Keep sessionRef updated to avoid stale closure during unmount cleanup
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   // Auto-cleanup unsaved uploaded images when component unmounts (navigating away)
   useEffect(() => {
@@ -1242,7 +1248,7 @@ function GenerateContent() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${sessionRef.current?.access_token}`,
         },
         body: JSON.stringify({ path })
       });
