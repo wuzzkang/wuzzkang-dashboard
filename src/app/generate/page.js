@@ -299,6 +299,7 @@ function GenerateContent() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [isUploadingProductIndex, setIsUploadingProductIndex] = useState(null);
+  const [pendingDeleteImages, setPendingDeleteImages] = useState([]);
   const [isGeneratingStoreDesc, setIsGeneratingStoreDesc] = useState(false);
   const [isGeneratingStoreTagline, setIsGeneratingStoreTagline] = useState(false);
   const [isGeneratingStoreQuote, setIsGeneratingStoreQuote] = useState(false);
@@ -1184,7 +1185,15 @@ function GenerateContent() {
     }
   };
 
-  const handleDeleteImage = async (imageUrl) => {
+  const handleDeleteImage = (imageUrl) => {
+    if (!imageUrl || imageUrl.includes('/defaults/')) return;
+    setPendingDeleteImages(prev => {
+      if (prev.includes(imageUrl)) return prev;
+      return [...prev, imageUrl];
+    });
+  };
+
+  const executeDeleteImage = async (imageUrl) => {
     if (!imageUrl || imageUrl.includes('/defaults/')) return;
 
     let path = '';
@@ -2108,6 +2117,10 @@ function GenerateContent() {
               setProjectId(saveResult.data.id || saveResult.data.projectId);
               setProjectStatus('draft');
             }
+            if (pendingDeleteImages.length > 0) {
+              pendingDeleteImages.forEach(url => executeDeleteImage(url));
+              setPendingDeleteImages([]);
+            }
           } else {
             // Save failed — log warning but don't throw so user can still see & publish the preview
             console.warn('[Preview Save] Failed to persist project draft to DB:', saveResult.error);
@@ -2151,6 +2164,10 @@ function GenerateContent() {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        if (pendingDeleteImages.length > 0) {
+          pendingDeleteImages.forEach(url => executeDeleteImage(url));
+          setPendingDeleteImages([]);
+        }
         router.push('/');
       } else {
         setError(
@@ -2193,6 +2210,10 @@ function GenerateContent() {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        if (pendingDeleteImages.length > 0) {
+          pendingDeleteImages.forEach(url => executeDeleteImage(url));
+          setPendingDeleteImages([]);
+        }
         setSuccessUrl(result.liveUrl);
         setShowSuccessModal(true);
         await refreshProfile(); // Refresh balance
