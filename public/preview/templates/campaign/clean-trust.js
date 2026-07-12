@@ -60,6 +60,13 @@ export async function render(pageConfig, guestName = 'Tamu') {
     // WA Link generator for general checkout
     const waUrlGeneral = `https://wa.me/${contact.whatsapp ? contact.whatsapp.replace(/\D/g, '') : ''}?text=${encodeURIComponent(`Halo,\nsaya tertarik dengan penawaran Anda: "${hero.headline || ''}".`)}`;
 
+    // Compile dynamic CTA link (WhatsApp or custom URL)
+    let finalCtaUrl = waUrlGeneral;
+    if (contact.cta_url && contact.cta_url.trim()) {
+        const urlStr = contact.cta_url.trim();
+        finalCtaUrl = (urlStr.startsWith('http://') || urlStr.startsWith('https://')) ? urlStr : `https://${urlStr}`;
+    }
+
     // Compile problems HTML list
     let problemsListHtml = '';
     if (Array.isArray(problems.list)) {
@@ -125,7 +132,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
                     <span class="font-bold tracking-tight text-slate-800 text-xs uppercase">OFFICIAL CAMPAIGN</span>
                 </div>
                 <a 
-                    href="${waUrlGeneral}"
+                    href="${finalCtaUrl}"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="py-2 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all"
@@ -148,7 +155,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
                     </p>
                     <div class="flex justify-center">
                         <a 
-                            href="${waUrlGeneral}" 
+                            href="${finalCtaUrl}" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             class="py-3.5 px-8 rounded-2xl font-bold text-white text-xs md:text-sm tracking-wide trust-btn-teal text-center active:scale-95 shadow-lg shadow-teal-600/10"
@@ -213,6 +220,11 @@ export async function render(pageConfig, guestName = 'Tamu') {
                 </section>
             ` : ''}
 
+            <!-- FAQ Section -->
+            ${content.faqs && content.faqs.length > 0 ? `
+                <section class="px-6 py-16 max-w-3xl mx-auto w-full border-b border-slate-100" id="campaign-faq-root"></section>
+            ` : ''}
+
             <!-- Closing CTA Section -->
             <section class="px-6 py-16 text-center max-w-2xl mx-auto w-full">
                 <div class="mb-8">
@@ -225,7 +237,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
                 </div>
                 <div class="flex justify-center">
                     <a 
-                        href="${waUrlGeneral}" 
+                        href="${finalCtaUrl}" 
                         target="_blank" 
                         rel="noopener noreferrer"
                         class="py-3.5 px-8 rounded-2xl font-bold text-white text-xs md:text-sm tracking-wide trust-btn-teal text-center active:scale-95 shadow-lg shadow-teal-600/10"
@@ -244,4 +256,11 @@ export async function render(pageConfig, guestName = 'Tamu') {
             </footer>
         </div>
     `;
+
+    // Initialize FAQ component if available
+    const faqRoot = document.getElementById('campaign-faq-root');
+    if (faqRoot && Array.isArray(content.faqs) && content.faqs.length > 0) {
+        const { initFaq } = await import('../components/Faq.js');
+        await initFaq(faqRoot, content.faqs, { theme: 'clean-trust' });
+    }
 }

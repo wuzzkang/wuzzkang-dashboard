@@ -268,6 +268,7 @@ function GenerateContent() {
   const [campaignWhatsapp, setCampaignWhatsapp] = useState('');
   const [campaignCtaUrl, setCampaignCtaUrl] = useState('');
   const [campaignBrief, setCampaignBrief] = useState('');
+  const [campaignFaqs, setCampaignFaqs] = useState([{ question: '', answer: '' }]);
 
   // Campaign AI loader states
   const [isGeneratingCampaignHero, setIsGeneratingCampaignHero] = useState(false);
@@ -275,6 +276,7 @@ function GenerateContent() {
   const [isGeneratingCampaignBenefits, setIsGeneratingCampaignBenefits] = useState(false);
   const [isGeneratingCampaignTestimonials, setIsGeneratingCampaignTestimonials] = useState(false);
   const [isGeneratingCampaignUrgency, setIsGeneratingCampaignUrgency] = useState(false);
+  const [isGeneratingCampaignFaq, setIsGeneratingCampaignFaq] = useState(false);
 
   // CV form states
   const [cvName, setCvName] = useState('');
@@ -565,6 +567,7 @@ function GenerateContent() {
               setCampaignClosingCta(content.closing?.cta_text || 'Dapatkan Sekarang!');
               setCampaignWhatsapp(content.contact?.whatsapp || '');
               setCampaignCtaUrl(content.contact?.cta_url || '');
+              setCampaignFaqs(content.faqs || [{ question: '', answer: '' }]);
               setDesignKey(pageConfig.meta?.design_key || 'neon-conversion');
             } else if (pageConfig && pageConfig.meta?.template_type === 'cv') {
               setTemplateType('cv');
@@ -709,7 +712,8 @@ function GenerateContent() {
         contact: {
           whatsapp: campaignWhatsapp,
           cta_url: campaignCtaUrl || null
-        }
+        },
+        faqs: campaignFaqs.filter(f => f.question && f.answer)
       };
     } else if (templateType === 'wedding') {
       metaTitle = `Undangan Pernikahan ${groomNickname || 'Groom'} & ${brideNickname || 'Bride'}`;
@@ -841,6 +845,7 @@ function GenerateContent() {
     campaignClosingCta,
     campaignWhatsapp,
     campaignCtaUrl,
+    campaignFaqs,
     campaignHeroImage,
     generateCampaignHero,
     preweddingPhotoUrl,
@@ -1559,6 +1564,7 @@ function GenerateContent() {
     if (fieldType === 'campaign_benefits') setIsGeneratingCampaignBenefits(true);
     if (fieldType === 'campaign_testimonials') setIsGeneratingCampaignTestimonials(true);
     if (fieldType === 'campaign_urgency') setIsGeneratingCampaignUrgency(true);
+    if (fieldType === 'campaign_faq') setIsGeneratingCampaignFaq(true);
 
     const context = {
       campaignName: name,
@@ -1636,6 +1642,9 @@ function GenerateContent() {
         setCampaignUrgency(finalContent.urgency || '');
         if (finalContent.cta_text) setCampaignClosingCta(finalContent.cta_text);
       }
+      if (fieldType === 'campaign_faq') {
+        setCampaignFaqs(finalContent.faqs || [{ question: '', answer: '' }]);
+      }
 
       await refreshProfile();
     } catch (err) {
@@ -1647,6 +1656,7 @@ function GenerateContent() {
       if (fieldType === 'campaign_benefits') setIsGeneratingCampaignBenefits(false);
       if (fieldType === 'campaign_testimonials') setIsGeneratingCampaignTestimonials(false);
       if (fieldType === 'campaign_urgency') setIsGeneratingCampaignUrgency(false);
+      if (fieldType === 'campaign_faq') setIsGeneratingCampaignFaq(false);
     }
   };
 
@@ -2069,7 +2079,8 @@ function GenerateContent() {
               contact: {
                 whatsapp: campaignWhatsapp || '',
                 cta_url: campaignCtaUrl || null
-              }
+              },
+              faqs: campaignFaqs.filter(f => f.question && f.answer)
             }
           };
         } else if (templateType === 'wedding') {
@@ -3980,6 +3991,72 @@ function GenerateContent() {
                               onChange={(e) => setCampaignClosingCta(e.target.value)}
                               className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
                             />
+                          </div>
+                        </div>
+
+                        {/* FAQ SECTION FORM */}
+                        <div className="space-y-2.5">
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">7. Pertanyaan yang Sering Diajukan (FAQ - Opsional)</div>
+                            {renderAICampaignButton('campaign_faq', isGeneratingCampaignFaq)}
+                          </div>
+                          <div className="space-y-3">
+                            {campaignFaqs.map((faq, index) => (
+                              <div key={index} className="bg-theme-bg/30 p-2.5 rounded-xl border border-theme-border space-y-1.5 relative">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (campaignFaqs.length > 1) {
+                                      setCampaignFaqs(prev => prev.filter((_, idx) => idx !== index));
+                                    } else {
+                                      setCampaignFaqs([{ question: '', answer: '' }]);
+                                    }
+                                  }}
+                                  className="absolute top-2 right-2 text-[8px] font-bold text-red-400 hover:underline cursor-pointer"
+                                >
+                                  Hapus
+                                </button>
+                                <div className="space-y-1">
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec">Pertanyaan #${index + 1}</label>
+                                  <input
+                                    type="text"
+                                    placeholder={`e.g. Apakah ada garansi uang kembali?`}
+                                    value={faq.question}
+                                    onChange={(e) => {
+                                      const updated = [...campaignFaqs];
+                                      updated[index] = { ...updated[index], question: e.target.value };
+                                      setCampaignFaqs(updated);
+                                    }}
+                                    className="block w-full px-2 py-1 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="block text-[8px] font-semibold text-theme-text-sec">Jawaban #${index + 1}</label>
+                                  <textarea
+                                    rows={2}
+                                    placeholder={`e.g. Ya, kami memberikan garansi 100% uang kembali jika...`}
+                                    value={faq.answer}
+                                    onChange={(e) => {
+                                      const updated = [...campaignFaqs];
+                                      updated[index] = { ...updated[index], answer: e.target.value };
+                                      setCampaignFaqs(updated);
+                                    }}
+                                    className="block w-full px-2 py-1 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-[10px] text-theme-text placeholder-theme-text-muted focus:outline-none resize-none"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                            <div className="flex gap-2">
+                              {campaignFaqs.length < 8 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCampaignFaqs(prev => [...prev, { question: '', answer: '' }])}
+                                  className="text-[9px] font-bold text-theme-accent hover:underline cursor-pointer"
+                                >
+                                  + Tambah FAQ
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
