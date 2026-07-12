@@ -20,6 +20,7 @@ const getProductIcon = (id) => {
     case 'toko-online': return '🛍️';
     case 'campaign': return '⚡';
     case 'cv': return '📄';
+    case 'e-course': return '🎓';
     default: return '📄';
   }
 };
@@ -32,6 +33,7 @@ const getProductDefaultDescription = (id) => {
     case 'toko-online': return 'Landing page e-commerce instan untuk katalog dagangan.';
     case 'campaign': return 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.';
     case 'cv': return 'Web CV profesional yang ATS-friendly, siap dibagikan sebagai link atau di-export ke PDF.';
+    case 'e-course': return 'Landing page e-course profesional dengan kurikulum modul, ulasan alumni, bonus penawaran, dan countdown urgensi.';
     default: return 'Rancang landing page instan sesuai kebutuhan Anda.';
   }
 };
@@ -118,7 +120,9 @@ const TEMPLATE_LATEST_VERSIONS = {
   'neon-conversion': 2,
   'clean-trust': 1,
   // CV
-  'professional-dark': 1
+  'professional-dark': 1,
+  // E-Course
+  'purple-academy': 1
 };
 
 function GenerateContent() {
@@ -326,6 +330,78 @@ function GenerateContent() {
   const [isGeneratingCvSummary, setIsGeneratingCvSummary] = useState(false);
   const [isGeneratingCvExperienceDesc, setIsGeneratingCvExperienceDesc] = useState({});
 
+  // E-Course form states
+  const [courseName, setCourseName] = useState('');
+  const [courseBrief, setCourseBrief] = useState('');
+  const [courseTargetAudience, setCourseTargetAudience] = useState('');
+  const [courseTone, setCourseTone] = useState('persuasive');
+  const [eCourseHeroHeadline, setECourseHeroHeadline] = useState('');
+  const [eCourseHeroSubheadline, setECourseHeroSubheadline] = useState('');
+  const [eCourseHeroCtaText, setECourseHeroCtaText] = useState('Gabung Kelas Sekarang');
+  const [eCourseHeroImage, setECourseHeroImage] = useState('');
+  const [generateECourseHeroImage, setGenerateECourseHeroImage] = useState(false);
+  const [eCourseHeroImageSource, setECourseHeroImageSource] = useState('unsplash');
+  const [isGeneratingECourseHeroImage, setIsGeneratingECourseHeroImage] = useState(false);
+  const [isUploadingECourseHeroImage, setIsUploadingECourseHeroImage] = useState(false);
+  const [eCourseProblemsTitle, setECourseProblemsTitle] = useState('Hambatan Belajar Anda');
+  const [eCourseProblemsList, setECourseProblemsList] = useState(['', '', '']);
+  const [eCourseSolutionsTitle, setECourseSolutionsTitle] = useState('Solusi Kelas Kami');
+  const [eCourseSolutionsIntro, setECourseSolutionsIntro] = useState('');
+  const [eCourseSolutionsList, setECourseSolutionsList] = useState(['', '', '']);
+  const [eCourseAudienceTitle, setECourseAudienceTitle] = useState('Siapa Yang Wajib Ikut?');
+  const [eCourseAudienceList, setECourseAudienceList] = useState(['', '', '']);
+  const [eCourseMentorName, setECourseMentorName] = useState('');
+  const [eCourseMentorRole, setECourseMentorRole] = useState('');
+  const [eCourseMentorDesc, setECourseMentorDesc] = useState('');
+  const [eCourseMentorAvatar, setECourseMentorAvatar] = useState('');
+  const [generateECourseMentorImage, setGenerateECourseMentorImage] = useState(false);
+  const [eCourseMentorImageSource, setECourseMentorImageSource] = useState('upload');
+  const [isUploadingECourseMentorAvatar, setIsUploadingECourseMentorAvatar] = useState(false);
+  const [eCourseCurriculumTitle, setECourseCurriculumTitle] = useState('Kurikulum & Modul Belajar');
+  const [eCourseCurriculumModules, setECourseCurriculumModules] = useState([
+    { title: '', desc: '' },
+    { title: '', desc: '' },
+    { title: '', desc: '' }
+  ]);
+  const [eCourseBenefitsTitle, setECourseBenefitsTitle] = useState('Fasilitas & Keuntungan');
+  const [eCourseBenefitsList, setECourseBenefitsList] = useState([
+    { title: '', desc: '' },
+    { title: '', desc: '' },
+    { title: '', desc: '' }
+  ]);
+  const [eCourseBonusesTitle, setECourseBonusesTitle] = useState('Bonus Spesial');
+  const [eCourseBonusesList, setECourseBonusesList] = useState([
+    { title: '', desc: '' },
+    { title: '', desc: '' }
+  ]);
+  const [eCoursePricingTitle, setECoursePricingTitle] = useState('Investasi Belajar Terbaik');
+  const [eCoursePricingOriginal, setECoursePricingOriginal] = useState('');
+  const [eCoursePricingDiscounted, setECoursePricingDiscounted] = useState('');
+  const [eCoursePricingCtaText, setECoursePricingCtaText] = useState('Daftar Sekarang');
+  const [eCoursePricingFeatures, setECoursePricingFeatures] = useState(['', '', '']);
+  const [eCourseTestimonialsTitle, setECourseTestimonialsTitle] = useState('Ulasan Dari Alumni');
+  const [eCourseTestimonialsList, setECourseTestimonialsList] = useState([
+    { name: '', role: '', content: '' },
+    { name: '', role: '', content: '' }
+  ]);
+  const [eCourseFaqs, setECourseFaqs] = useState([{ question: '', answer: '' }]);
+  const [eCourseWhatsapp, setECourseWhatsapp] = useState('');
+  const [eCourseCtaUrl, setECourseCtaUrl] = useState('');
+  const [eCourseCopyright, setECourseCopyright] = useState('');
+
+  // E-Course AI assist loading states
+  const [isGeneratingECourseHero, setIsGeneratingECourseHero] = useState(false);
+  const [isGeneratingECourseProblems, setIsGeneratingECourseProblems] = useState(false);
+  const [isGeneratingECourseSolutions, setIsGeneratingECourseSolutions] = useState(false);
+  const [isGeneratingECourseAudience, setIsGeneratingECourseAudience] = useState(false);
+  const [isGeneratingECourseMentor, setIsGeneratingECourseMentor] = useState(false);
+  const [isGeneratingECourseCurriculum, setIsGeneratingECourseCurriculum] = useState(false);
+  const [isGeneratingECourseBenefits, setIsGeneratingECourseBenefits] = useState(false);
+  const [isGeneratingECourseBonuses, setIsGeneratingECourseBonuses] = useState(false);
+  const [isGeneratingECoursePricing, setIsGeneratingECoursePricing] = useState(false);
+  const [isGeneratingECourseTestimonials, setIsGeneratingECourseTestimonials] = useState(false);
+  const [isGeneratingECourseFaq, setIsGeneratingECourseFaq] = useState(false);
+
   // Toko Online upload & AI loader states
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
@@ -390,6 +466,8 @@ function GenerateContent() {
       raw = campaignHeadline.substring(0, 25);
     } else if (templateType === 'cv' && cvName) {
       raw = `${cvName}-cv`;
+    } else if (templateType === 'e-course' && courseName) {
+      raw = `${courseName}-kelas`;
     } else {
       raw = name; // fallback to project name
     }
@@ -619,6 +697,79 @@ function GenerateContent() {
               setCvCertifications(content.certifications || []);
               setDesignKey(pageConfig.meta?.design_key || 'professional-dark');
               setDesignVersion(pageConfig.meta?.template_version || 1);
+            } else if (pageConfig && pageConfig.meta?.template_type === 'e-course') {
+              setTemplateType('e-course');
+              const content = pageConfig.content || {};
+              setCourseName(content.courseName || pageConfig.meta?.courseName || '');
+              setCourseBrief(content.courseBrief || pageConfig.meta?.courseBrief || '');
+              setCourseTargetAudience(content.courseTargetAudience || '');
+              setCourseTone(content.courseTone || pageConfig.meta?.resolvedToneKey || 'persuasive');
+              
+              setECourseHeroHeadline(content.hero?.headline || '');
+              setECourseHeroSubheadline(content.hero?.subheadline || '');
+              setECourseHeroCtaText(content.hero?.cta_text || 'Gabung Kelas Sekarang');
+              setECourseHeroImage(content.hero?.image_url || '');
+              if (content.hero?.image_url) {
+                setGenerateECourseHeroImage(true);
+                if (content.hero.image_url.includes('images.unsplash.com')) {
+                  setECourseHeroImageSource('unsplash');
+                } else {
+                  setECourseHeroImageSource('upload');
+                }
+              } else {
+                setGenerateECourseHeroImage(false);
+                setECourseHeroImageSource('unsplash');
+              }
+              
+              setECourseProblemsTitle(content.problems?.title || 'Hambatan Belajar Anda');
+              setECourseProblemsList(content.problems?.list || ['', '', '']);
+              setECourseSolutionsTitle(content.solutions?.title || 'Solusi Kelas Kami');
+              setECourseSolutionsIntro(content.solutions?.intro || '');
+              setECourseSolutionsList(content.solutions?.list || ['', '', '']);
+              setECourseAudienceTitle(content.audience?.title || 'Siapa Yang Wajib Ikut?');
+              setECourseAudienceList(content.audience?.list || ['', '', '']);
+              
+              setECourseMentorName(content.mentor?.name || '');
+              setECourseMentorRole(content.mentor?.role || '');
+              setECourseMentorDesc(content.mentor?.desc || '');
+              setECourseMentorAvatar(content.mentor?.avatar_url || '');
+              if (content.mentor?.avatar_url) {
+                setGenerateECourseMentorImage(true);
+                if (content.mentor.avatar_url.includes('images.unsplash.com')) {
+                  setECourseMentorImageSource('unsplash');
+                } else {
+                  setECourseMentorImageSource('upload');
+                }
+              } else {
+                setGenerateECourseMentorImage(false);
+                setECourseMentorImageSource('upload');
+              }
+              
+              setECourseCurriculumTitle(content.curriculum?.title || 'Kurikulum & Modul Belajar');
+              setECourseCurriculumModules(content.curriculum?.modules || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+              
+              setECourseBenefitsTitle(content.benefits?.title || 'Fasilitas & Keuntungan');
+              setECourseBenefitsList(content.benefits?.list || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+              
+              setECourseBonusesTitle(content.bonuses?.title || 'Bonus Spesial');
+              setECourseBonusesList(content.bonuses?.list || [{ title: '', desc: '' }, { title: '', desc: '' }]);
+              
+              setECoursePricingTitle(content.pricing?.title || 'Investasi Belajar Terbaik');
+              setECoursePricingOriginal(content.pricing?.original_price || '');
+              setECoursePricingDiscounted(content.pricing?.discounted_price || '');
+              setECoursePricingCtaText(content.pricing?.cta_text || 'Daftar Sekarang');
+              setECoursePricingFeatures(content.pricing?.features || ['', '', '']);
+              
+              setECourseTestimonialsTitle(content.testimonials?.title || 'Ulasan Dari Alumni');
+              setECourseTestimonialsList(content.testimonials?.list || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
+              
+              setECourseFaqs(content.faqs || [{ question: '', answer: '' }]);
+              setECourseWhatsapp(content.contact?.whatsapp || '');
+              setECourseCtaUrl(content.contact?.cta_url || '');
+              setECourseCopyright(content.contact?.copyright || '');
+              
+              setDesignKey(pageConfig.meta?.design_key || 'purple-academy');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
             } else {
               setTemplateType('store');
             }
@@ -788,6 +939,68 @@ function GenerateContent() {
         languages: cvLanguages.filter(l => l.language && l.level),
         certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
       };
+    } else if (templateType === 'e-course') {
+      metaTitle = name || 'E-Course Halaman';
+      assembledContent = {
+        courseName: courseName,
+        courseBrief: courseBrief,
+        courseTargetAudience: courseTargetAudience || null,
+        courseTone: courseTone || null,
+        hero: {
+          headline: eCourseHeroHeadline,
+          subheadline: eCourseHeroSubheadline,
+          cta_text: eCourseHeroCtaText,
+          image_url: generateECourseHeroImage ? (eCourseHeroImage || null) : null
+        },
+        problems: {
+          title: eCourseProblemsTitle,
+          list: eCourseProblemsList.filter(Boolean)
+        },
+        solutions: {
+          title: eCourseSolutionsTitle,
+          intro: eCourseSolutionsIntro,
+          list: eCourseSolutionsList.filter(Boolean)
+        },
+        audience: {
+          title: eCourseAudienceTitle,
+          list: eCourseAudienceList.filter(Boolean)
+        },
+        mentor: {
+          name: eCourseMentorName,
+          role: eCourseMentorRole,
+          desc: eCourseMentorDesc,
+          avatar_url: generateECourseMentorImage ? (eCourseMentorAvatar || null) : null
+        },
+        curriculum: {
+          title: eCourseCurriculumTitle,
+          modules: eCourseCurriculumModules.filter(m => m.title && m.desc)
+        },
+        benefits: {
+          title: eCourseBenefitsTitle,
+          list: eCourseBenefitsList.filter(b => b.title && b.desc)
+        },
+        bonuses: {
+          title: eCourseBonusesTitle,
+          list: eCourseBonusesList.filter(b => b.title && b.desc)
+        },
+        pricing: {
+          title: eCoursePricingTitle,
+          original_price: eCoursePricingOriginal,
+          discounted_price: eCoursePricingDiscounted,
+          cta_text: eCoursePricingCtaText,
+          features: eCoursePricingFeatures.filter(Boolean)
+        },
+        testimonials: {
+          title: eCourseTestimonialsTitle,
+          list: eCourseTestimonialsList.filter(t => t.name && t.content)
+        },
+        faqs: eCourseFaqs.filter(f => f.question && f.answer),
+        contact: {
+          whatsapp: eCourseWhatsapp,
+          cta_url: eCourseCtaUrl || null,
+          copyright: eCourseCopyright || null
+        }
+      };
     } else {
       metaTitle = 'Draft Page';
       assembledContent = {};
@@ -899,6 +1112,46 @@ function GenerateContent() {
     cvSkills,
     cvLanguages,
     cvCertifications,
+    courseName,
+    courseBrief,
+    courseTargetAudience,
+    courseTone,
+    eCourseHeroHeadline,
+    eCourseHeroSubheadline,
+    eCourseHeroCtaText,
+    eCourseHeroImage,
+    generateECourseHeroImage,
+    eCourseHeroImageSource,
+    eCourseProblemsTitle,
+    eCourseProblemsList,
+    eCourseSolutionsTitle,
+    eCourseSolutionsIntro,
+    eCourseSolutionsList,
+    eCourseAudienceTitle,
+    eCourseAudienceList,
+    eCourseMentorName,
+    eCourseMentorRole,
+    eCourseMentorDesc,
+    eCourseMentorAvatar,
+    generateECourseMentorImage,
+    eCourseMentorImageSource,
+    eCourseCurriculumTitle,
+    eCourseCurriculumModules,
+    eCourseBenefitsTitle,
+    eCourseBenefitsList,
+    eCourseBonusesTitle,
+    eCourseBonusesList,
+    eCoursePricingTitle,
+    eCoursePricingOriginal,
+    eCoursePricingDiscounted,
+    eCoursePricingCtaText,
+    eCoursePricingFeatures,
+    eCourseTestimonialsTitle,
+    eCourseTestimonialsList,
+    eCourseFaqs,
+    eCourseWhatsapp,
+    eCourseCtaUrl,
+    eCourseCopyright,
   ]);
 
   // Synchronize state with live preview iframe
@@ -1075,6 +1328,11 @@ function GenerateContent() {
         cvEducations.length === 0 ||
         cvEducations.some(e => !e.institution || !e.degree || !e.period);
     }
+    if (templateType === 'e-course') {
+      return !courseName || !courseBrief || !eCourseWhatsapp ||
+        eCourseCurriculumModules.some(m => !m.title || !m.desc) ||
+        eCourseBenefitsList.some(b => !b.title || !b.desc);
+    }
     if (templateType === 'store') {
       return !prompt;
     }
@@ -1107,10 +1365,12 @@ function GenerateContent() {
     const isProduct = target.startsWith('product-');
     const productIndex = isProduct ? parseInt(target.split('-')[1]) : null;
     const isCv = target === 'cv' || target === 'cvPhoto';
+    const isECourseHero = target === 'eCourseHero';
+    const isECourseMentor = target === 'eCourseMentor';
 
     let category = 'other';
-    if (isGroom || isBride || isCelebrant) category = 'avatar';
-    else if (isPrewedding || isCampaignHero || isBanner) category = 'background';
+    if (isGroom || isBride || isCelebrant || isECourseMentor) category = 'avatar';
+    else if (isPrewedding || isCampaignHero || isBanner || isECourseHero) category = 'background';
     else if (isGallery) category = 'gallery';
     else if (isStory) category = 'story';
     else if (isLogo) category = 'logo';
@@ -1128,6 +1388,8 @@ function GenerateContent() {
     if (isBanner) setIsUploadingBanner(true);
     if (isProduct) setIsUploadingProductIndex(productIndex);
     if (isCv) setIsUploadingCvPhoto(true);
+    if (isECourseHero) setIsUploadingECourseHeroImage(true);
+    if (isECourseMentor) setIsUploadingECourseMentorAvatar(true);
 
     try {
       let fileToUpload = file;
@@ -1223,6 +1485,14 @@ function GenerateContent() {
         if (cvPhotoUrl) handleDeleteImage(cvPhotoUrl);
         setCvPhotoUrl(publicUrl);
       }
+      if (isECourseHero) {
+        if (eCourseHeroImage) handleDeleteImage(eCourseHeroImage);
+        setECourseHeroImage(publicUrl);
+      }
+      if (isECourseMentor) {
+        if (eCourseMentorAvatar) handleDeleteImage(eCourseMentorAvatar);
+        setECourseMentorAvatar(publicUrl);
+      }
       if (isProduct) {
         const oldProductImageUrl = tokoProducts[productIndex]?.image_url;
         if (oldProductImageUrl) handleDeleteImage(oldProductImageUrl);
@@ -1247,6 +1517,8 @@ function GenerateContent() {
       if (isBanner) setIsUploadingBanner(false);
       if (isProduct) setIsUploadingProductIndex(null);
       if (isCv) setIsUploadingCvPhoto(false);
+      if (isECourseHero) setIsUploadingECourseHeroImage(false);
+      if (isECourseMentor) setIsUploadingECourseMentorAvatar(false);
     }
   };
 
@@ -1734,6 +2006,179 @@ function GenerateContent() {
     }
   };
 
+  const handleAIECourseAssist = async (fieldType) => {
+    if (!session?.access_token) return;
+
+    if (!courseBrief.trim()) {
+      alert('Harap isi Deskripsi Brief E-Course terlebih dahulu di bagian atas sebagai acuan AI.');
+      return;
+    }
+
+    const remainingFree = profile?.remainingFree ?? 0;
+    const cost = profile?.ai_generate_cost ?? 1;
+
+    if (remainingFree === 0) {
+      const confirmCharge = window.confirm(
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya ${cost} Credit yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+      );
+      if (!confirmCharge) return;
+    }
+
+    if (fieldType === 'e_course_hero') setIsGeneratingECourseHero(true);
+    if (fieldType === 'e_course_problems') setIsGeneratingECourseProblems(true);
+    if (fieldType === 'e_course_solutions') setIsGeneratingECourseSolutions(true);
+    if (fieldType === 'e_course_audience') setIsGeneratingECourseAudience(true);
+    if (fieldType === 'e_course_mentor') setIsGeneratingECourseMentor(true);
+    if (fieldType === 'e_course_curriculum') setIsGeneratingECourseCurriculum(true);
+    if (fieldType === 'e_course_benefits') setIsGeneratingECourseBenefits(true);
+    if (fieldType === 'e_course_bonuses') setIsGeneratingECourseBonuses(true);
+    if (fieldType === 'e_course_pricing') setIsGeneratingECoursePricing(true);
+    if (fieldType === 'e_course_testimonials') setIsGeneratingECourseTestimonials(true);
+    if (fieldType === 'e_course_faq') setIsGeneratingECourseFaq(true);
+
+    let context = {
+      courseName: name || courseName,
+      courseBrief: courseBrief
+    };
+
+    if (fieldType === 'e_course_faq') {
+      const filledFaqs = eCourseFaqs.filter(faq => faq.question?.trim() && faq.answer?.trim());
+      const totalSlots = eCourseFaqs.length;
+      let targetGenerateCount = 3;
+
+      if (totalSlots > 1) {
+        targetGenerateCount = totalSlots - filledFaqs.length;
+      } else {
+        targetGenerateCount = filledFaqs.length > 0 ? 0 : 3;
+      }
+
+      if (targetGenerateCount === 0 && totalSlots > 0) {
+        targetGenerateCount = totalSlots;
+        context.filledFaqs = [];
+      } else {
+        context.filledFaqs = filledFaqs;
+      }
+      context.faqCount = targetGenerateCount;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ fieldType, context }),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Gagal mengirim tugas copywriting ke antrean.');
+      }
+
+      const jobId = result.jobId;
+      let attempts = 0;
+      let finalContent = null;
+
+      while (attempts < 60) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/status`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!statusRes.ok) {
+          if (statusRes.status === 404) {
+            throw new Error('Pekerjaan generate tidak ditemukan di antrean.');
+          }
+          throw new Error('Gagal memeriksa status pekerjaan copywriting.');
+        }
+
+        const jobData = await statusRes.json();
+        if (jobData.state === 'completed') {
+          finalContent = jobData.result?.content;
+          break;
+        } else if (jobData.state === 'failed') {
+          throw new Error(jobData.failedReason || 'Gagal memproses copywriting AI di antrean.');
+        }
+        attempts++;
+      }
+
+      if (!finalContent) {
+        throw new Error('Waktu tunggu pembuatan copywriting AI habis (timeout).');
+      }
+
+      if (fieldType === 'e_course_hero') {
+        setECourseHeroHeadline(finalContent.headline || '');
+        setECourseHeroSubheadline(finalContent.subheadline || '');
+        if (finalContent.cta_text) setECourseHeroCtaText(finalContent.cta_text);
+      }
+      if (fieldType === 'e_course_problems') {
+        setECourseProblemsTitle(finalContent.title || 'Hambatan Belajar Anda');
+        setECourseProblemsList(finalContent.list || ['', '', '']);
+      }
+      if (fieldType === 'e_course_solutions') {
+        setECourseSolutionsTitle(finalContent.title || 'Solusi Kelas Kami');
+        setECourseSolutionsIntro(finalContent.intro || '');
+        setECourseSolutionsList(finalContent.list || ['', '', '']);
+      }
+      if (fieldType === 'e_course_audience') {
+        setECourseAudienceTitle(finalContent.title || 'Siapa Yang Wajib Ikut?');
+        setECourseAudienceList(finalContent.list || ['', '', '']);
+      }
+      if (fieldType === 'e_course_mentor') {
+        setECourseMentorName(finalContent.name || '');
+        setECourseMentorRole(finalContent.role || '');
+        setECourseMentorDesc(finalContent.desc || '');
+      }
+      if (fieldType === 'e_course_curriculum') {
+        setECourseCurriculumTitle(finalContent.title || 'Kurikulum & Modul Belajar');
+        setECourseCurriculumModules(finalContent.modules || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+      }
+      if (fieldType === 'e_course_benefits') {
+        setECourseBenefitsTitle(finalContent.title || 'Fasilitas & Keuntungan');
+        setECourseBenefitsList(finalContent.list || [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+      }
+      if (fieldType === 'e_course_bonuses') {
+        setECourseBonusesTitle(finalContent.title || 'Bonus Spesial');
+        setECourseBonusesList(finalContent.list || [{ title: '', desc: '' }, { title: '', desc: '' }]);
+      }
+      if (fieldType === 'e_course_pricing') {
+        setECoursePricingTitle(finalContent.title || 'Investasi Belajar Terbaik');
+        setECoursePricingOriginal(finalContent.original_price || '');
+        setECoursePricingDiscounted(finalContent.discounted_price || '');
+        if (finalContent.cta_text) setECoursePricingCtaText(finalContent.cta_text);
+        setECoursePricingFeatures(finalContent.features || ['', '', '']);
+      }
+      if (fieldType === 'e_course_testimonials') {
+        setECourseTestimonialsTitle(finalContent.title || 'Ulasan Dari Alumni');
+        setECourseTestimonialsList(finalContent.list || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
+      }
+      if (fieldType === 'e_course_faq') {
+        setECourseFaqs(finalContent.faqs || [{ question: '', answer: '' }]);
+      }
+
+      await refreshProfile();
+    } catch (err) {
+      console.error('[Dashboard] E-Course AI Assist error:', err);
+      alert('Terjadi kesalahan jaringan saat memanggil AI.');
+    } finally {
+      if (fieldType === 'e_course_hero') setIsGeneratingECourseHero(false);
+      if (fieldType === 'e_course_problems') setIsGeneratingECourseProblems(false);
+      if (fieldType === 'e_course_solutions') setIsGeneratingECourseSolutions(false);
+      if (fieldType === 'e_course_audience') setIsGeneratingECourseAudience(false);
+      if (fieldType === 'e_course_mentor') setIsGeneratingECourseMentor(false);
+      if (fieldType === 'e_course_curriculum') setIsGeneratingECourseCurriculum(false);
+      if (fieldType === 'e_course_benefits') setIsGeneratingECourseBenefits(false);
+      if (fieldType === 'e_course_bonuses') setIsGeneratingECourseBonuses(false);
+      if (fieldType === 'e_course_pricing') setIsGeneratingECoursePricing(false);
+      if (fieldType === 'e_course_testimonials') setIsGeneratingECourseTestimonials(false);
+      if (fieldType === 'e_course_faq') setIsGeneratingECourseFaq(false);
+    }
+  };
+
   const renderAITokoButton = (fieldType, isLoading, index = null) => {
     const remainingFree = profile?.remainingFree ?? 15;
     const cost = profile?.ai_generate_cost ?? 100;
@@ -1787,6 +2232,23 @@ function GenerateContent() {
         type="button"
         disabled={isLoading || !campaignBrief.trim()}
         onClick={() => handleAICampaignAssist(fieldType)}
+        className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
+      >
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
+      </button>
+    );
+  };
+
+  const renderAIECourseButton = (fieldType, isLoading) => {
+    const remainingFree = profile?.remainingFree ?? 15;
+    const cost = profile?.ai_generate_cost ?? 1;
+    const isFree = remainingFree > 0;
+
+    return (
+      <button
+        type="button"
+        disabled={isLoading || !courseBrief.trim()}
+        onClick={() => handleAIECourseAssist(fieldType)}
         className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
       >
         {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
@@ -2084,6 +2546,76 @@ function GenerateContent() {
               certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
             }
           };
+        } else if (templateType === 'e-course') {
+          compiledPageData = {
+            meta: {
+              title: name || 'E-Course Halaman',
+              theme: designKey,
+              template_type: 'e-course',
+              design_key: designKey,
+              template_version: designVersion,
+            },
+            content: {
+              courseName: courseName,
+              courseBrief: courseBrief,
+              courseTargetAudience: courseTargetAudience || null,
+              courseTone: courseTone || null,
+              hero: {
+                headline: eCourseHeroHeadline,
+                subheadline: eCourseHeroSubheadline,
+                cta_text: eCourseHeroCtaText,
+                image_url: generateECourseHeroImage ? (eCourseHeroImage || null) : null
+              },
+              problems: {
+                title: eCourseProblemsTitle,
+                list: eCourseProblemsList.filter(Boolean)
+              },
+              solutions: {
+                title: eCourseSolutionsTitle,
+                intro: eCourseSolutionsIntro,
+                list: eCourseSolutionsList.filter(Boolean)
+              },
+              audience: {
+                title: eCourseAudienceTitle,
+                list: eCourseAudienceList.filter(Boolean)
+              },
+              mentor: {
+                name: eCourseMentorName,
+                role: eCourseMentorRole,
+                desc: eCourseMentorDesc,
+                avatar_url: generateECourseMentorImage ? (eCourseMentorAvatar || null) : null
+              },
+              curriculum: {
+                title: eCourseCurriculumTitle,
+                modules: eCourseCurriculumModules.filter(m => m.title && m.desc)
+              },
+              benefits: {
+                title: eCourseBenefitsTitle,
+                list: eCourseBenefitsList.filter(b => b.title && b.desc)
+              },
+              bonuses: {
+                title: eCourseBonusesTitle,
+                list: eCourseBonusesList.filter(b => b.title && b.desc)
+              },
+              pricing: {
+                title: eCoursePricingTitle,
+                original_price: eCoursePricingOriginal,
+                discounted_price: eCoursePricingDiscounted,
+                cta_text: eCoursePricingCtaText,
+                features: eCoursePricingFeatures.filter(Boolean)
+              },
+              testimonials: {
+                title: eCourseTestimonialsTitle,
+                list: eCourseTestimonialsList.filter(t => t.name && t.content)
+              },
+              faqs: eCourseFaqs.filter(f => f.question && f.answer),
+              contact: {
+                whatsapp: eCourseWhatsapp,
+                cta_url: eCourseCtaUrl || null,
+                copyright: eCourseCopyright || null
+              }
+            }
+          };
         } else if (templateType === 'toko-online') {
           compiledPageData = {
             meta: {
@@ -2338,6 +2870,76 @@ function GenerateContent() {
           skills: cvSkills,
           languages: cvLanguages.filter(l => l.language && l.level),
           certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
+        }
+      };
+    } else if (templateType === 'e-course') {
+      compiledPageData = {
+        meta: {
+          title: name || 'E-Course Halaman',
+          theme: designKey,
+          template_type: 'e-course',
+          design_key: designKey,
+          template_version: designVersion,
+        },
+        content: {
+          courseName: courseName,
+          courseBrief: courseBrief,
+          courseTargetAudience: courseTargetAudience || null,
+          courseTone: courseTone || null,
+          hero: {
+            headline: eCourseHeroHeadline,
+            subheadline: eCourseHeroSubheadline,
+            cta_text: eCourseHeroCtaText,
+            image_url: generateECourseHeroImage ? (eCourseHeroImage || null) : null
+          },
+          problems: {
+            title: eCourseProblemsTitle,
+            list: eCourseProblemsList.filter(Boolean)
+          },
+          solutions: {
+            title: eCourseSolutionsTitle,
+            intro: eCourseSolutionsIntro,
+            list: eCourseSolutionsList.filter(Boolean)
+          },
+          audience: {
+            title: eCourseAudienceTitle,
+            list: eCourseAudienceList.filter(Boolean)
+          },
+          mentor: {
+            name: eCourseMentorName,
+            role: eCourseMentorRole,
+            desc: eCourseMentorDesc,
+            avatar_url: generateECourseMentorImage ? (eCourseMentorAvatar || null) : null
+          },
+          curriculum: {
+            title: eCourseCurriculumTitle,
+            modules: eCourseCurriculumModules.filter(m => m.title && m.desc)
+          },
+          benefits: {
+            title: eCourseBenefitsTitle,
+            list: eCourseBenefitsList.filter(b => b.title && b.desc)
+          },
+          bonuses: {
+            title: eCourseBonusesTitle,
+            list: eCourseBonusesList.filter(b => b.title && b.desc)
+          },
+          pricing: {
+            title: eCoursePricingTitle,
+            original_price: eCoursePricingOriginal,
+            discounted_price: eCoursePricingDiscounted,
+            cta_text: eCoursePricingCtaText,
+            features: eCoursePricingFeatures.filter(Boolean)
+          },
+          testimonials: {
+            title: eCourseTestimonialsTitle,
+            list: eCourseTestimonialsList.filter(t => t.name && t.content)
+          },
+          faqs: eCourseFaqs.filter(f => f.question && f.answer),
+          contact: {
+            whatsapp: eCourseWhatsapp,
+            cta_url: eCourseCtaUrl || null,
+            copyright: eCourseCopyright || null
+          }
         }
       };
     } else if (templateType === 'toko-online') {
@@ -2823,7 +3425,8 @@ function GenerateContent() {
                          templateType === 'birthday' ? 'Nama Acara Ulang Tahun' :
                          templateType === 'toko-online' ? 'Nama Toko Online' :
                          templateType === 'campaign' ? 'Nama Campaign / Halaman Penjualan' :
-                         templateType === 'cv' ? 'Nama CV / Resume' : 'Nama Halaman / Acara'}
+                         templateType === 'cv' ? 'Nama CV / Resume' :
+                         templateType === 'e-course' ? 'Nama E-Course' : 'Nama Halaman / Acara'}
                       </label>
                       <input
                         type="text"
@@ -2833,7 +3436,8 @@ function GenerateContent() {
                           templateType === 'birthday' ? 'Contoh: Ulang Tahun Kayla - Ke-17' :
                           templateType === 'toko-online' ? 'Contoh: Serasi Gadget Store' :
                           templateType === 'campaign' ? 'Contoh: Blueprint Copywriting AI' :
-                          templateType === 'cv' ? 'Contoh: CV Rian Prasetya - Senior Developer' : 'Contoh: Halaman Keren Saya'
+                          templateType === 'cv' ? 'Contoh: CV Rian Prasetya - Senior Developer' :
+                          templateType === 'e-course' ? 'Contoh: E-Course Digital Marketing Mastery' : 'Contoh: Halaman Keren Saya'
                         }
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -4353,6 +4957,816 @@ function GenerateContent() {
                       </div>
                     )}
 
+                    {/* E-Course Fields */}
+                    {templateType === 'e-course' && (
+                      <div className="space-y-5 border-t border-theme-border pt-4">
+
+                        {/* Design Picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                            Pilih Desain Tema
+                          </label>
+                          <div className="flex gap-3">
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36">
+                              <button
+                                type="button"
+                                onClick={() => handleSelectDesign('purple-academy')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'purple-academy'
+                                    ? 'border-theme-accent bg-theme-accent/10 text-theme-accent'
+                                    : 'border-theme-border hover:border-theme-text-sec text-theme-text-muted bg-theme-bg'
+                                }`}
+                              >
+                                <span className="text-xl">💜</span>
+                                <div className="text-[10px] font-black tracking-wide uppercase">Purple Academy</div>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* General Info */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                            <span>ℹ️</span> Informasi Dasar E-Course
+                          </h3>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Nama Kelas / E-Course
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Contoh: Digital Marketing Mastery"
+                              value={courseName}
+                              onChange={(e) => setCourseName(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Deskripsi Brief E-Course (Digunakan sebagai Konteks AI)
+                            </label>
+                            <textarea
+                              required
+                              placeholder="Tuliskan penjelasan singkat e-course ini, materi utamanya, dan apa tujuan akhirnya..."
+                              value={courseBrief}
+                              onChange={(e) => setCourseBrief(e.target.value)}
+                              rows={3}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors resize-y"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Target Audiens (Opsional)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: Pemula, UMKM, Freelancer"
+                              value={courseTargetAudience}
+                              onChange={(e) => setCourseTargetAudience(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Gaya Bahasa Copywriting (Tone)
+                            </label>
+                            <select
+                              value={courseTone}
+                              onChange={(e) => setCourseTone(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            >
+                              <option value="persuasive">Persuasif & Manfaat Nyata</option>
+                              <option value="urgency">Mendesak (FOMO & Promo)</option>
+                              <option value="professional">Profesional & Edukatif</option>
+                              <option value="conversational">Santai & Bersahabat</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Hero Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>🚀</span> Hero / Bagian Utama
+                            </h3>
+                            {renderAIECourseButton('e_course_hero', isGeneratingECourseHero)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Headline Promosi
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Headline utama halaman..."
+                              value={eCourseHeroHeadline}
+                              onChange={(e) => setECourseHeroHeadline(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Sub-Headline (Detail Singkat)
+                            </label>
+                            <textarea
+                              required
+                              placeholder="Penjelasan ringkas manfaat kelas..."
+                              value={eCourseHeroSubheadline}
+                              onChange={(e) => setECourseHeroSubheadline(e.target.value)}
+                              rows={2}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors resize-y"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Teks Tombol CTA
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseHeroCtaText}
+                              onChange={(e) => setECourseHeroCtaText(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          
+                          {/* Hero Image Picker with Cartoon Fallback Info */}
+                          <ImagePickerField
+                            checkboxId="generateECourseHeroImage"
+                            checkboxLabel="Gunakan Foto Kustom (jika tidak dicentang, grafis kartun default akan digunakan)"
+                            unsplashQuery="education,classroom,student,online learning"
+                            imageUrl={eCourseHeroImage}
+                            onImageChange={(val) => {
+                              if (!val && eCourseHeroImage && eCourseHeroImageSource === 'upload') {
+                                handleDeleteImage(eCourseHeroImage);
+                              }
+                              setECourseHeroImage(val);
+                            }}
+                            apiToken={session?.access_token}
+                            apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                            isEnabled={generateECourseHeroImage}
+                            onEnabledChange={setGenerateECourseHeroImage}
+                            source={eCourseHeroImageSource}
+                            onSourceChange={setECourseHeroImageSource}
+                            onUpload={handleUploadImage}
+                            uploadType="eCourseHero"
+                          />
+                        </div>
+
+                        {/* Problems Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>⚠️</span> Masalah & Agitasi
+                            </h3>
+                            {renderAIECourseButton('e_course_problems', isGeneratingECourseProblems)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Bagian Masalah
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseProblemsTitle}
+                              onChange={(e) => setECourseProblemsTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Daftar Masalah (Maksimal 3)
+                            </label>
+                            {eCourseProblemsList.map((prob, idx) => (
+                              <input
+                                key={idx}
+                                type="text"
+                                placeholder={`Contoh Masalah ${idx + 1}...`}
+                                value={prob}
+                                onChange={(e) => {
+                                  const next = [...eCourseProblemsList];
+                                  next[idx] = e.target.value;
+                                  setECourseProblemsList(next);
+                                }}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Solutions Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>💡</span> Solusi & Value Proposition
+                            </h3>
+                            {renderAIECourseButton('e_course_solutions', isGeneratingECourseSolutions)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Bagian Solusi
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseSolutionsTitle}
+                              onChange={(e) => setECourseSolutionsTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Kalimat Pengantar Solusi
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Kalimat pengantar kelas..."
+                              value={eCourseSolutionsIntro}
+                              onChange={(e) => setECourseSolutionsIntro(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Poin-poin Solusi (Maksimal 3)
+                            </label>
+                            {eCourseSolutionsList.map((sol, idx) => (
+                              <input
+                                key={idx}
+                                type="text"
+                                placeholder={`Poin Solusi ${idx + 1}...`}
+                                value={sol}
+                                onChange={(e) => {
+                                  const next = [...eCourseSolutionsList];
+                                  next[idx] = e.target.value;
+                                  setECourseSolutionsList(next);
+                                }}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Audience Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>🎯</span> Target Audiens / Calon Peserta
+                            </h3>
+                            {renderAIECourseButton('e_course_audience', isGeneratingECourseAudience)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Bagian Audiens
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseAudienceTitle}
+                              onChange={(e) => setECourseAudienceTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Target Kategori Peserta (Maksimal 3)
+                            </label>
+                            {eCourseAudienceList.map((aud, idx) => (
+                              <input
+                                key={idx}
+                                type="text"
+                                placeholder={`Contoh: Pelaku Bisnis, Mahasiswa, Freelancer`}
+                                value={aud}
+                                onChange={(e) => {
+                                  const next = [...eCourseAudienceList];
+                                  next[idx] = e.target.value;
+                                  setECourseAudienceList(next);
+                                }}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Mentor Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>👨‍🏫</span> Profil Mentor / Instruktur
+                            </h3>
+                            {renderAIECourseButton('e_course_mentor', isGeneratingECourseMentor)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Nama Mentor
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Nama lengkap mentor..."
+                              value={eCourseMentorName}
+                              onChange={(e) => setECourseMentorName(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Peran / Jabatan Profesional
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Contoh: Digital Marketer at Tech Company"
+                              value={eCourseMentorRole}
+                              onChange={(e) => setECourseMentorRole(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Bio Singkat / Kredibilitas Mentor
+                            </label>
+                            <textarea
+                              required
+                              placeholder="Latar belakang pengalaman dan keahlian mentor..."
+                              value={eCourseMentorDesc}
+                              onChange={(e) => setECourseMentorDesc(e.target.value)}
+                              rows={2}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors resize-y"
+                            />
+                          </div>
+                          <ImagePickerField
+                            checkboxId="generateECourseMentorImage"
+                            checkboxLabel="Gunakan Foto Kustom Mentor (jika tidak dicentang, avatar kartun default akan digunakan)"
+                            unsplashQuery="portrait,teacher,lecturer,avatar"
+                            imageUrl={eCourseMentorAvatar}
+                            onImageChange={(val) => {
+                              if (!val && eCourseMentorAvatar && eCourseMentorImageSource === 'upload') {
+                                handleDeleteImage(eCourseMentorAvatar);
+                              }
+                              setECourseMentorAvatar(val);
+                            }}
+                            apiToken={session?.access_token}
+                            apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                            isEnabled={generateECourseMentorImage}
+                            onEnabledChange={setGenerateECourseMentorImage}
+                            source={eCourseMentorImageSource}
+                            onSourceChange={setECourseMentorImageSource}
+                            onUpload={handleUploadImage}
+                            uploadType="eCourseMentor"
+                          />
+                        </div>
+
+                        {/* Curriculum Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>📖</span> Kurikulum & Modul Pembelajaran
+                            </h3>
+                            {renderAIECourseButton('e_course_curriculum', isGeneratingECourseCurriculum)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Bagian Kurikulum
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseCurriculumTitle}
+                              onChange={(e) => setECourseCurriculumTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Daftar Modul Belajar
+                            </label>
+                            {eCourseCurriculumModules.map((mod, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2 relative">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[10px] font-bold text-theme-text-sec">Modul #0{idx + 1}</span>
+                                  {eCourseCurriculumModules.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setECourseCurriculumModules(prev => prev.filter((_, i) => i !== idx))}
+                                      className="text-[9px] font-bold text-red-400 hover:underline cursor-pointer"
+                                    >
+                                      Hapus
+                                    </button>
+                                  )}
+                                </div>
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Judul Modul..."
+                                  value={mod.title}
+                                  onChange={(e) => {
+                                    const next = [...eCourseCurriculumModules];
+                                    next[idx].title = e.target.value;
+                                    setECourseCurriculumModules(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Deskripsi Singkat Materi..."
+                                  value={mod.desc}
+                                  onChange={(e) => {
+                                    const next = [...eCourseCurriculumModules];
+                                    next[idx].desc = e.target.value;
+                                    setECourseCurriculumModules(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                              </div>
+                            ))}
+                            {eCourseCurriculumModules.length < 5 && (
+                              <button
+                                type="button"
+                                onClick={() => setECourseCurriculumModules(prev => [...prev, { title: '', desc: '' }])}
+                                className="text-[9px] font-bold text-theme-accent hover:underline cursor-pointer"
+                              >
+                                + Tambah Modul Kurikulum
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Benefits Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>⭐</span> Keuntungan & Fasilitas
+                            </h3>
+                            {renderAIECourseButton('e_course_benefits', isGeneratingECourseBenefits)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Bagian Benefit
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseBenefitsTitle}
+                              onChange={(e) => setECourseBenefitsTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Daftar Keuntungan / Fasilitas (Maksimal 3)
+                            </label>
+                            {eCourseBenefitsList.map((ben, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                                <span className="text-[10px] font-bold text-theme-text-sec">Benefit #0{idx + 1}</span>
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Nama Benefit (e.g. Akses Selamanya)"
+                                  value={ben.title}
+                                  onChange={(e) => {
+                                    const next = [...eCourseBenefitsList];
+                                    next[idx].title = e.target.value;
+                                    setECourseBenefitsList(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Deskripsi Ringkas Benefit..."
+                                  value={ben.desc}
+                                  onChange={(e) => {
+                                    const next = [...eCourseBenefitsList];
+                                    next[idx].desc = e.target.value;
+                                    setECourseBenefitsList(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Bonuses Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>🎁</span> Bonus Spesial Eksklusif
+                            </h3>
+                            {renderAIECourseButton('e_course_bonuses', isGeneratingECourseBonuses)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Bagian Bonus
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseBonusesTitle}
+                              onChange={(e) => setECourseBonusesTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Daftar Bonus
+                            </label>
+                            {eCourseBonusesList.map((bon, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                                <span className="text-[10px] font-bold text-theme-text-sec">Bonus #0{idx + 1}</span>
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Nama Bonus (e.g. Ebook Premium)"
+                                  value={bon.title}
+                                  onChange={(e) => {
+                                    const next = [...eCourseBonusesList];
+                                    next[idx].title = e.target.value;
+                                    setECourseBonusesList(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Penjelasan Isi Bonus..."
+                                  value={bon.desc}
+                                  onChange={(e) => {
+                                    const next = [...eCourseBonusesList];
+                                    next[idx].desc = e.target.value;
+                                    setECourseBonusesList(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Pricing / Checkout Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>💰</span> Investasi & Harga Kelas
+                            </h3>
+                            {renderAIECourseButton('e_course_pricing', isGeneratingECoursePricing)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Investasi Belajar
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCoursePricingTitle}
+                              onChange={(e) => setECoursePricingTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3.5">
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                                Harga Normal (Dicoret)
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="e.g., Rp 999.000"
+                                value={eCoursePricingOriginal}
+                                onChange={(e) => setECoursePricingOriginal(e.target.value)}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                                Harga Promo (Aktif)
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="e.g., Rp 199.000"
+                                value={eCoursePricingDiscounted}
+                                onChange={(e) => setECoursePricingDiscounted(e.target.value)}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Teks Tombol Pembelian
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCoursePricingCtaText}
+                              onChange={(e) => setECoursePricingCtaText(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Fasilitas / Akses Belajar (Maksimal 3)
+                            </label>
+                            {eCoursePricingFeatures.map((feat, idx) => (
+                              <input
+                                key={idx}
+                                type="text"
+                                placeholder={`Fasilitas ${idx + 1}...`}
+                                value={feat}
+                                onChange={(e) => {
+                                  const next = [...eCoursePricingFeatures];
+                                  next[idx] = e.target.value;
+                                  setECoursePricingFeatures(next);
+                                }}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Testimonials Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>💬</span> Ulasan / Testimoni Alumni
+                            </h3>
+                            {renderAIECourseButton('e_course_testimonials', isGeneratingECourseTestimonials)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Judul Bagian Testimoni
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={eCourseTestimonialsTitle}
+                              onChange={(e) => setECourseTestimonialsTitle(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Ulasan Alumni (Maksimal 2)
+                            </label>
+                            {eCourseTestimonialsList.map((test, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                                <span className="text-[10px] font-bold text-theme-text-sec">Alumni #0{idx + 1}</span>
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Nama Alumni..."
+                                  value={test.name}
+                                  onChange={(e) => {
+                                    const next = [...eCourseTestimonialsList];
+                                    next[idx].name = e.target.value;
+                                    setECourseTestimonialsList(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Pekerjaan / Alumni ke-..."
+                                  value={test.role}
+                                  onChange={(e) => {
+                                    const next = [...eCourseTestimonialsList];
+                                    next[idx].role = e.target.value;
+                                    setECourseTestimonialsList(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                                <textarea
+                                  required
+                                  placeholder="Isi Ulasan Testimoni..."
+                                  value={test.content}
+                                  onChange={(e) => {
+                                    const next = [...eCourseTestimonialsList];
+                                    next[idx].content = e.target.value;
+                                    setECourseTestimonialsList(next);
+                                  }}
+                                  rows={2}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none resize-y"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* FAQ Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>❓</span> Tanya Jawab (FAQ)
+                            </h3>
+                            {renderAIECourseButton('e_course_faq', isGeneratingECourseFaq)}
+                          </div>
+                          <div className="space-y-3">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+                              Daftar Pertanyaan & Jawaban
+                            </label>
+                            {eCourseFaqs.map((faq, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2 relative">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[10px] font-bold text-theme-text-sec">Tanya Jawab #{idx + 1}</span>
+                                  {eCourseFaqs.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setECourseFaqs(prev => prev.filter((_, i) => i !== idx))}
+                                      className="text-[9px] font-bold text-red-400 hover:underline cursor-pointer"
+                                    >
+                                      Hapus
+                                    </button>
+                                  )}
+                                </div>
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Pertanyaan..."
+                                  value={faq.question}
+                                  onChange={(e) => {
+                                    const next = [...eCourseFaqs];
+                                    next[idx].question = e.target.value;
+                                    setECourseFaqs(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Jawaban..."
+                                  value={faq.answer}
+                                  onChange={(e) => {
+                                    const next = [...eCourseFaqs];
+                                    next[idx].answer = e.target.value;
+                                    setECourseFaqs(next);
+                                  }}
+                                  className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none"
+                                />
+                              </div>
+                            ))}
+                            <div className="flex gap-2">
+                              {eCourseFaqs.length < 5 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setECourseFaqs(prev => [...prev, { question: '', answer: '' }])}
+                                  className="text-[9px] font-bold text-theme-accent hover:underline cursor-pointer"
+                                >
+                                  + Tambah FAQ (Maksimal 5)
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contact & Footer */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                            <span>📞</span> Kontak & Footer
+                          </h3>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Nomor WhatsApp Aktif (Gunakan Format 62xxxx)
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Contoh: 628123456789"
+                              value={eCourseWhatsapp}
+                              onChange={(e) => setECourseWhatsapp(e.target.value.replace(/\D/g, ''))}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Custom Checkout CTA URL (Opsional)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: checkout.mycourse.com/pay"
+                              value={eCourseCtaUrl}
+                              onChange={(e) => setECourseCtaUrl(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Teks Copyright Footer (Opsional)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: © 2026 Digital Academy. Hak Cipta Dilindungi."
+                              value={eCourseCopyright}
+                              onChange={(e) => setECourseCopyright(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                      </div>
+                    )}
+
                     {/* CV Fields */}
                     {templateType === 'cv' && (
                       <div className="space-y-5 border-t border-theme-border pt-4">
@@ -5028,7 +6442,7 @@ function GenerateContent() {
                   </div>
                 )}
 
-                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv') ? (
+                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course') ? (
                   <iframe
                     ref={iframeRef}
                     src="/preview/index.html"
@@ -5243,6 +6657,9 @@ function GenerateContent() {
                                  } else if (product.id === 'cv') {
                                    setDesignKey('professional-dark');
                                    setDesignVersion(TEMPLATE_LATEST_VERSIONS['professional-dark'] || 1);
+                                 } else if (product.id === 'e-course') {
+                                   setDesignKey('purple-academy');
+                                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['purple-academy'] || 1);
                                  }
                               }
                             }}
@@ -5372,6 +6789,7 @@ function GenerateContent() {
                   const isTokoOnline = ['modern-clean', 'midnight-dark'].includes(previewDesignKey);
                   const isCampaign = ['neon-conversion', 'clean-trust'].includes(previewDesignKey);
                   const isCv = previewDesignKey === 'professional-dark';
+                  const isECourse = previewDesignKey === 'purple-academy';
                   const isGold = previewDesignKey === 'elegant-gold';
                   const isMidnight = previewDesignKey === 'midnight-dark';
 
@@ -5576,6 +6994,104 @@ function GenerateContent() {
                             year: '2024'
                           }
                         ]
+                      }
+                    };
+                  } else if (isECourse) {
+                    mockData = {
+                      meta: {
+                        title: 'E-Course: Digital Marketing Mastery',
+                        theme: 'purple-academy',
+                        template_type: 'e-course',
+                        design_key: 'purple-academy',
+                        template_version: TEMPLATE_LATEST_VERSIONS['purple-academy'] || 1
+                      },
+                      content: {
+                        courseName: 'Digital Marketing Mastery',
+                        courseBrief: 'Kelas online terlengkap cara jualan dan iklan digital mendatangkan pembeli berlimpah.',
+                        hero: {
+                          headline: 'Kuasai Iklan Digital & Naikkan Omzet Bisnis 10x Lipat! 🚀',
+                          subheadline: 'Belajar taktik jualan laris di Facebook, Instagram, Google, & TikTok Ads dibimbing langsung oleh praktisi berpengalaman.',
+                          cta_text: 'Amankan Slot Belajar Sekarang!'
+                        },
+                        problems: {
+                          title: 'Kendala Utama Pebisnis Online 😰',
+                          list: [
+                            'Iklan boncos terus menerus tanpa mendatangkan konversi.',
+                            'Bingung cara menentukan target audiens yang spesifik.',
+                            'Belum punya strategi funneling yang teruji menghasilkan penjualan.'
+                          ]
+                        },
+                        solutions: {
+                          title: 'Metode Belajar Terstruktur 💡',
+                          intro: 'Kelas ini dirancang khusus untuk memandu Anda dari nol sampai mandiri beriklan.',
+                          list: [
+                            'Materi video e-learning interaktif 50+ modul lengkap.',
+                            'Tugas praktik langsung dan studi kasus real-world.',
+                            'Bimbingan langsung via webinar rutin setiap minggu.'
+                          ]
+                        },
+                        audience: {
+                          title: 'Siapa Yang Wajib Ikut Kelas Ini? 🎯',
+                          list: [
+                            'Pebisnis UMKM yang ingin ekspansi ke digital.',
+                            'Karyawan swasta yang ingin belajar side income.',
+                            'Freelancer & Mahasiswa yang ingin membuka jasa iklan.'
+                          ]
+                        },
+                        mentor: {
+                          name: 'Rian Prasetya',
+                          role: 'Digital Marketing Lead at Serasi Tech',
+                          desc: 'Pengalaman 8+ tahun mengelola budget iklan digital senilai miliaran rupiah dan membantu ratusan UMKM naik kelas.'
+                        },
+                        curriculum: {
+                          title: 'Kurikulum & Modul Belajar 📖',
+                          modules: [
+                            { title: 'Modul 01: Fondasi Mindset Beriklan', desc: 'Memahami dasar marketing funneling, psikologi pembeli, dan riset pasar kompetitor.' },
+                            { title: 'Modul 02: Praktek Setup FB & IG Ads', desc: 'Langkah demi langkah mendaftar Business Manager, pasang Pixel tracking, dan riset audiens.' },
+                            { title: 'Modul 03: Optimasi Skala Iklan (Scaling)', desc: 'Cara membaca metrik iklan, optimasi budget CBO/ABO, dan teknik retargeting conversion.' }
+                          ]
+                        },
+                        benefits: {
+                          title: 'Fasilitas Belajar Premium ⭐',
+                          list: [
+                            { title: 'Akses Selamanya 🌐', desc: 'Dapatkan update materi e-course gratis selamanya tanpa biaya bulanan lagi.' },
+                            { title: 'Grup Komunitas Eksklusif 👥', desc: 'Bergabung dengan ribuan alumni lainnya untuk diskusi dan networking.' },
+                            { title: 'Sertifikat Kelulusan Resmi 🎓', desc: 'Klaim sertifikat digital resmi setelah menyelesaikan seluruh modul kelas.' }
+                          ]
+                        },
+                        bonuses: {
+                          title: 'Bonus Spesial Hari Ini 🎁',
+                          list: [
+                            { title: 'Template Copywriting Siap Pakai 📝', desc: 'Kumpulan kata-kata promosi konversi tinggi untuk berbagai jenis industri produk.' },
+                            { title: '100+ Ide Prompts AI Chatbot 🤖', desc: 'Gunakan kecerdasan buatan untuk merancang materi promosi dalam hitungan detik.' }
+                          ]
+                        },
+                        pricing: {
+                          title: 'Investasi Belajar Sekali Seumur Hidup 💰',
+                          original_price: 'Rp 999.000',
+                          discounted_price: 'Rp 199.000',
+                          cta_text: 'Daftar & Gabung Kelas Hari Ini',
+                          features: [
+                            'Akses 50+ Modul Video HD',
+                            'Gabung Grup Komunitas Telegram',
+                            'Webinar Tanya Jawab Mingguan',
+                            'Free Update Materi Selamanya'
+                          ]
+                        },
+                        testimonials: {
+                          title: 'Ulasan Jujur Dari Alumni 💬',
+                          list: [
+                            { name: 'Andi Setiawan', role: 'UMKM Fashion Solo', content: 'Materi modul FB Ads-nya sangat gampang dipahami pemula. Setelah praktek sebulan, omzet saya naik hampir 3 kali lipat!' },
+                            { name: 'Dewi Lestari', role: 'Ibu Rumah Tangga', content: 'Sangat recommended! Sekarang saya bisa punya penghasilan sendiri dari rumah dengan membuka jasa setup iklan toko online.' }
+                          ]
+                        },
+                        faqs: [
+                          { question: 'Apakah pemula total bisa mengikuti kelas ini?', answer: 'Ya tentu saja! Kurikulum dirancang dari fondasi dasar beriklan hingga taktik tingkat lanjut.' },
+                          { question: 'Berapa lama masa akses materi e-course?', answer: 'Anda mendapatkan akses selamanya, termasuk update materi gratis di masa mendatang.' }
+                        ],
+                        contact: {
+                          whatsapp: '6281234567890'
+                        }
                       }
                     };
                   } else {

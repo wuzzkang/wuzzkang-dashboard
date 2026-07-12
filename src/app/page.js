@@ -325,7 +325,7 @@ export default function DashboardPage() {
       return matchesSearch && (templateType === 'wedding' || templateType === 'birthday');
     }
     if (filterType === 'bisnis') {
-      return matchesSearch && (templateType === 'store' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv');
+      return matchesSearch && (templateType === 'store' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course');
     }
     return matchesSearch && templateType === filterType;
   });
@@ -541,7 +541,7 @@ export default function DashboardPage() {
                               <span>Lihat</span>
                               <ExternalLink className="h-3.5 w-3.5" />
                             </a>
-                            {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv') && (
+                            {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course') && (
                               (project.edit_count || 0) >= maxProjectEdits ? (
                                 <button
                                   disabled
