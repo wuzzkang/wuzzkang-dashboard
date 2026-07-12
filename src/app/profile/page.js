@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useTheme } from '@/hooks/useTheme';
 import Sidebar from '@/components/Sidebar';
 import Skeleton from '@/components/Skeleton';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import AlertBanner from '@/components/AlertBanner';
 import {
   User, Mail, Shield, Radio, Save, Check, AlertCircle, Eye, EyeOff,
   BarChart2, Target, Music2, ExternalLink, Loader2, KeyRound, Palette, LogOut
@@ -70,37 +72,12 @@ const TRACKING_FIELDS = [
 ];
 
 export default function ProfilePage() {
-  const { user, session, profile, loading, refreshProfile } = useAuth();
+  const { user, session, profile, loading, refreshProfile } = useRequireAuth();
   const router = useRouter();
+  const { activeTheme, handleThemeChange } = useTheme();
 
   const [profileData, setProfileData] = useState(null);
   const [isFetching, setIsFetching] = useState(true);
-
-  // Theme state
-  const [activeTheme, setActiveTheme] = useState('clean');
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'clean';
-    setActiveTheme(savedTheme);
-  }, []);
-
-  const handleThemeChange = (newTheme) => {
-    setActiveTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    window.dispatchEvent(new Event('themeChange'));
-  };
-
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      router.push('/login');
-    } catch (e) {
-      alert('Gagal melakukan logout.');
-    }
-  };
 
   // Password reset
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -124,12 +101,16 @@ export default function ProfilePage() {
   // Anchor for #tracking hash navigation
   const trackingRef = useRef(null);
 
-  // ── Auth guard ───────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!loading && !user) {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
       router.push('/login');
+    } catch (e) {
+      alert('Gagal melakukan logout.');
     }
-  }, [user, loading, router]);
+  };
 
   // ── Fetch full profile (includes tracking_config) ───────────────────────
   useEffect(() => {
@@ -359,10 +340,7 @@ export default function ProfilePage() {
                 Untuk mengubah password, kami akan mengirimkan link reset ke email Anda.
               </p>
               {passwordError && (
-                <div className="flex items-center gap-2 text-red-400 text-xs mb-3 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                  <span>{passwordError}</span>
-                </div>
+                <AlertBanner type="error" message={passwordError} className="mb-3" />
               )}
               <button
                 onClick={handlePasswordReset}
@@ -444,16 +422,10 @@ export default function ProfilePage() {
 
             {/* Save result feedback */}
             {trackingSaveResult === 'success' && (
-              <div className="flex items-center gap-2 text-green-400 text-sm bg-green-500/10 border border-green-500/20 rounded-xl px-3.5 py-2.5">
-                <Check className="h-4 w-4 shrink-0" />
-                <span>Berhasil disimpan! Pixel akan aktif di semua landing page berikutnya.</span>
-              </div>
+              <AlertBanner type="success" message="Berhasil disimpan! Pixel akan aktif di semua landing page berikutnya." />
             )}
             {trackingSaveResult === 'error' && (
-              <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-2.5">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{trackingError || 'Gagal menyimpan. Coba lagi.'}</span>
-              </div>
+              <AlertBanner type="error" message={trackingError || 'Gagal menyimpan. Coba lagi.'} />
             )}
 
             <button

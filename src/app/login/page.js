@@ -6,6 +6,9 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { Sparkles, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { BRAND_NAME } from '@/config/branding';
+import IconInput from '@/components/IconInput';
+import AlertBanner from '@/components/AlertBanner';
+import Loading from '@/components/Loading';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -27,13 +30,7 @@ export default function LoginPage() {
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#1a1510]">
-        <div className="relative">
-          <div className="h-12 w-12 rounded-full border-4 border-[#f5a623]/20 border-t-[#f5a623] animate-spin"></div>
-        </div>
-      </div>
-    );
+    return <Loading fullScreen />;
   }
 
   const handleAuth = async (e) => {
@@ -44,38 +41,29 @@ export default function LoginPage() {
 
     try {
       if (isForgotPassword) {
-        // Request password reset link
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/update-password`,
         });
         if (error) throw error;
         setMessage('Link reset password berhasil dikirim! Silakan periksa kotak masuk email Anda.');
       } else if (isSignUp) {
-        // Sign up with Supabase Auth
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: {
-              full_name: fullName,
-            },
+            data: { full_name: fullName },
           },
         });
 
         if (error) throw error;
-        
+
         if (data?.user?.identities?.length === 0) {
           setAuthError('Email ini sudah terdaftar. Silakan login.');
         } else {
           setMessage('Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi atau langsung login jika konfirmasi email dinonaktifkan.');
         }
       } else {
-        // Sign in
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         router.push('/');
       }
@@ -88,42 +76,36 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-theme-bg relative overflow-hidden px-4 transition-theme">
-      {/* Decorative Warm Theme Glow */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-theme-accent/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-theme-accent-hover/5 rounded-full blur-3xl"></div>
+      {/* Decorative Glow */}
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-theme-accent/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-theme-accent-hover/5 rounded-full blur-3xl" />
 
       <div className="w-full max-w-sm bg-theme-surface border border-theme-border rounded-2xl p-6 shadow-2xl relative z-10 transition-theme">
         {/* Header */}
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="h-11 w-11 rounded-xl flex items-center justify-center shadow-md mb-3.5"
-            style={{ background: 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))' }}>
+          <div
+            className="h-11 w-11 rounded-xl flex items-center justify-center shadow-md mb-3.5"
+            style={{ background: 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))' }}
+          >
             <Sparkles className="h-5 w-5 text-white" />
           </div>
-          <h1 className="text-2xl font-black text-theme-text tracking-tight animate-pulse" style={{ fontFamily: "'Sora', sans-serif" }}>
+          <h1
+            className="text-2xl font-black text-theme-text tracking-tight animate-pulse"
+            style={{ fontFamily: "'Sora', sans-serif" }}
+          >
             {isForgotPassword ? 'Reset Password' : BRAND_NAME}
           </h1>
           <p className="text-xs text-theme-text-sec mt-1.5 leading-relaxed">
-            {isForgotPassword 
+            {isForgotPassword
               ? 'Masukkan email Anda untuk menerima link reset password'
-              : isSignUp 
-              ? 'Buat akun untuk memulai generate landing page' 
+              : isSignUp
+              ? 'Buat akun untuk memulai generate landing page'
               : 'Masuk ke dashboard akun Anda'}
           </p>
         </div>
 
-        {/* Auth Error Notification */}
-        {authError && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg p-3 mb-5">
-            {authError}
-          </div>
-        )}
-
-        {/* Success message */}
-        {message && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-lg p-3 mb-5">
-            {message}
-          </div>
-        )}
+        <AlertBanner type="error" message={authError} className="mb-5" />
+        <AlertBanner type="success" message={message} className="mb-5" />
 
         {/* Form */}
         <form onSubmit={handleAuth} className="space-y-4">
@@ -132,19 +114,14 @@ export default function LoginPage() {
               <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                 Nama Lengkap
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-4 w-4 text-theme-text-muted" />
-                </span>
-                <input
-                  type="text"
-                  required
-                  placeholder="Nama Anda"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="block w-full pl-9 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-                />
-              </div>
+              <IconInput
+                icon={<User className="h-4 w-4" />}
+                type="text"
+                required
+                placeholder="Nama Anda"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
             </div>
           )}
 
@@ -152,19 +129,14 @@ export default function LoginPage() {
             <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
               Alamat Email
             </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-4 w-4 text-theme-text-muted" />
-              </span>
-              <input
-                type="email"
-                required
-                placeholder="nama@perusahaan.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-9 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-              />
-            </div>
+            <IconInput
+              icon={<Mail className="h-4 w-4" />}
+              type="email"
+              required
+              placeholder="nama@perusahaan.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
 
           {!isForgotPassword && (
@@ -187,19 +159,14 @@ export default function LoginPage() {
                   </button>
                 )}
               </div>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-4 w-4 text-theme-text-muted" />
-                </span>
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-9 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-                />
-              </div>
+              <IconInput
+                icon={<Lock className="h-4 w-4" />}
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
           )}
 
@@ -209,14 +176,14 @@ export default function LoginPage() {
             className="w-full mt-2 bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSubmitting ? (
-              <div className="h-4 w-4 rounded-full border-2 border-theme-accent-text/20 border-t-theme-accent-text animate-spin"></div>
+              <div className="h-4 w-4 rounded-full border-2 border-theme-accent-text/20 border-t-theme-accent-text animate-spin" />
             ) : (
               <>
                 <span>
-                  {isForgotPassword 
-                    ? 'Kirim Link Reset' 
-                    : isSignUp 
-                    ? 'Daftar Sekarang' 
+                  {isForgotPassword
+                    ? 'Kirim Link Reset'
+                    : isSignUp
+                    ? 'Daftar Sekarang'
                     : 'Masuk Dashboard'}
                 </span>
                 <ArrowRight className="h-4 w-4" />

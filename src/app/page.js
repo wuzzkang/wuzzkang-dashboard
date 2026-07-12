@@ -2,15 +2,17 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import Sidebar from '@/components/Sidebar';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useModalHistory } from '@/hooks/useModalHistory';
+import PageLayout from '@/components/PageLayout';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import AlertBanner from '@/components/AlertBanner';
 import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search, Link2, Loader2, Trash2, ChevronRight } from 'lucide-react';
 import Skeleton from '@/components/Skeleton';
 
 export default function DashboardPage() {
-  const { user, session, loading } = useAuth();
+  const { user, session, loading } = useRequireAuth();
   const router = useRouter();
 
   const [projects, setProjects] = useState([]);
@@ -40,41 +42,9 @@ export default function DashboardPage() {
   const [domainSuccess, setDomainSuccess] = useState('');
   const checkDebounceRef = useRef(null);
 
-  // Sync back button / popstate with share modal state
-  const prevShareModalRef = useRef(false);
-
-  useEffect(() => {
-    const handlePopState = (event) => {
-      const currentModalId = window.history.state?.modalId;
-      if (!currentModalId) {
-        setShareModalOpen(false);
-        setDomainModalOpen(false);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (shareModalOpen) {
-      if (!window.history.state || window.history.state.modalId !== 'share-modal') {
-        window.history.pushState({ modalId: 'share-modal' }, '');
-      }
-    }
-  }, [shareModalOpen]);
-
-  useEffect(() => {
-    if (!shareModalOpen && prevShareModalRef.current) {
-      if (typeof window !== 'undefined' && window.history.state?.modalId === 'share-modal') {
-        window.history.back();
-      }
-    }
-    prevShareModalRef.current = shareModalOpen;
-  }, [shareModalOpen]);
-
+  // Use shared hooks for modal browser history management
+  useModalHistory(shareModalOpen, 'share-modal', () => setShareModalOpen(false));
+  useModalHistory(domainModalOpen, 'domain-modal', () => setDomainModalOpen(false));
 
   // Fetch systemSettings for max edits config
   useEffect(() => {
@@ -97,13 +67,6 @@ export default function DashboardPage() {
     };
     fetchProfileSettings();
   }, [session]);
-
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
 
   // Fetch projects from backend
   useEffect(() => {
@@ -395,11 +358,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
-      <Sidebar />
-
-      {/* Main Content - Mobile-First */}
-      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
+    <PageLayout>
         {/* Header */}
         <div className="flex flex-col gap-4 mb-4">
           <div>
@@ -956,7 +915,6 @@ export default function DashboardPage() {
             setSubdomainToDelete(null);
           }}
         />
-      </main>
-    </div>
+      </PageLayout>
   );
 }

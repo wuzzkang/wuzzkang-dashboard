@@ -2,15 +2,19 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import Sidebar from '@/components/Sidebar';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useModalHistory } from '@/hooks/useModalHistory';
+import PageLayout from '@/components/PageLayout';
 import Skeleton from '@/components/Skeleton';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { CreditCard, ArrowRight, CheckCircle, AlertCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X } from 'lucide-react';
+import AlertBanner from '@/components/AlertBanner';
+import QrisZoomModal from '@/components/QrisZoomModal';
+import TransactionStatusBadge from '@/components/TransactionStatusBadge';
+import { CreditCard, ArrowRight, CheckCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X } from 'lucide-react';
 import { BRAND_NAME } from '@/config/branding';
 
 export default function TopUpPage() {
-  const { user, session, profile, loading, refreshProfile } = useAuth();
+  const { user, session, profile, loading, refreshProfile } = useRequireAuth();
   const router = useRouter();
 
   // Input states (Credits)
@@ -35,68 +39,9 @@ export default function TopUpPage() {
   const prevActiveTxRef = useRef(null);
   const prevQrisZoomRef = useRef(false);
 
-  const handleCloseQris = () => {
-    setIsQrisZoomed(false);
-  };
-
-  useEffect(() => {
-    const handlePopState = (event) => {
-      const currentModalId = window.history.state?.modalId;
-
-      if (!currentModalId) {
-        setIsQrisZoomed(false);
-        setActiveTransaction(null);
-      } else if (currentModalId === 'active-tx') {
-        setIsQrisZoomed(false);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (activeTransaction) {
-      if (!window.history.state || window.history.state.modalId !== 'active-tx') {
-        window.history.pushState({ modalId: 'active-tx' }, '');
-      }
-    }
-  }, [activeTransaction]);
-
-  useEffect(() => {
-    if (!activeTransaction && prevActiveTxRef.current) {
-      if (typeof window !== 'undefined' && window.history.state?.modalId === 'active-tx') {
-        window.history.back();
-      }
-    }
-    prevActiveTxRef.current = activeTransaction;
-  }, [activeTransaction]);
-
-  useEffect(() => {
-    if (isQrisZoomed) {
-      if (!window.history.state || window.history.state.modalId !== 'qris-zoom') {
-        window.history.pushState({ modalId: 'qris-zoom' }, '');
-      }
-    }
-  }, [isQrisZoomed]);
-
-  useEffect(() => {
-    if (!isQrisZoomed && prevQrisZoomRef.current) {
-      if (typeof window !== 'undefined' && window.history.state?.modalId === 'qris-zoom') {
-        window.history.back();
-      }
-    }
-    prevQrisZoomRef.current = isQrisZoomed;
-  }, [isQrisZoomed]);
-
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
+  // Use the shared useModalHistory hook for browser back button handling
+  useModalHistory(!!activeTransaction, 'active-tx', () => setActiveTransaction(null));
+  useModalHistory(isQrisZoomed, 'qris-zoom', () => setIsQrisZoomed(false));
 
   // Fetch active products list from backend
   useEffect(() => {
@@ -421,32 +366,18 @@ export default function TopUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
-      <Sidebar />
-
-      {/* Main Content - Mobile-First */}
-      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
-        <div className="mb-6">
-          <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Top Up Credit</h1>
-          <p className="text-theme-text-sec text-xs mt-1">Tambah credit {BRAND_NAME} untuk mendeploy website landing page Anda</p>
-        </div>
+    <>
+      <PageLayout>
+      <div className="mb-6">
+        <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Top Up Credit</h1>
+        <p className="text-theme-text-sec text-xs mt-1">Tambah credit {BRAND_NAME} untuk mendeploy website landing page Anda</p>
+      </div>
 
         <div className="space-y-6">
           {/* Form Top Up */}
           <div className="space-y-4">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl p-3.5 flex gap-2.5 items-start">
-                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {successMessage && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl p-3.5 flex gap-2.5 items-start">
-                <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span>{successMessage}</span>
-              </div>
-            )}
+            <AlertBanner type="error" message={error} />
+            <AlertBanner type="success" message={successMessage} />
 
             {!activeTransaction ? (
               <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5">
@@ -797,7 +728,7 @@ export default function TopUpPage() {
                             {cashVal ? `Rp ${cashVal.toLocaleString('id-ID')}` : '-'}
                           </span>
                           <span className="font-black text-emerald-400">
-                            +{tx.amount.toLocaleString('id-ID')} Credit
+                           +{tx.amount.toLocaleString('id-ID')} Credit
                           </span>
                         </div>
 
@@ -847,54 +778,6 @@ export default function TopUpPage() {
         </div>
 
         {/* QRIS Zoom Modal Overlay */}
-        {isQrisZoomed && activeTransaction && (
-          <div 
-            onClick={handleCloseQris}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md transition-all duration-300 cursor-zoom-out animate-fadeIn"
-          >
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white p-5 rounded-3xl w-full max-w-[400px] shadow-2xl relative text-slate-900 flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-200"
-            >
-              {/* Close button */}
-              <button
-                onClick={handleCloseQris}
-                className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-                title="Tutup"
-              >
-                <X className="h-4.5 w-4.5" />
-              </button>
- 
-              <div className="text-center mt-2">
-                <h3 className="text-base font-black tracking-tight text-slate-900" style={{ fontFamily: "'Sora', sans-serif" }}>
-                  Scan Kode QRIS
-                </h3>
-                <p className="text-[10px] font-mono text-slate-500 mt-1">
-                  Order ID: {activeTransaction.order_id}
-                </p>
-              </div>
- 
-              {/* QRIS Large Image */}
-              <div className="bg-white p-2 rounded-2xl border border-slate-200 flex items-center justify-center shadow-inner">
-                <img 
-                  src={activeTransaction.metadata?.qr_image_url || activeTransaction.winpay?.qrUrl || '/qris.png'} 
-                  alt="QRIS Code Large" 
-                  className="w-[350px] h-[350px] object-contain"
-                />
-              </div>
- 
-              <div className="w-full mt-1">
-                <button
-                  type="button"
-                  onClick={handleCloseQris}
-                  className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-200/60 cursor-pointer active:scale-[0.98]"
-                >
-                  Tutup
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         <ConfirmDialog
           isOpen={showCancelConfirm}
@@ -909,7 +792,14 @@ export default function TopUpPage() {
           onCancel={() => setShowCancelConfirm(false)}
           variant="warning"
         />
-      </main>
-    </div>
+      </PageLayout>
+
+      {/* QRIS Zoom Modal */}
+      <QrisZoomModal
+        isOpen={isQrisZoomed && !!activeTransaction}
+        onClose={() => setIsQrisZoomed(false)}
+        transaction={activeTransaction}
+      />
+    </>
   );
 }

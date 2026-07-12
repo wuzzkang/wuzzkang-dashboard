@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/hooks/useTheme';
 import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette, History, Plus } from 'lucide-react';
 import { BRAND_NAME } from '@/config/branding';
 
@@ -27,26 +28,7 @@ export default function Sidebar() {
       router.replace(href);
     }
   };
-  const [activeTheme, setActiveTheme] = useState('clean');
-
-  useEffect(() => {
-    const syncTheme = () => {
-      const savedTheme = localStorage.getItem('theme') || 'clean';
-      setActiveTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    };
-
-    syncTheme();
-    window.addEventListener('themeChange', syncTheme);
-    return () => window.removeEventListener('themeChange', syncTheme);
-  }, []);
-
-  const handleThemeChange = (newTheme) => {
-    setActiveTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    window.dispatchEvent(new Event('themeChange'));
-  };
+  const { activeTheme, handleThemeChange } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
