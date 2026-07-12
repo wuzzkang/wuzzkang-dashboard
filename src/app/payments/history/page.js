@@ -23,6 +23,7 @@ import {
   ChevronRight,
   X,
   Search,
+  Download,
   Maximize2,
   Smartphone,
   Info
@@ -505,7 +506,7 @@ export default function PaymentHistoryPage() {
                 </p>
               </div>
               <button
-                onClick={handleCloseDetail}
+                onClick={() => setSelectedTx(null)}
                 className="p-1.5 rounded-full hover:bg-theme-card/60 text-theme-text-sec transition-colors"
                 title="Tutup"
               >
@@ -698,7 +699,7 @@ export default function PaymentHistoryPage() {
             <div className="w-full mt-1">
               <button
                 type="button"
-                onClick={handleCloseDetail}
+                onClick={() => setSelectedTx(null)}
                 className="w-full py-3 px-4 bg-theme-card border border-theme-border/60 hover:border-theme-text-muted text-theme-text rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-[0.98]"
               >
                 Tutup
