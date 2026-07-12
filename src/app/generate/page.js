@@ -1566,10 +1566,31 @@ function GenerateContent() {
     if (fieldType === 'campaign_urgency') setIsGeneratingCampaignUrgency(true);
     if (fieldType === 'campaign_faq') setIsGeneratingCampaignFaq(true);
 
-    const context = {
+    let context = {
       campaignName: name,
       campaignBrief: campaignBrief
     };
+
+    if (fieldType === 'campaign_faq') {
+      const filledFaqs = campaignFaqs.filter(faq => faq.question?.trim() && faq.answer?.trim());
+      const totalSlots = campaignFaqs.length;
+      let targetGenerateCount = 3;
+
+      if (totalSlots > 1) {
+        targetGenerateCount = totalSlots - filledFaqs.length;
+      } else {
+        targetGenerateCount = filledFaqs.length > 0 ? 0 : 3;
+      }
+
+      // If they clicked AI Generate but all slots are already filled, we regenerate all slots
+      if (targetGenerateCount === 0 && totalSlots > 0) {
+        targetGenerateCount = totalSlots;
+        context.filledFaqs = [];
+      } else {
+        context.filledFaqs = filledFaqs;
+      }
+      context.faqCount = targetGenerateCount;
+    }
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
@@ -1643,7 +1664,28 @@ function GenerateContent() {
         if (finalContent.cta_text) setCampaignClosingCta(finalContent.cta_text);
       }
       if (fieldType === 'campaign_faq') {
-        setCampaignFaqs(finalContent.faqs || [{ question: '', answer: '' }]);
+        const generated = finalContent.faqs || [];
+        const originalFaqs = [...campaignFaqs];
+        let genIndex = 0;
+
+        const mergedFaqs = originalFaqs.map(faq => {
+          const isFilled = faq.question?.trim() && faq.answer?.trim();
+          if (isFilled && context.filledFaqs && context.filledFaqs.length > 0) {
+            return faq;
+          } else {
+            const replacement = generated[genIndex] || { question: '', answer: '' };
+            genIndex++;
+            return replacement;
+          }
+        });
+
+        let finalFaqs = [...mergedFaqs];
+        while (genIndex < generated.length && finalFaqs.length < 5) {
+          finalFaqs.push(generated[genIndex]);
+          genIndex++;
+        }
+
+        setCampaignFaqs(finalFaqs);
       }
 
       await refreshProfile();
@@ -2231,6 +2273,173 @@ function GenerateContent() {
     setError('');
     setIsPublishing(true);
 
+    let compiledPageData;
+    if (templateType === 'cv') {
+      compiledPageData = {
+        meta: {
+          title: cvName ? `CV — ${cvName}` : 'Curriculum Vitae',
+          theme: designKey || 'professional-dark',
+          template_type: 'cv',
+          design_key: designKey || 'professional-dark',
+        },
+        content: {
+          profile: {
+            name: cvName,
+            title: cvTitle,
+            summary: cvSummary,
+            photo_url: cvPhotoUrl || null,
+            email: cvEmail,
+            phone: cvPhone,
+            location: cvLocation,
+            linkedin_url: cvLinkedin || null,
+            github_url: cvGithub || null,
+            portfolio_url: cvPortfolio || null,
+          },
+          experiences: cvExperiences.filter(e => e.company && e.position && e.period),
+          educations: cvEducations.filter(e => e.institution && e.degree && e.period),
+          skills: cvSkills,
+          languages: cvLanguages.filter(l => l.language && l.level),
+          certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
+        }
+      };
+    } else if (templateType === 'toko-online') {
+      compiledPageData = {
+        meta: {
+          title: storeName || 'Toko Online',
+          theme: designKey,
+          template_type: 'toko-online',
+          design_key: designKey,
+        },
+        content: {
+          design_key: designKey,
+          store: {
+            name: storeName,
+            tagline: storeTagline,
+            description: storeDescription || null,
+            logo_url: storeLogoUrl || null,
+            banner_url: generateStoreBanner ? (storeBannerUrl || null) : null
+          },
+          products: tokoProducts.map(p => ({
+            name: p.name,
+            price: p.price,
+            description: p.description || null,
+            image_url: p.image_url || null
+          })),
+          contact: {
+            whatsapp: tokoWhatsapp,
+            instagram: tokoInstagram || null,
+            shopee_url: tokoShopee || null,
+            tokopedia_url: tokoTokopedia || null,
+            address: tokoAddress || null
+          },
+          quote: tokoQuote || null
+        }
+      };
+    } else if (templateType === 'campaign') {
+      compiledPageData = {
+        meta: {
+          title: name || 'Campaign Halaman',
+          theme: designKey,
+          template_type: 'campaign',
+          design_key: designKey,
+        },
+        content: {
+          design_key: designKey,
+          brief: campaignBrief || null,
+          hero: {
+            headline: campaignHeadline,
+            subheadline: campaignSubheadline,
+            cta_text: campaignCtaText,
+            image_url: generateCampaignHero ? (campaignHeroImage || null) : null
+          },
+          problems: {
+            title: campaignProblemsTitle,
+            list: campaignProblemsList.filter(Boolean)
+          },
+          solutions: {
+            title: campaignSolutionsTitle,
+            intro: campaignSolutionsIntro,
+            benefits: campaignBenefits
+          },
+          social_proof: {
+            testimonials: campaignTestimonials,
+            guarantee: campaignGuarantee || null
+          },
+          closing: {
+            urgency: campaignUrgency,
+            cta_text: campaignClosingCta
+          },
+          contact: {
+            whatsapp: campaignWhatsapp || '',
+            cta_url: campaignCtaUrl || null
+          },
+          faqs: campaignFaqs.filter(f => f.question && f.answer)
+        }
+      };
+    } else if (templateType === 'wedding') {
+      compiledPageData = {
+        meta: {
+          title: `Undangan Pernikahan ${groomNickname || 'Groom'} & ${brideNickname || 'Bride'}`,
+          theme: designKey,
+          template_type: 'wedding',
+          design_key: designKey,
+        },
+        content: {
+          design_key: designKey,
+          groom: { name: groomName, nickname: groomNickname, father: groomFather, mother: groomMother, image_url: groomImage || null },
+          bride: { name: brideName, nickname: brideNickname, father: brideMother, mother: brideMother, image_url: brideImage || null },
+          prewedding_photo_url: generatePrewedding ? (preweddingPhotoUrl || null) : null,
+          story: storyList.length > 0 ? storyList : null,
+          akad: { date: akadDate, time: akadTime, location: akadLocation, maps_url: akadMaps || null },
+          resepsi: { date: resepsiDate, time: resepsiTime, location: resepsiLocation, maps_url: resepsiMaps || null },
+          gift: giftBank && giftAccount ? { bank_name: giftBank, account_number: giftAccount, account_holder: giftHolder || '' } : null,
+          gallery: galleryList.length > 0 ? galleryList : null,
+          quote: pageData?.content?.quote || 'Semoga menjadi keluarga sakinah mawaddah warahmah.',
+          last_generated_prewedding_url: preweddingPhotoUrl || pageData?.content?.last_generated_prewedding_url || null,
+          prewedding_generate_count: preweddingGenerateCount,
+          banner_tagline: pageData?.content?.banner_tagline || null,
+          invitation_intro: pageData?.content?.invitation_intro || null,
+          closing_message: pageData?.content?.closing_message || null,
+          style_palette: pageData?.content?.style_palette || null,
+          scene_description: pageData?.content?.scene_description || null,
+        }
+      };
+    } else if (templateType === 'birthday') {
+      compiledPageData = {
+        meta: {
+          title: `Undangan Ulang Tahun ${celebrantNickname || celebrantName || 'Celebrant'}`,
+          theme: designKey,
+          template_type: 'birthday',
+          design_key: designKey,
+        },
+        content: {
+          design_key: designKey,
+          celebrant: {
+            name: celebrantName,
+            nickname: celebrantNickname,
+            age: celebrantAge,
+            parent_name: celebrantParents || null,
+            image_url: celebrantImage || null,
+            gender: celebrantGender
+          },
+          event: {
+            date: birthdayDate,
+            time: birthdayTime,
+            location: birthdayLocation,
+            maps_url: birthdayMaps || null
+          },
+          gift: birthdayGiftBank && birthdayGiftAccount ? {
+            bank_name: birthdayGiftBank,
+            account_number: birthdayGiftAccount,
+            account_holder: birthdayGiftHolder || ''
+          } : null,
+          quote: pageData?.content?.quote || 'Selamat hari lahir! Semoga panjang umur, sehat selalu.',
+          banner_tagline: pageData?.content?.banner_tagline || null,
+          closing_message: pageData?.content?.closing_message || null,
+        }
+      };
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}/edit-deployed`, {
         method: 'POST',
@@ -2238,7 +2447,7 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ name, pageData }),
+        body: JSON.stringify({ name, pageData: compiledPageData }),
       });
 
       const result = await response.json();
@@ -2246,8 +2455,9 @@ function GenerateContent() {
       if (response.ok && result.success) {
         hasSavedRef.current = true;
         uploadedImagesRef.current = [];
-        cleanupOrphanedAssets(originalPageDataRef.current, pageData);
-        originalPageDataRef.current = pageData;
+        cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
+        originalPageDataRef.current = compiledPageData;
+        setPageData(compiledPageData);
         if (pendingDeleteImages.length > 0) {
           pendingDeleteImages.forEach(url => executeDeleteImage(url));
           setPendingDeleteImages([]);
@@ -4017,9 +4227,13 @@ function GenerateContent() {
                                   Hapus
                                 </button>
                                 <div className="space-y-1">
-                                  <label className="block text-[8px] font-semibold text-theme-text-sec">Pertanyaan #${index + 1}</label>
+                                  <div className="flex justify-between items-center">
+                                    <label className="block text-[8px] font-semibold text-theme-text-sec">Pertanyaan #${index + 1}</label>
+                                    <span className="text-[7px] text-theme-text-muted">{(faq.question || '').length}/120</span>
+                                  </div>
                                   <input
                                     type="text"
+                                    maxLength={120}
                                     placeholder={`e.g. Apakah ada garansi uang kembali?`}
                                     value={faq.question}
                                     onChange={(e) => {
@@ -4031,9 +4245,13 @@ function GenerateContent() {
                                   />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="block text-[8px] font-semibold text-theme-text-sec">Jawaban #${index + 1}</label>
+                                  <div className="flex justify-between items-center">
+                                    <label className="block text-[8px] font-semibold text-theme-text-sec">Jawaban #${index + 1}</label>
+                                    <span className="text-[7px] text-theme-text-muted">{(faq.answer || '').length}/200</span>
+                                  </div>
                                   <textarea
                                     rows={2}
+                                    maxLength={200}
                                     placeholder={`e.g. Ya, kami memberikan garansi 100% uang kembali jika...`}
                                     value={faq.answer}
                                     onChange={(e) => {
@@ -4047,13 +4265,13 @@ function GenerateContent() {
                               </div>
                             ))}
                             <div className="flex gap-2">
-                              {campaignFaqs.length < 8 && (
+                              {campaignFaqs.length < 5 && (
                                 <button
                                   type="button"
                                   onClick={() => setCampaignFaqs(prev => [...prev, { question: '', answer: '' }])}
                                   className="text-[9px] font-bold text-theme-accent hover:underline cursor-pointer"
                                 >
-                                  + Tambah FAQ
+                                  + Tambah FAQ (Maksimal 5)
                                 </button>
                               )}
                             </div>
