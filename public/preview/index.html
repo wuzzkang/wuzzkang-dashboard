@@ -58,8 +58,10 @@
 
                 if (templateType === 'wedding') {
                     try {
+                        const templateVersion = pageData.meta?.template_version || 1;
+                        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
                         // Dynamically import the exact JS template module with cache-bust
-                        const module = await import(`./templates/wedding/${designKey}.js${cacheBust}`);
+                        const module = await import(`./templates/wedding/${resolvedFile}${cacheBust}`);
                         
                         // Execute the template renderer
                         await module.render(pageData, 'Nama Tamu Undangan');
@@ -87,8 +89,10 @@
                     }
                 } else if (templateType === 'toko-online') {
                     try {
+                        const templateVersion = pageData.meta?.template_version || 1;
+                        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
                         // Dynamically import the exact JS toko-online template module with cache-bust
-                        const module = await import(`./templates/toko-online/${designKey}.js${cacheBust}`);
+                        const module = await import(`./templates/toko-online/${resolvedFile}${cacheBust}`);
                         
                         // Execute the template renderer
                         await module.render(pageData, 'Tamu');
@@ -97,8 +101,10 @@
                     }
                 } else if (templateType === 'campaign') {
                     try {
+                        const templateVersion = pageData.meta?.template_version || 1;
+                        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
                         // Dynamically import the exact JS campaign template module with cache-bust
-                        const module = await import(`./templates/campaign/${designKey}.js${cacheBust}`);
+                        const module = await import(`./templates/campaign/${resolvedFile}${cacheBust}`);
                         
                         // Execute the template renderer
                         await module.render(pageData, 'Tamu');
@@ -107,8 +113,10 @@
                     }
                 } else if (templateType === 'birthday') {
                     try {
+                        const templateVersion = pageData.meta?.template_version || 1;
+                        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
                         // Dynamically import the exact JS birthday template module with cache-bust
-                        const module = await import(`./templates/birthday/${designKey}.js${cacheBust}`);
+                        const module = await import(`./templates/birthday/${resolvedFile}${cacheBust}`);
                         
                         // Execute the template renderer
                         await module.render(pageData, 'Nama Tamu Undangan');
@@ -117,8 +125,10 @@
                     }
                 } else if (templateType === 'cv') {
                     try {
+                        const templateVersion = pageData.meta?.template_version || 1;
+                        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
                         // Dynamically import the CV template module with cache-bust
-                        const module = await import(`./templates/cv/${designKey}.js${cacheBust}`);
+                        const module = await import(`./templates/cv/${resolvedFile}${cacheBust}`);
                         
                         // Execute the template renderer (CV does not use guestName)
                         await module.render(pageData, '', BRAND_CONFIG);

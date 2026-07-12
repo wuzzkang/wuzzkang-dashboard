@@ -102,6 +102,25 @@ const compressImage = (file) => {
   });
 };
 
+const TEMPLATE_LATEST_VERSIONS = {
+  // Toko Online
+  'modern-clean': 1,
+  'midnight-dark': 1,
+  // Wedding
+  'sage-green': 1,
+  'floral-pink': 1,
+  'classic-love': 1,
+  'javanese-traditional': 1,
+  // Birthday
+  'cute-balloon': 1,
+  'elegant-gold': 1,
+  // Campaign
+  'neon-conversion': 2,
+  'clean-trust': 1,
+  // CV
+  'professional-dark': 1
+};
+
 function GenerateContent() {
   const { user, session, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
@@ -153,6 +172,7 @@ function GenerateContent() {
 
   // Wedding modular additions
   const [designKey, setDesignKey] = useState('modern-clean');
+  const [designVersion, setDesignVersion] = useState(1);
   const [previewDesignKey, setPreviewDesignKey] = useState(null);
 
   const closePreviewModal = () => {
@@ -160,6 +180,11 @@ function GenerateContent() {
     if (typeof window !== 'undefined' && window.history.state?.isPreviewModal) {
       window.history.back();
     }
+  };
+
+  const handleSelectDesign = (key) => {
+    setDesignKey(key);
+    setDesignVersion(TEMPLATE_LATEST_VERSIONS[key] || 1);
   };
 
   // Handle Back Button closure for the Design Preview Modal
@@ -472,6 +497,7 @@ function GenerateContent() {
               setGiftHolder(content.gift?.account_holder || '');
 
               setDesignKey(pageConfig.meta?.design_key || 'sage-green');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
               setGroomImage(content.groom?.image_url || DEFAULT_GROOM_AVATAR);
               setBrideImage(content.bride?.image_url || DEFAULT_BRIDE_AVATAR);
               setStoryList(content.story || []);
@@ -510,6 +536,7 @@ function GenerateContent() {
               setBirthdayGiftHolder(content.gift?.account_holder || '');
 
               setDesignKey(pageConfig.meta?.design_key || 'cute-balloon');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
             } else if (pageConfig && pageConfig.meta?.template_type === 'toko-online') {
               setTemplateType('toko-online');
               const content = pageConfig.content || {};
@@ -537,6 +564,7 @@ function GenerateContent() {
               setTokoAddress(content.contact?.address || '');
               setTokoQuote(content.quote || '');
               setDesignKey(pageConfig.meta?.design_key || 'modern-clean');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
             } else if (pageConfig && pageConfig.meta?.template_type === 'campaign') {
               setTemplateType('campaign');
               const content = pageConfig.content || {};
@@ -569,6 +597,7 @@ function GenerateContent() {
               setCampaignCtaUrl(content.contact?.cta_url || '');
               setCampaignFaqs(content.faqs || [{ question: '', answer: '' }]);
               setDesignKey(pageConfig.meta?.design_key || 'neon-conversion');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
             } else if (pageConfig && pageConfig.meta?.template_type === 'cv') {
               setTemplateType('cv');
               const content = pageConfig.content || {};
@@ -589,6 +618,7 @@ function GenerateContent() {
               setCvLanguages(content.languages?.length > 0 ? content.languages : [{ language: '', level: '' }]);
               setCvCertifications(content.certifications || []);
               setDesignKey(pageConfig.meta?.design_key || 'professional-dark');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
             } else {
               setTemplateType('store');
             }
@@ -767,6 +797,7 @@ function GenerateContent() {
       meta: {
         template_type: templateType,
         design_key: designKey,
+        template_version: designVersion,
         title: metaTitle,
         theme: designKey
       },
@@ -782,6 +813,7 @@ function GenerateContent() {
     projectId,
     templateType,
     designKey,
+    designVersion,
     groomName,
     groomNickname,
     groomFather,
@@ -2030,6 +2062,7 @@ function GenerateContent() {
               theme: designKey || 'professional-dark',
               template_type: 'cv',
               design_key: designKey || 'professional-dark',
+              template_version: designVersion,
             },
             content: {
               profile: {
@@ -2058,6 +2091,7 @@ function GenerateContent() {
               theme: designKey,
               template_type: 'toko-online',
               design_key: designKey,
+              template_version: designVersion,
             },
             content: {
               design_key: designKey,
@@ -2091,6 +2125,7 @@ function GenerateContent() {
               theme: designKey,
               template_type: 'campaign',
               design_key: designKey,
+              template_version: designVersion,
             },
             content: {
               design_key: designKey,
@@ -2132,6 +2167,7 @@ function GenerateContent() {
               theme: designKey,
               template_type: 'wedding',
               design_key: designKey,
+              template_version: designVersion,
             },
             content: {
               design_key: designKey,
@@ -2160,6 +2196,7 @@ function GenerateContent() {
               theme: designKey,
               template_type: 'birthday',
               design_key: designKey,
+              template_version: designVersion,
             },
             content: {
               design_key: designKey,
@@ -2281,6 +2318,7 @@ function GenerateContent() {
           theme: designKey || 'professional-dark',
           template_type: 'cv',
           design_key: designKey || 'professional-dark',
+          template_version: designVersion,
         },
         content: {
           profile: {
@@ -2309,6 +2347,7 @@ function GenerateContent() {
           theme: designKey,
           template_type: 'toko-online',
           design_key: designKey,
+          template_version: designVersion,
         },
         content: {
           design_key: designKey,
@@ -2342,6 +2381,7 @@ function GenerateContent() {
           theme: designKey,
           template_type: 'campaign',
           design_key: designKey,
+          template_version: designVersion,
         },
         content: {
           design_key: designKey,
@@ -2383,6 +2423,7 @@ function GenerateContent() {
           theme: designKey,
           template_type: 'wedding',
           design_key: designKey,
+          template_version: designVersion,
         },
         content: {
           design_key: designKey,
@@ -2411,6 +2452,7 @@ function GenerateContent() {
           theme: designKey,
           template_type: 'birthday',
           design_key: designKey,
+          template_version: designVersion,
         },
         content: {
           design_key: designKey,
@@ -2800,6 +2842,37 @@ function GenerateContent() {
                       />
                     </div>
 
+                    {/* Template Upgrade Banner */}
+                    {(() => {
+                      const latestVer = TEMPLATE_LATEST_VERSIONS[designKey] || 1;
+                      const canUpgrade = latestVer > designVersion;
+                      if (!canUpgrade) return null;
+
+                      return (
+                        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 p-4 rounded-2xl mb-4 text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                          <div className="space-y-1">
+                            <div className="font-bold flex items-center gap-1.5 text-amber-400">
+                              <AlertCircle size={14} /> Tersedia Versi Desain Baru!
+                            </div>
+                            <p className="text-theme-text-sec text-[11px] leading-relaxed">
+                              Tema <b>{designKey}</b> memiliki pembaruan desain terbaru (Versi {latestVer}). Upgrade sekarang untuk menikmati tata letak terbaru secara aman.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Upgrade desain tema "${designKey}" ke versi ${latestVer}?\n\nKonten lama Anda akan tetap dipertahankan.`)) {
+                                setDesignVersion(latestVer);
+                              }
+                            }}
+                            className="flex-shrink-0 bg-amber-500 text-slate-900 font-bold px-3 py-2 rounded-xl hover:bg-amber-400 active:scale-95 transition-all"
+                          >
+                            Upgrade Desain (v{latestVer})
+                          </button>
+                        </div>
+                      );
+                    })()}
+
                     {/* Wedding Fields */}
                     {templateType === 'wedding' && (
                       <div className="space-y-4 border-t border-theme-border pt-4">
@@ -2812,7 +2885,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('sage-green')}
+                                onClick={() => handleSelectDesign('sage-green')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'sage-green' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -2830,7 +2903,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('floral-pink')}
+                                onClick={() => handleSelectDesign('floral-pink')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'floral-pink' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -2848,7 +2921,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('classic-love')}
+                                onClick={() => handleSelectDesign('classic-love')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'classic-love' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -2866,7 +2939,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('javanese-traditional')}
+                                onClick={() => handleSelectDesign('javanese-traditional')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'javanese-traditional' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -3287,7 +3360,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('cute-balloon')}
+                                onClick={() => handleSelectDesign('cute-balloon')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'cute-balloon' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -3305,7 +3378,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('elegant-gold')}
+                                onClick={() => handleSelectDesign('elegant-gold')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'elegant-gold' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -3502,7 +3575,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('modern-clean')}
+                                onClick={() => handleSelectDesign('modern-clean')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'modern-clean' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -3520,7 +3593,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('midnight-dark')}
+                                onClick={() => handleSelectDesign('midnight-dark')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'midnight-dark' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -3851,7 +3924,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('neon-conversion')}
+                                onClick={() => handleSelectDesign('neon-conversion')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'neon-conversion' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -3869,7 +3942,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36 snap-start">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('clean-trust')}
+                                onClick={() => handleSelectDesign('clean-trust')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${designKey === 'clean-trust' ? 'border-theme-accent bg-theme-accent/10 text-theme-accent' : 'border-theme-border bg-theme-bg/50 text-theme-text-sec'
                                   }`}
                               >
@@ -4293,7 +4366,7 @@ function GenerateContent() {
                             <div className="flex flex-col gap-1.5 flex-shrink-0 w-36">
                               <button
                                 type="button"
-                                onClick={() => setDesignKey('professional-dark')}
+                                onClick={() => handleSelectDesign('professional-dark')}
                                 className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
                                   designKey === 'professional-dark'
                                     ? 'border-theme-accent bg-theme-accent/10 text-theme-accent'
@@ -5154,10 +5227,23 @@ function GenerateContent() {
                                 setIsTemplateModalOpen(false);
                                 // Clear page data when changing template types to refresh state
                                 setPageData(null);
-                                // Reset designKey based on product type
-                                if (product.id === 'toko-online') setDesignKey('modern-clean');
-                                else if (product.id === 'wedding') setDesignKey('sage-green');
-                                else if (product.id === 'birthday') setDesignKey('cute-balloon');
+                                // Reset designKey and version based on product type
+                                if (product.id === 'toko-online') {
+                                   setDesignKey('modern-clean');
+                                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['modern-clean'] || 1);
+                                 } else if (product.id === 'wedding') {
+                                   setDesignKey('sage-green');
+                                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['sage-green'] || 1);
+                                 } else if (product.id === 'birthday') {
+                                   setDesignKey('cute-balloon');
+                                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['cute-balloon'] || 1);
+                                 } else if (product.id === 'campaign') {
+                                   setDesignKey('neon-conversion');
+                                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['neon-conversion'] || 1);
+                                 } else if (product.id === 'cv') {
+                                   setDesignKey('professional-dark');
+                                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['professional-dark'] || 1);
+                                 }
                               }
                             }}
                             className={`group border rounded-2xl p-5 flex flex-col justify-between text-left transition-all duration-300 relative overflow-hidden ${!isActive
@@ -5295,7 +5381,8 @@ function GenerateContent() {
                       meta: {
                         title: `Contoh Undangan - Tema ${isGold ? 'Elegant Gold' : 'Cute Balloon'}`,
                         template_type: 'birthday',
-                        design_key: previewDesignKey
+                        design_key: previewDesignKey,
+                        template_version: TEMPLATE_LATEST_VERSIONS[previewDesignKey] || 1
                       },
                       content: {
                         celebrant: isGold ? {
@@ -5332,7 +5419,8 @@ function GenerateContent() {
                       meta: {
                         title: `Toko Contoh - Tema ${isMidnight ? 'Midnight Dark' : 'Modern Clean'}`,
                         template_type: 'toko-online',
-                        design_key: previewDesignKey
+                        design_key: previewDesignKey,
+                        template_version: TEMPLATE_LATEST_VERSIONS[previewDesignKey] || 1
                       },
                       content: {
                         store: {
@@ -5379,7 +5467,8 @@ function GenerateContent() {
                       meta: {
                         title: `Contoh Campaign - Tema ${previewDesignKey === 'neon-conversion' ? 'Neon Conversion' : 'Clean Trust'}`,
                         template_type: 'campaign',
-                        design_key: previewDesignKey
+                        design_key: previewDesignKey,
+                        template_version: TEMPLATE_LATEST_VERSIONS[previewDesignKey] || 1
                       },
                       content: {
                         hero: {
@@ -5443,7 +5532,8 @@ function GenerateContent() {
                         title: 'CV — Rian Prasetya',
                         theme: 'professional-dark',
                         template_type: 'cv',
-                        design_key: 'professional-dark'
+                        design_key: 'professional-dark',
+                        template_version: TEMPLATE_LATEST_VERSIONS['professional-dark'] || 1
                       },
                       content: {
                         profile: {
@@ -5493,7 +5583,8 @@ function GenerateContent() {
                       meta: {
                         title: `Contoh Undangan - Tema ${previewDesignKey === 'sage-green' ? 'Sage Green' : previewDesignKey === 'floral-pink' ? 'Floral Pink' : previewDesignKey === 'classic-love' ? 'Classic Love' : 'Javanese Traditional'}`,
                         template_type: 'wedding',
-                        design_key: previewDesignKey
+                        design_key: previewDesignKey,
+                        template_version: TEMPLATE_LATEST_VERSIONS[previewDesignKey] || 1
                       },
                       content: {
                         groom: {
