@@ -43,6 +43,22 @@
             domain: 'siluet.web.id'
         };
 
+        // Capture unhandled script errors
+        window.addEventListener('error', (event) => {
+            const appEl = document.getElementById('app');
+            if (appEl) {
+                appEl.innerHTML = `<div class="p-6 text-red-550 font-bold text-center">Unhandled Error: ${event.message} at ${event.filename}:${event.lineno}</div>`;
+            }
+        });
+
+        // Capture unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            const appEl = document.getElementById('app');
+            if (appEl) {
+                appEl.innerHTML = `<div class="p-6 text-red-550 font-bold text-center">Unhandled Promise Rejection: ${event.reason?.message || event.reason}</div>`;
+            }
+        });
+
         // Notify parent that iframe is ready to receive postMessage data
         window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
 
@@ -132,6 +148,9 @@
                         
                         // Execute the template renderer (CV does not use guestName)
                         await module.render(pageData, '', BRAND_CONFIG);
+                    } catch (err) {
+                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template CV: ${err.message}</div>`;
+                    }
                 } else if (templateType === 'e-course') {
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;

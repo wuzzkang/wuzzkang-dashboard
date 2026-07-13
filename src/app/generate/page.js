@@ -143,7 +143,7 @@ function GenerateContent() {
   const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
   const [slug, setSlug] = useState('');
-  const [templateType, setTemplateType] = useState('toko-online');
+  const [templateType, setTemplateType] = useState('');
   const [products, setProducts] = useState([]);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -1230,16 +1230,50 @@ function GenerateContent() {
         if (response.ok) {
           const result = await response.json();
           if (result.success && Array.isArray(result.data)) {
-            setProducts(result.data);
+            // Sort products:
+            // 1. priority = 1 comes first.
+            // 2. within groups, sort by created_at descending (newest first).
+            const sortedData = [...result.data].sort((a, b) => {
+              const aIsPriority = a.priority === 1;
+              const bIsPriority = b.priority === 1;
+
+              if (aIsPriority && !bIsPriority) return -1;
+              if (!aIsPriority && bIsPriority) return 1;
+
+              const aTime = new Date(a.created_at || 0).getTime();
+              const bTime = new Date(b.created_at || 0).getTime();
+              return bTime - aTime;
+            });
+
+            setProducts(sortedData);
 
             // Set the first active template as default ONLY if creating a new project (no draftId)
             if (!draftId) {
-              const activeProducts = result.data.filter(p => p.is_active);
+              const activeProducts = sortedData.filter(p => p.is_active);
               if (activeProducts.length > 0) {
-                setTemplateType(prev => {
-                  const currentIsActive = activeProducts.some(p => p.id === prev);
-                  return currentIsActive ? prev : activeProducts[0].id;
-                });
+                const defaultProduct = activeProducts[0];
+                setTemplateType(defaultProduct.id);
+                
+                // Initialize corresponding design key and version
+                if (defaultProduct.id === 'toko-online') {
+                  setDesignKey('modern-clean');
+                  setDesignVersion(TEMPLATE_LATEST_VERSIONS['modern-clean'] || 1);
+                } else if (defaultProduct.id === 'wedding') {
+                  setDesignKey('sage-green');
+                  setDesignVersion(TEMPLATE_LATEST_VERSIONS['sage-green'] || 1);
+                } else if (defaultProduct.id === 'birthday') {
+                  setDesignKey('cute-balloon');
+                  setDesignVersion(TEMPLATE_LATEST_VERSIONS['cute-balloon'] || 1);
+                } else if (defaultProduct.id === 'campaign') {
+                  setDesignKey('neon-conversion');
+                  setDesignVersion(TEMPLATE_LATEST_VERSIONS['neon-conversion'] || 1);
+                } else if (defaultProduct.id === 'cv') {
+                  setDesignKey('professional-dark');
+                  setDesignVersion(TEMPLATE_LATEST_VERSIONS['professional-dark'] || 1);
+                } else if (defaultProduct.id === 'e-course') {
+                  setDesignKey('purple-academy');
+                  setDesignVersion(TEMPLATE_LATEST_VERSIONS['purple-academy'] || 1);
+                }
               }
             }
           }
@@ -1255,12 +1289,24 @@ function GenerateContent() {
     if (products && products.length > 0) {
       return products;
     }
-    return [
-      { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko' },
-      { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 15000, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Campaign' },
-      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan' },
-      { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.', unit: 'Undangan' }
+    const defaultProducts = [
+      { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko', priority: null, created_at: '2026-06-20T00:00:00Z' },
+      { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 15000, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Campaign', priority: null, created_at: '2026-06-21T00:00:00Z' },
+      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan', priority: null, created_at: '2026-06-22T00:00:00Z' },
+      { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.', unit: 'Undangan', priority: null, created_at: '2026-06-23T00:00:00Z' }
     ];
+
+    return [...defaultProducts].sort((a, b) => {
+      const aIsPriority = a.priority === 1;
+      const bIsPriority = b.priority === 1;
+
+      if (aIsPriority && !bIsPriority) return -1;
+      if (!aIsPriority && bIsPriority) return 1;
+
+      const aTime = new Date(a.created_at || 0).getTime();
+      const bTime = new Date(b.created_at || 0).getTime();
+      return bTime - aTime;
+    });
   };
 
   const displayProducts = getDisplayProducts();
@@ -5027,6 +5073,13 @@ function GenerateContent() {
                                 <span className="text-xl">💜</span>
                                 <div className="text-[10px] font-black tracking-wide uppercase">Purple Academy</div>
                               </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('purple-academy')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -6899,7 +6952,8 @@ function GenerateContent() {
                               previewDesignKey === 'modern-clean' ? 'Modern Clean 🛍️' :
                                 previewDesignKey === 'midnight-dark' ? 'Midnight Dark 👑' :
                                   previewDesignKey === 'neon-conversion' ? 'Neon Conversion ⚡' :
-                                    previewDesignKey === 'clean-trust' ? 'Clean Trust 🛡️' : 'Theme'
+                                    previewDesignKey === 'clean-trust' ? 'Clean Trust 🛡️' :
+                                      previewDesignKey === 'purple-academy' ? 'Purple Academy 💜' : 'Theme'
                   }
                 </h3>
                 <p className="text-[10px] text-theme-text-muted mt-0.5">Contoh tampilan landing page</p>
