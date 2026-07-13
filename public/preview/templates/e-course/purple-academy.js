@@ -326,7 +326,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
                     <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white font-black text-sm">
                         🎓
                     </div>
-                    <span class="font-extrabold tracking-tight text-white text-xs uppercase">E-COURSE ACADEMY</span>
+                    <span class="font-extrabold tracking-tight text-white text-xs uppercase">${content.brand_name || 'E-COURSE ACADEMY'}</span>
                 </div>
                 <a 
                     href="#pricing"
@@ -354,8 +354,9 @@ export async function render(pageConfig, guestName = 'Tamu') {
                         </p>
                         
                         <!-- Countdown Timer inside Hero -->
+                        ${(content.countdown?.enabled !== false) ? `
                         <div class="bg-indigo-950/30 border border-purple-950 rounded-2xl p-5 mb-8 max-w-sm">
-                            <p class="text-xs text-purple-300 font-bold uppercase tracking-wider text-center mb-3">Sisa Waktu Promo Hari Ini:</p>
+                            <p class="text-xs text-purple-300 font-bold uppercase tracking-wider text-center mb-3">${content.countdown?.title || 'Sisa Waktu Promo Hari Ini:'}</p>
                             <div class="grid grid-cols-4 gap-2 text-center" id="countdown-timer">
                                 <div>
                                     <span class="block text-2xl font-black text-white" id="cd-days">00</span>
@@ -375,7 +376,8 @@ export async function render(pageConfig, guestName = 'Tamu') {
                                 </div>
                             </div>
                         </div>
-
+                        ` : ''}
+                        
                         <div class="flex flex-col sm:flex-row gap-4">
                             <a 
                                 href="#pricing" 
@@ -403,7 +405,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
 
             <!-- Problems Section -->
             ${problemsHtml ? `
-                <section class="px-6 py-16 bg-gray-950/20 max-w-4xl mx-auto w-full border-b border-purple-950">
+                <section class="px-6 py-16 bg-gray-950/20 max-w-6xl mx-auto w-full border-b border-purple-950">
                     <div class="text-center mb-10">
                         <h2 class="text-xl md:text-3xl font-black text-white tracking-tight">
                             ${problems.title || 'Kendala Yang Sering Dihadapi'}
@@ -417,7 +419,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
             ` : ''}
 
             <!-- Value Prop & Solutions -->
-            <section class="px-6 py-16 max-w-4xl mx-auto w-full border-b border-purple-950">
+            <section class="px-6 py-16 max-w-6xl mx-auto w-full border-b border-purple-950">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                     <div>
                         <span class="text-purple-400 text-xs font-bold tracking-wider uppercase">${solutions.title || 'Solusi Belajar'}</span>
@@ -434,7 +436,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
 
             <!-- Target Audience -->
             ${audienceHtml ? `
-                <section class="px-6 py-16 max-w-4xl mx-auto w-full border-b border-purple-950">
+                <section class="px-6 py-16 max-w-6xl mx-auto w-full border-b border-purple-950">
                     <div class="text-center mb-12">
                         <h2 class="text-xl md:text-3xl font-extrabold text-white tracking-tight">
                             ${audience.title || 'Siapa Yang Wajib Mengikuti Kelas Ini?'}
@@ -450,7 +452,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
             <!-- Mentor Section -->
             ${mentor.name ? `
                 <section class="px-6 py-16 bg-gray-950/10 border-b border-purple-950">
-                    <div class="max-w-3xl mx-auto bg-indigo-950/20 border border-purple-950/50 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8">
+                    <div class="max-w-6xl mx-auto bg-indigo-950/20 border border-purple-950/50 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8">
                         <div class="flex-shrink-0">
                             ${mentor.avatar_url ? `
                                 <img src="${mentor.avatar_url}" alt="${mentor.name}" class="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-purple-500 shadow-lg mx-auto">
@@ -468,7 +470,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
 
             <!-- Curriculum Section -->
             ${curriculumHtml ? `
-                <section class="px-6 py-16 max-w-3xl mx-auto w-full border-b border-purple-950" id="curriculum">
+                <section class="px-6 py-16 max-w-6xl mx-auto w-full border-b border-purple-950" id="curriculum">
                     <div class="text-center mb-12">
                         <h2 class="text-xl md:text-3xl font-extrabold text-white tracking-tight">
                             ${curriculum.title || 'Kurikulum Kelas'}
@@ -483,7 +485,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
 
             <!-- Benefits Section -->
             ${benefitsHtml ? `
-                <section class="px-6 py-16 max-w-4xl mx-auto w-full border-b border-purple-950">
+                <section class="px-6 py-16 max-w-6xl mx-auto w-full border-b border-purple-950">
                     <div class="text-center mb-12">
                         <h2 class="text-xl md:text-3xl font-extrabold text-white tracking-tight">
                             ${benefits.title || 'Keuntungan Bergabung'}
@@ -498,7 +500,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
 
             <!-- Testimonials Section -->
             ${testimonialsHtml ? `
-                <section class="px-6 py-16 max-w-4xl mx-auto w-full border-b border-purple-950">
+                <section class="px-6 py-16 max-w-6xl mx-auto w-full border-b border-purple-950">
                     <div class="text-center mb-12">
                         <h2 class="text-xl md:text-3xl font-extrabold text-white tracking-tight">
                             ${testimonials.title || 'Kisah Sukses Alumni'}
@@ -514,7 +516,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
             <!-- Special Bonuses -->
             ${bonusesHtml ? `
                 <section class="px-6 py-16 bg-gray-950/20 w-full border-b border-purple-950">
-                    <div class="max-w-3xl mx-auto">
+                    <div class="max-w-6xl mx-auto">
                         <div class="text-center mb-12">
                             <h2 class="text-xl md:text-3xl font-extrabold text-white tracking-tight">
                                 ${bonuses.title || 'Bonus Eksklusif Tambahan'}
@@ -570,7 +572,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
 
             <!-- FAQ Section -->
             ${content.faqs && content.faqs.length > 0 ? `
-                <section class="px-6 py-16 max-w-3xl mx-auto w-full border-b border-purple-950" id="e-course-faq-root"></section>
+                <section class="px-6 py-16 max-w-6xl mx-auto w-full border-b border-purple-950" id="e-course-faq-root"></section>
             ` : ''}
 
             <!-- Footer -->
@@ -584,7 +586,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
     `;
 
     // Initialize Countdown Timer Logic
-    setupCountdownTimer();
+    setupCountdownTimer(content.countdown);
 
     // Initialize Accordion Logic
     setupCurriculumAccordion();
@@ -604,7 +606,7 @@ export async function render(pageConfig, guestName = 'Tamu') {
 /**
  * Timer counting down to the end of today (23:59:59)
  */
-function setupCountdownTimer() {
+function setupCountdownTimer(countdown) {
     const dEl = document.getElementById('cd-days');
     const hEl = document.getElementById('cd-hours');
     const mEl = document.getElementById('cd-mins');
@@ -612,15 +614,24 @@ function setupCountdownTimer() {
 
     if (!dEl || !hEl || !mEl || !sEl) return;
 
+    const timerType = countdown?.type || 'end_of_day';
+    const targetDateStr = countdown?.target_date;
+
     function update() {
         const now = new Date();
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
+        let targetDate;
 
-        let diff = endOfDay - now;
+        if (timerType === 'fixed' && targetDateStr) {
+            targetDate = new Date(targetDateStr);
+        } else {
+            targetDate = new Date();
+            targetDate.setHours(23, 59, 59, 999);
+        }
+
+        let diff = targetDate - now;
         if (diff < 0) diff = 0;
 
-        const days = 0; // End of today always 0 days
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const mins = Math.floor((diff / (1000 * 60)) % 60);
         const secs = Math.floor((diff / 1000) % 60);
@@ -632,7 +643,8 @@ function setupCountdownTimer() {
     }
 
     update();
-    setInterval(update, 1000);
+    const interval = setInterval(update, 1000);
+    return interval;
 }
 
 /**

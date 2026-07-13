@@ -132,8 +132,17 @@
                         
                         // Execute the template renderer (CV does not use guestName)
                         await module.render(pageData, '', BRAND_CONFIG);
+                } else if (templateType === 'e-course') {
+                    try {
+                        const templateVersion = pageData.meta?.template_version || 1;
+                        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
+                        // Dynamically import the E-Course template module with cache-bust
+                        const module = await import(`./templates/e-course/${resolvedFile}${cacheBust}`);
+                        
+                        // Execute the template renderer
+                        await module.render(pageData, 'Tamu');
                     } catch (err) {
-                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template CV: ${err.message}</div>`;
+                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template E-Course: ${err.message}</div>`;
                     }
                 } else {
                     // Default mockup preview for Store template

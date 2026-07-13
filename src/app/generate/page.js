@@ -341,6 +341,11 @@ function GenerateContent() {
   const [eCourseHeroImage, setECourseHeroImage] = useState('');
   const [generateECourseHeroImage, setGenerateECourseHeroImage] = useState(false);
   const [eCourseHeroImageSource, setECourseHeroImageSource] = useState('unsplash');
+  const [eCourseBrandName, setECourseBrandName] = useState('E-COURSE ACADEMY');
+  const [eCourseCountdownEnabled, setECourseCountdownEnabled] = useState(true);
+  const [eCourseCountdownTitle, setECourseCountdownTitle] = useState('Sisa Waktu Promo Hari Ini:');
+  const [eCourseCountdownType, setECourseCountdownType] = useState('end_of_day');
+  const [eCourseCountdownTargetDate, setECourseCountdownTargetDate] = useState('');
   const [isGeneratingECourseHeroImage, setIsGeneratingECourseHeroImage] = useState(false);
   const [isUploadingECourseHeroImage, setIsUploadingECourseHeroImage] = useState(false);
   const [eCourseProblemsTitle, setECourseProblemsTitle] = useState('Hambatan Belajar Anda');
@@ -720,6 +725,22 @@ function GenerateContent() {
                 setGenerateECourseHeroImage(false);
                 setECourseHeroImageSource('unsplash');
               }
+              setECourseBrandName(content.brand_name || 'E-COURSE ACADEMY');
+              const cd = content.countdown || {};
+              setECourseCountdownEnabled(cd.enabled !== false);
+              setECourseCountdownTitle(cd.title || 'Sisa Waktu Promo Hari Ini:');
+              setECourseCountdownType(cd.type || 'end_of_day');
+              if (cd.target_date) {
+                try {
+                  const date = new Date(cd.target_date);
+                  const localIso = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                  setECourseCountdownTargetDate(localIso);
+                } catch (e) {
+                  setECourseCountdownTargetDate('');
+                }
+              } else {
+                setECourseCountdownTargetDate('');
+              }
               
               setECourseProblemsTitle(content.problems?.title || 'Hambatan Belajar Anda');
               setECourseProblemsList(content.problems?.list || ['', '', '']);
@@ -999,6 +1020,13 @@ function GenerateContent() {
           whatsapp: eCourseWhatsapp,
           cta_url: eCourseCtaUrl || null,
           copyright: eCourseCopyright || null
+        },
+        brand_name: eCourseBrandName || 'E-COURSE ACADEMY',
+        countdown: {
+          enabled: eCourseCountdownEnabled,
+          title: eCourseCountdownTitle || 'Sisa Waktu Promo Hari Ini:',
+          type: eCourseCountdownType,
+          target_date: eCourseCountdownType === 'fixed' && eCourseCountdownTargetDate ? new Date(eCourseCountdownTargetDate).toISOString() : null
         }
       };
     } else {
@@ -1122,6 +1150,11 @@ function GenerateContent() {
     eCourseHeroImage,
     generateECourseHeroImage,
     eCourseHeroImageSource,
+    eCourseBrandName,
+    eCourseCountdownEnabled,
+    eCourseCountdownTitle,
+    eCourseCountdownType,
+    eCourseCountdownTargetDate,
     eCourseProblemsTitle,
     eCourseProblemsList,
     eCourseSolutionsTitle,
@@ -1329,7 +1362,7 @@ function GenerateContent() {
         cvEducations.some(e => !e.institution || !e.degree || !e.period);
     }
     if (templateType === 'e-course') {
-      return !courseName || !courseBrief || !eCourseWhatsapp ||
+      return !courseName || !eCourseWhatsapp ||
         eCourseCurriculumModules.some(m => !m.title || !m.desc) ||
         eCourseBenefitsList.some(b => !b.title || !b.desc);
     }
@@ -2613,6 +2646,13 @@ function GenerateContent() {
                 whatsapp: eCourseWhatsapp,
                 cta_url: eCourseCtaUrl || null,
                 copyright: eCourseCopyright || null
+              },
+              brand_name: eCourseBrandName || 'E-COURSE ACADEMY',
+              countdown: {
+                enabled: eCourseCountdownEnabled,
+                title: eCourseCountdownTitle || 'Sisa Waktu Promo Hari Ini:',
+                type: eCourseCountdownType,
+                target_date: eCourseCountdownType === 'fixed' && eCourseCountdownTargetDate ? new Date(eCourseCountdownTargetDate).toISOString() : null
               }
             }
           };
@@ -2939,6 +2979,13 @@ function GenerateContent() {
             whatsapp: eCourseWhatsapp,
             cta_url: eCourseCtaUrl || null,
             copyright: eCourseCopyright || null
+          },
+          brand_name: eCourseBrandName || 'E-COURSE ACADEMY',
+          countdown: {
+            enabled: eCourseCountdownEnabled,
+            title: eCourseCountdownTitle || 'Sisa Waktu Promo Hari Ini:',
+            type: eCourseCountdownType,
+            target_date: eCourseCountdownType === 'fixed' && eCourseCountdownTargetDate ? new Date(eCourseCountdownTargetDate).toISOString() : null
           }
         }
       };
@@ -5007,7 +5054,6 @@ function GenerateContent() {
                               Deskripsi Brief E-Course (Digunakan sebagai Konteks AI)
                             </label>
                             <textarea
-                              required
                               placeholder="Tuliskan penjelasan singkat e-course ini, materi utamanya, dan apa tujuan akhirnya..."
                               value={courseBrief}
                               onChange={(e) => setCourseBrief(e.target.value)}
@@ -5054,6 +5100,18 @@ function GenerateContent() {
                           </div>
                           <div>
                             <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Nama Brand / Akademi (Header)
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Contoh: E-COURSE ACADEMY"
+                              value={eCourseBrandName}
+                              onChange={(e) => setECourseBrandName(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
                               Headline Promosi
                             </label>
                             <input
@@ -5089,6 +5147,83 @@ function GenerateContent() {
                               onChange={(e) => setECourseHeroCtaText(e.target.value)}
                               className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
                             />
+                          </div>
+                          
+                          {/* Countdown Timer Config */}
+                          <div className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-3 mt-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id="eCourseCountdownEnabled"
+                                checked={eCourseCountdownEnabled}
+                                onChange={(e) => setECourseCountdownEnabled(e.target.checked)}
+                                className="h-4 w-4 rounded border-theme-border bg-theme-bg text-theme-accent focus:ring-theme-accent cursor-pointer"
+                              />
+                              <label htmlFor="eCourseCountdownEnabled" className="text-[10px] font-bold text-theme-text cursor-pointer">
+                                Aktifkan Countdown Timer (Urgency)
+                              </label>
+                            </div>
+
+                            {eCourseCountdownEnabled && (
+                              <div className="space-y-3 pt-2 border-t border-theme-border/20">
+                                <div>
+                                  <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                                    Judul / Teks Countdown
+                                  </label>
+                                  <input
+                                    type="text"
+                                    placeholder="Contoh: Sisa Waktu Promo Hari Ini:"
+                                    value={eCourseCountdownTitle}
+                                    onChange={(e) => setECourseCountdownTitle(e.target.value)}
+                                    className="block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                                  />
+                                </div>
+                                
+                                <div>
+                                  <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                                    Tipe Countdown
+                                  </label>
+                                  <div className="flex gap-4">
+                                    <label className="flex items-center gap-1.5 text-xs text-theme-text cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="eCourseCountdownType"
+                                        value="end_of_day"
+                                        checked={eCourseCountdownType === 'end_of_day'}
+                                        onChange={() => setECourseCountdownType('end_of_day')}
+                                        className="h-3 w-3 border-theme-border text-theme-accent"
+                                      />
+                                      Setiap Hari (Reset Tengah Malam)
+                                    </label>
+                                    <label className="flex items-center gap-1.5 text-xs text-theme-text cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name="eCourseCountdownType"
+                                        value="fixed"
+                                        checked={eCourseCountdownType === 'fixed'}
+                                        onChange={() => setECourseCountdownType('fixed')}
+                                        className="h-3 w-3 border-theme-border text-theme-accent"
+                                      />
+                                      Tanggal Spesifik (Statis)
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {eCourseCountdownType === 'fixed' && (
+                                  <div>
+                                    <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                                      Tanggal Target (Statis)
+                                    </label>
+                                    <input
+                                      type="datetime-local"
+                                      value={eCourseCountdownTargetDate}
+                                      onChange={(e) => setECourseCountdownTargetDate(e.target.value)}
+                                      className="block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                           
                           {/* Hero Image Picker with Cartoon Fallback Info */}

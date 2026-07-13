@@ -5,6 +5,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Global Branding Config
+const BRAND_CONFIG = {
+    name: 'Siluet',
+    domain: 'siluet.web.id'
+};
+
 // ==========================================
 // CACHE BUSTER CONFIG (FOR DEV & PRODUCTION DEPLOYMENTS)
 // ==========================================
@@ -220,6 +226,48 @@ const renderPage = async (pageConfig) => {
             } catch (err) {
                 console.error('[LP Router] Fallback template failed:', err);
                 appEl.innerHTML = renderError('Gagal memuat template campaign.');
+            }
+        }
+        return;
+    }
+
+    if (templateType === 'cv') {
+        const designKey = pageConfig.meta?.design_key || 'professional-dark';
+        const templateVersion = pageConfig.meta?.template_version || 1;
+        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
+        try {
+            console.log(`[LP Router] Loading cv template: ${designKey} (v${templateVersion})...`);
+            const module = await import(`./templates/cv/${resolvedFile}${cacheBustQuery}`);
+            await module.render(pageConfig, '', BRAND_CONFIG);
+        } catch (e) {
+            console.error(`[LP Router] Failed to load cv template ${designKey}, falling back to professional-dark:`, e);
+            try {
+                const module = await import(`./templates/cv/professional-dark.js${cacheBustQuery}`);
+                await module.render(pageConfig, '', BRAND_CONFIG);
+            } catch (err) {
+                console.error('[LP Router] CV fallback template failed:', err);
+                appEl.innerHTML = renderError('Gagal memuat template CV.');
+            }
+        }
+        return;
+    }
+
+    if (templateType === 'e-course') {
+        const designKey = pageConfig.meta?.design_key || 'purple-academy';
+        const templateVersion = pageConfig.meta?.template_version || 1;
+        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
+        try {
+            console.log(`[LP Router] Loading e-course template: ${designKey} (v${templateVersion})...`);
+            const module = await import(`./templates/e-course/${resolvedFile}${cacheBustQuery}`);
+            await module.render(pageConfig, 'Tamu');
+        } catch (e) {
+            console.error(`[LP Router] Failed to load e-course template ${designKey}, falling back to purple-academy:`, e);
+            try {
+                const module = await import(`./templates/e-course/purple-academy.js${cacheBustQuery}`);
+                await module.render(pageConfig, 'Tamu');
+            } catch (err) {
+                console.error('[LP Router] E-Course fallback template failed:', err);
+                appEl.innerHTML = renderError('Gagal memuat template e-course.');
             }
         }
         return;
