@@ -22,6 +22,9 @@ export default function DashboardPage() {
   const [shareProject, setShareProject] = useState(null);
   const [isDeleteSubdomainOpen, setIsDeleteSubdomainOpen] = useState(false);
   const [subdomainToDelete, setSubdomainToDelete] = useState(null);
+  const [isDeleteProjectOpen, setIsDeleteProjectOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [projectDeleting, setProjectDeleting] = useState(false);
   const [guestName, setGuestName] = useState('');
   const [copied, setCopied] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -270,6 +273,36 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteProject = async (projectParam = null) => {
+    const targetProject = projectParam || projectToDelete;
+    if (!targetProject) return;
+    setProjectDeleting(true);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects/${targetProject.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        alert(result.error || 'Gagal menghapus project.');
+        return;
+      }
+
+      // Update local state
+      setProjects((prev) => prev.filter((p) => p.id !== targetProject.id));
+      alert('Project beserta seluruh asetnya berhasil dihapus.');
+      setIsDeleteProjectOpen(false);
+      setProjectToDelete(null);
+    } catch (e) {
+      alert('Terjadi kesalahan jaringan.');
+    } finally {
+      setProjectDeleting(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'deployed':
@@ -459,7 +492,20 @@ export default function DashboardPage() {
                         <h3 className="text-sm font-bold text-theme-text group-hover:text-theme-accent transition-colors" style={{ fontFamily: "'Sora', sans-serif" }}>
                           {project.name}
                         </h3>
-                        {getStatusBadge(project.status)}
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(project.status)}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setProjectToDelete(project);
+                              setIsDeleteProjectOpen(true);
+                            }}
+                            className="p-1 rounded-lg text-theme-text-sec hover:bg-red-500/10 hover:text-red-400 transition-colors flex-shrink-0"
+                            title="Hapus Project"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="space-y-2 text-xs text-theme-text-sec mt-3">
@@ -913,6 +959,24 @@ export default function DashboardPage() {
           onCancel={() => {
             setIsDeleteSubdomainOpen(false);
             setSubdomainToDelete(null);
+          }}
+        />
+
+        <ConfirmDialog
+          isOpen={isDeleteProjectOpen}
+          title="Hapus Project"
+          message={`Apakah Anda yakin ingin menghapus project "${projectToDelete?.name}" beserta seluruh asetnya secara permanen? Tindakan ini bersifat permanen, instan, dan tidak dapat dikembalikan.`}
+          confirmLabel={projectDeleting ? "Menghapus..." : "Hapus"}
+          cancelLabel="Batal"
+          variant="danger"
+          onConfirm={() => {
+            if (projectToDelete) {
+              handleDeleteProject(projectToDelete);
+            }
+          }}
+          onCancel={() => {
+            setIsDeleteProjectOpen(false);
+            setProjectToDelete(null);
           }}
         />
       </PageLayout>
