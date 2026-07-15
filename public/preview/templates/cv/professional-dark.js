@@ -25,6 +25,7 @@ export async function render(pageConfig, guestName = '', brandConfig = { name: '
 
     const brandName = brandConfig?.name || 'Siluet';
     const brandDomain = brandConfig?.domain || 'siluet.web.id';
+    const hideFooter = pageConfig.meta?.hide_footer === true;
 
     // Inject CSS (with unique ID to prevent duplicate injection on re-render)
     if (!document.getElementById('cv-professional-dark-styles')) {
@@ -68,6 +69,7 @@ export async function render(pageConfig, guestName = '', brandConfig = { name: '
                 .cv-skills-grid { page-break-inside: avoid; }
                 a { color: inherit !important; text-decoration: none !important; }
                 .cv-contact-link { color: #1a202c !important; }
+                .cv-exp-desc, .cv-exp-bullets li { color: #1a202c !important; }
             }
 
             /* ===== LAYOUT ===== */
@@ -242,7 +244,9 @@ export async function render(pageConfig, guestName = '', brandConfig = { name: '
                 white-space: nowrap;
             }
             .cv-exp-company { font-size: 0.85rem; font-weight: 600; color: #9f7aea; margin-bottom: 0.45rem; }
-            .cv-exp-desc { font-size: 0.83rem; color: #a0aec0; line-height: 1.65; }
+            .cv-exp-desc { font-size: 0.83rem; color: #a0aec0; line-height: 1.65; margin-bottom: 0.5rem; }
+            .cv-exp-bullets { margin-top: 0.35rem; margin-bottom: 0.5rem; padding-left: 1.2rem; list-style-type: disc; }
+            .cv-exp-bullets li { font-size: 0.83rem; color: #a0aec0; line-height: 1.65; margin-bottom: 0.25rem; }
 
             /* ===== EDUCATION ITEMS ===== */
             .cv-education-item { margin-bottom: 1.1rem; }
@@ -332,6 +336,48 @@ export async function render(pageConfig, guestName = '', brandConfig = { name: '
             .replace(/"/g, '&quot;');
     };
 
+    // Helper: render experience description with support for paragraphs and bullet points
+    const renderExperienceDescription = (desc) => {
+        if (!desc) return '';
+        
+        let cleanDesc = desc;
+        // Split inline " * " or " - " with newlines if the user didn't write newlines (safe auto-formatting)
+        if (!cleanDesc.includes('\n')) {
+            cleanDesc = cleanDesc.replace(/ \*(?=\s)/g, '\n*');
+            cleanDesc = cleanDesc.replace(/ -(?=\s)/g, '\n-');
+        }
+
+        const lines = cleanDesc.split('\n');
+        let html = [];
+        let inList = false;
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
+                if (!inList) {
+                    html.push('<ul class="cv-exp-bullets">');
+                    inList = true;
+                }
+                const content = trimmed.substring(1).trim();
+                html.push(`<li>${esc(content)}</li>`);
+            } else {
+                if (inList) {
+                    html.push('</ul>');
+                    inList = false;
+                }
+                html.push(`<p class="cv-exp-desc">${esc(trimmed)}</p>`);
+            }
+        }
+
+        if (inList) {
+            html.push('</ul>');
+        }
+
+        return html.join('');
+    };
+
     // Helper: render SVG icons inline (ATS-neutral, hidden from screen readers)
     const icon = {
         email: `<svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
@@ -375,7 +421,7 @@ export async function render(pageConfig, guestName = '', brandConfig = { name: '
                         <time class="cv-exp-period">${esc(exp.period)}</time>
                     </div>
                     <p class="cv-exp-company">${esc(exp.company)}</p>
-                    ${exp.description ? `<p class="cv-exp-desc">${esc(exp.description)}</p>` : ''}
+                    ${renderExperienceDescription(exp.description)}
                 </article>
             `).join('')}
         </section>`
@@ -493,9 +539,11 @@ export async function render(pageConfig, guestName = '', brandConfig = { name: '
                 </div>
 
                 <!-- ===== FOOTER ===== -->
+                ${hideFooter ? '' : `
                 <footer class="cv-footer">
                     <p>CV dibuat dengan <a href="https://${brandDomain}" target="_blank" rel="noopener noreferrer" style="color:#63b3ed;text-decoration:none;">${brandName}</a> &bull; ${currentYear}</p>
                 </footer>
+                `}
 
             </div>
         </main>

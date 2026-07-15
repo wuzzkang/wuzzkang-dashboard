@@ -327,6 +327,7 @@ function GenerateContent() {
   const [cvSkills, setCvSkills] = useState([]);
   const [cvLanguages, setCvLanguages] = useState([{ language: '', level: '' }]);
   const [cvCertifications, setCvCertifications] = useState([]);
+  const [hideFooter, setHideFooter] = useState(false);
  
   // CV AI loader states
   const [isGeneratingCvSummary, setIsGeneratingCvSummary] = useState(false);
@@ -546,6 +547,7 @@ function GenerateContent() {
             }
             originalPageDataRef.current = pageConfig;
             setPageData(pageConfig);
+            setHideFooter(!!pageConfig.meta?.hide_footer);
 
             // Deduce a clean default slug from project name or use already existing slug
             const suggestedSlug = project.slug || project.name
@@ -1043,7 +1045,8 @@ function GenerateContent() {
         design_key: designKey,
         template_version: designVersion,
         title: metaTitle,
-        theme: designKey
+        theme: designKey,
+        hide_footer: hideFooter
       },
       content: assembledContent
     };
@@ -1188,6 +1191,7 @@ function GenerateContent() {
     eCourseWhatsapp,
     eCourseCtaUrl,
     eCourseCopyright,
+    hideFooter,
   ]);
 
   // Synchronize state with live preview iframe
@@ -2612,6 +2616,7 @@ function GenerateContent() {
               template_type: 'cv',
               design_key: designKey || 'professional-dark',
               template_version: designVersion,
+              hide_footer: hideFooter
             },
             content: {
               profile: {
@@ -6437,6 +6442,23 @@ function GenerateContent() {
                               </div>
                             </div>
                           ))}
+                        </div>
+
+                        {/* === PENGATURAN HALAMAN === */}
+                        <div className="space-y-3 bg-theme-bg/30 border border-theme-border rounded-xl p-3.5 mt-3">
+                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">7. Pengaturan Halaman</div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="cv-hide-footer"
+                              checked={hideFooter}
+                              onChange={(e) => setHideFooter(e.target.checked)}
+                              className="w-3.5 h-3.5 text-theme-accent bg-theme-bg border-theme-border rounded focus:ring-theme-accent focus:ring-2 focus:ring-offset-0 focus:outline-none cursor-pointer"
+                            />
+                            <label htmlFor="cv-hide-footer" className="text-xs font-semibold text-theme-text-sec cursor-pointer select-none">
+                              Sembunyikan Footer (Tanpa Branding)
+                            </label>
+                          </div>
                         </div>
 
                       </div>
