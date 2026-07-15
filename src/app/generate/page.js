@@ -231,6 +231,7 @@ function GenerateContent() {
   const [isUploadingPreweddingImage, setIsUploadingPreweddingImage] = useState(false);
   const [preweddingGenerateCount, setPreweddingGenerateCount] = useState(0);
   const [maxProjectEdits, setMaxProjectEdits] = useState(3);
+  const [projectEditCost, setProjectEditCost] = useState(1);
   const [maxPreweddingGenerations, setMaxPreweddingGenerations] = useState(3);
 
   // Birthday modular additions
@@ -504,6 +505,7 @@ function GenerateContent() {
           setTrackingConfig(result.data?.tracking_config ?? null);
           if (result.systemSettings) {
             setMaxProjectEdits(result.systemSettings.max_project_edits || 3);
+            setProjectEditCost(result.systemSettings.project_edit_cost || 1);
             setMaxPreweddingGenerations(result.systemSettings.max_prewedding_generations || 3);
           }
         }
@@ -3199,6 +3201,7 @@ function GenerateContent() {
           pendingDeleteImages.forEach(url => executeDeleteImage(url));
           setPendingDeleteImages([]);
         }
+        await refreshProfile();
         router.push('/');
       } else {
         setError(
@@ -6478,7 +6481,9 @@ function GenerateContent() {
                           Tautan: <a href={successUrl || `http://localhost:5000/?slug=${slug}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-300 inline-flex items-center gap-0.5">{slug} <ExternalLink className="h-2.5 w-2.5 inline" /></a>
                         </div>
                         <div className="text-[9px] text-theme-text-muted mt-1.5">
-                          Kuota edit tersisa: {maxProjectEdits - editCount} dari {maxProjectEdits} kali
+                          {editCount < maxProjectEdits 
+                            ? `Kuota edit gratis tersisa: ${maxProjectEdits - editCount} dari ${maxProjectEdits} kali` 
+                            : `Kuota edit gratis telah habis. Edit selanjutnya dikenakan biaya ${projectEditCost} credit per simpan.`}
                         </div>
                       </>
                     )}
@@ -6683,7 +6688,8 @@ function GenerateContent() {
             <button
               type="submit"
               form="generate-form"
-              disabled={isPublishing || isFormInvalid() || editCount >= maxProjectEdits}
+              disabled={isPublishing || isFormInvalid() || (editCount >= maxProjectEdits && (profile?.balance ?? 0) < projectEditCost)}
+              title={editCount >= maxProjectEdits && (profile?.balance ?? 0) < projectEditCost ? 'Saldo credit tidak cukup untuk menyimpan edit berbayar' : ''}
               className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               {isPublishing ? (
@@ -6694,7 +6700,11 @@ function GenerateContent() {
               ) : (
                 <>
                   <CheckCircle className="h-4 w-4" />
-                  <span>Simpan Perubahan ({maxProjectEdits - editCount}/{maxProjectEdits})</span>
+                  {editCount < maxProjectEdits ? (
+                    <span>Simpan Perubahan ({maxProjectEdits - editCount}/{maxProjectEdits})</span>
+                  ) : (
+                    <span>Simpan Perubahan ({projectEditCost} Credit)</span>
+                  )}
                 </>
               )}
             </button>

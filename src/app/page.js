@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [maxProjectEdits, setMaxProjectEdits] = useState(0);
+  const [projectEditCost, setProjectEditCost] = useState(1);
   const [subdomainActive, setSubdomainActive] = useState(true);
 
   // Domain modal state
@@ -58,6 +59,7 @@ export default function DashboardPage() {
           const result = await res.json();
           if (result.systemSettings) {
             setMaxProjectEdits(result.systemSettings.max_project_edits || 3);
+            setProjectEditCost(result.systemSettings.project_edit_cost || 1);
             setSubdomainActive(result.systemSettings.subdomain_active !== false);
           }
         }
@@ -543,13 +545,13 @@ export default function DashboardPage() {
                             </a>
                             {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course') && (
                               (project.edit_count || 0) >= maxProjectEdits ? (
-                                <button
-                                  disabled
-                                  className="flex-1 text-center bg-theme-border/50 text-theme-text-muted font-bold text-xs py-2.5 px-3 rounded-xl cursor-not-allowed border border-theme-border"
-                                  title={`Batas edit habis (maksimal ${maxProjectEdits}x). Silakan hubungi admin.`}
+                                <Link
+                                  href={`/generate?id=${project.id}&editMode=true`}
+                                  className="flex-1 text-center bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1"
+                                  title={`Jatah edit gratis habis. Edit berikutnya dikenakan biaya ${projectEditCost} Credit.`}
                                 >
-                                  Edit (0/{maxProjectEdits})
-                                </button>
+                                  <span>Edit ({projectEditCost} Credit)</span>
+                                </Link>
                               ) : (
                                 <Link
                                   href={`/generate?id=${project.id}&editMode=true`}
