@@ -30,6 +30,13 @@ export default function DashboardPage() {
   const [projectEditCost, setProjectEditCost] = useState(1);
   const [subdomainActive, setSubdomainActive] = useState(true);
 
+  // Pagination & Lazy loading state
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const PROJECTS_LIMIT = parseInt(process.env.NEXT_PUBLIC_PROJECTS_PER_PAGE, 10) || 5;
+
   // Domain modal state
   const [domainModalOpen, setDomainModalOpen] = useState(false);
   const [domainProject, setDomainProject] = useState(null);
@@ -70,37 +77,72 @@ export default function DashboardPage() {
     fetchProfileSettings();
   }, [session]);
 
-  // Fetch projects from backend
-  useEffect(() => {
-    const getProjects = async () => {
-      if (!session) return;
-      try {
+  // Fetch projects from backend with pagination, search, and filtering
+  const getProjects = async (pageToFetch, isReset = false) => {
+    if (!session) return;
+    try {
+      if (isReset) {
         setFetching(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setProjects(result.data);
-          }
-        } else {
-          setError('Gagal memuat data proyek.');
-        }
-      } catch (err) {
-        setError('Terjadi kesalahan jaringan.');
-      } finally {
-        setFetching(false);
+      } else {
+        setLoadingMore(true);
       }
-    };
+      
+      const offset = (pageToFetch - 1) * PROJECTS_LIMIT;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/projects?limit=${PROJECTS_LIMIT}&offset=${offset}&search=${encodeURIComponent(searchTerm)}&filter=${encodeURIComponent(filterType)}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-    if (session) {
-      getProjects();
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          const fetchedProjects = result.data || [];
+          const count = result.totalCount || 0;
+          setTotalCount(count);
+          
+          if (isReset) {
+            setProjects(fetchedProjects);
+          } else {
+            setProjects(prev => [...prev, ...fetchedProjects]);
+          }
+          
+          setHasMore(offset + fetchedProjects.length < count);
+        }
+      } else {
+        setError('Gagal memuat data proyek.');
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan jaringan.');
+    } finally {
+      setFetching(false);
+      setLoadingMore(false);
     }
-  }, [session]);
+  };
+
+  // Handle reset search / filter triggers
+  useEffect(() => {
+    if (!session) return;
+    setPage(1);
+    setHasMore(true);
+    
+    // Debounce search term requests
+    const delayDebounceFn = setTimeout(() => {
+      getProjects(1, true);
+    }, searchTerm ? 400 : 0);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, filterType, session]);
+
+  // Handle page change (loading more)
+  useEffect(() => {
+    if (!session) return;
+    if (page > 1) {
+      getProjects(page, false);
+    }
+  }, [page]);
 
   // Fetch subdomain pricing when domain modal opens
   useEffect(() => {
@@ -318,19 +360,7 @@ export default function DashboardPage() {
     return config?.meta?.template_type || 'store';
   };
 
-  const filteredProjects = projects.filter((project) => {
-    const templateType = getProjectTemplateType(project);
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-    if (filterType === 'all') return matchesSearch;
-    if (filterType === 'undangan') {
-      return matchesSearch && (templateType === 'wedding' || templateType === 'birthday');
-    }
-    if (filterType === 'bisnis') {
-      return matchesSearch && (templateType === 'store' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course');
-    }
-    return matchesSearch && templateType === filterType;
-  });
+  const filteredProjects = projects;
 
   // Subdomain input display badge
   const renderSubdomainStatus = () => {
@@ -598,6 +628,32 @@ export default function DashboardPage() {
                 );
               })
             )}
+          </div>
+        )}
+
+        {/* Pagination & Load More Controls */}
+        {hasMore && (
+          <div className="flex justify-center pt-6">
+            <button
+              onClick={() => setPage(prev => prev + 1)}
+              disabled={loadingMore}
+              className="inline-flex items-center gap-2 bg-theme-card hover:bg-theme-surface border border-theme-border text-theme-text hover:text-theme-accent text-xs font-bold py-2.5 px-5 rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-theme-accent" />
+                  <span>Memuat...</span>
+                </>
+              ) : (
+                <span>Tampilkan Lebih Banyak</span>
+              )}
+            </button>
+          </div>
+        )}
+
+        {!fetching && !hasMore && projects.length > 0 && (
+          <div className="text-center text-[10px] text-theme-text-muted pt-6">
+            Menampilkan semua {totalCount} landing page.
           </div>
         )}
 
