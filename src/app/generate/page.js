@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, Suspense } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/Sidebar';
@@ -6597,9 +6598,19 @@ function GenerateContent() {
                     </div>
                     <div className="flex justify-between items-center border-t border-theme-border/50 pt-1.5">
                       <span>Saldo Anda:</span>
-                      <span className={(profile?.balance ?? 0) < finalCost ? 'text-red-400' : 'text-emerald-400'}>
-                        {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={(profile?.balance ?? 0) < finalCost ? 'text-red-400' : 'text-emerald-400'}>
+                          {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
+                        </span>
+                        {(profile?.balance ?? 0) < finalCost && (
+                          <Link
+                            href="/topup"
+                            className="bg-red-500 hover:bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded transition-colors uppercase tracking-wider"
+                          >
+                            Top Up
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </form>
