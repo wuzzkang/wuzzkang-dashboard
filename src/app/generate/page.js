@@ -1643,7 +1643,8 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${sessionRef.current?.access_token}`,
         },
-        body: JSON.stringify({ path })
+        body: JSON.stringify({ path }),
+        keepalive: true
       });
 
       const result = await response.json();
@@ -1657,7 +1658,7 @@ function GenerateContent() {
     }
   };
 
-  const cleanupOrphanedAssets = (oldData, newData) => {
+  const cleanupOrphanedAssets = async (oldData, newData) => {
     if (!oldData) return;
 
     const extractUrls = (obj) => {
@@ -1682,12 +1683,16 @@ function GenerateContent() {
       const oldUrls = extractUrls(oldData);
       const newUrls = extractUrls(newData);
 
+      const deletePromises = [];
       oldUrls.forEach(url => {
         if (!newUrls.has(url)) {
           console.log('[Cleanup] Replaced or removed asset detected. Deleting from storage:', url);
-          executeDeleteImage(url);
+          deletePromises.push(executeDeleteImage(url));
         }
       });
+      if (deletePromises.length > 0) {
+        await Promise.all(deletePromises);
+      }
     } catch (err) {
       console.error('[Cleanup] Error processing orphaned assets:', err);
     }
@@ -2890,14 +2895,14 @@ function GenerateContent() {
           if (saveResponse.ok && saveResult.success) {
             hasSavedRef.current = true;
             uploadedImagesRef.current = [];
-            cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
+            await cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
             originalPageDataRef.current = compiledPageData;
             if (!projectId) {
               setProjectId(saveResult.data.id || saveResult.data.projectId);
               setProjectStatus('draft');
             }
             if (pendingDeleteImages.length > 0) {
-              pendingDeleteImages.forEach(url => executeDeleteImage(url));
+              await Promise.all(pendingDeleteImages.map(url => executeDeleteImage(url)));
               setPendingDeleteImages([]);
             }
             hasSavedRef.current = false;
@@ -3195,11 +3200,11 @@ function GenerateContent() {
       if (response.ok && result.success) {
         hasSavedRef.current = true;
         uploadedImagesRef.current = [];
-        cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
+        await cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
         originalPageDataRef.current = compiledPageData;
         setPageData(compiledPageData);
         if (pendingDeleteImages.length > 0) {
-          pendingDeleteImages.forEach(url => executeDeleteImage(url));
+          await Promise.all(pendingDeleteImages.map(url => executeDeleteImage(url)));
           setPendingDeleteImages([]);
         }
         await refreshProfile();
@@ -3247,10 +3252,10 @@ function GenerateContent() {
       if (response.ok && result.success) {
         hasSavedRef.current = true;
         uploadedImagesRef.current = [];
-        cleanupOrphanedAssets(originalPageDataRef.current, pageData);
+        await cleanupOrphanedAssets(originalPageDataRef.current, pageData);
         originalPageDataRef.current = pageData;
         if (pendingDeleteImages.length > 0) {
-          pendingDeleteImages.forEach(url => executeDeleteImage(url));
+          await Promise.all(pendingDeleteImages.map(url => executeDeleteImage(url)));
           setPendingDeleteImages([]);
         }
         setSuccessUrl(result.liveUrl);
