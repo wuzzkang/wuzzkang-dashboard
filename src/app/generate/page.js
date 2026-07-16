@@ -1385,44 +1385,94 @@ function GenerateContent() {
     return <Loading fullScreen={true} text="Memuat Akun..." size="lg" />;
   }
 
+  // Helper to get descriptive validation errors
+  const getFormValidationErrors = () => {
+    const errors = [];
+    if (!name) {
+      errors.push(templateType === 'wedding' ? 'Nama Undangan / Pernikahan' :
+                  templateType === 'birthday' ? 'Nama Acara Ulang Tahun' :
+                  templateType === 'toko-online' ? 'Nama Toko Online' :
+                  templateType === 'campaign' ? 'Nama Campaign / Halaman Penjualan' :
+                  templateType === 'cv' ? 'Nama CV / Resume' :
+                  templateType === 'e-course' ? 'Nama E-Course' : 'Nama Halaman / Acara');
+    }
+    if (templateType === 'wedding') {
+      if (!groomName) errors.push("Nama Lengkap Pria");
+      if (!groomNickname) errors.push("Nama Panggilan Pria");
+      if (!groomFather) errors.push("Nama Ayah Pria");
+      if (!groomMother) errors.push("Nama Ibu Pria");
+      if (!brideName) errors.push("Nama Lengkap Wanita");
+      if (!brideNickname) errors.push("Nama Panggilan Wanita");
+      if (!brideFather) errors.push("Nama Ayah Wanita");
+      if (!brideMother) errors.push("Nama Ibu Wanita");
+      if (!akadDate) errors.push("Tanggal Akad Nikah");
+      if (!akadTime) errors.push("Waktu Akad Nikah");
+      if (!akadLocation) errors.push("Lokasi Akad Nikah");
+      if (!resepsiDate) errors.push("Tanggal Resepsi Pernikahan");
+      if (!resepsiTime) errors.push("Waktu Resepsi Pernikahan");
+      if (!resepsiLocation) errors.push("Lokasi Resepsi Pernikahan");
+    } else if (templateType === 'birthday') {
+      if (!celebrantName) errors.push("Nama Lengkap Anak/Penerima");
+      if (!celebrantNickname) errors.push("Nama Panggilan Anak/Penerima");
+      if (!celebrantAge) errors.push("Umur Anak/Penerima");
+      if (!birthdayDate) errors.push("Tanggal Acara Ulang Tahun");
+      if (!birthdayTime) errors.push("Waktu Acara Ulang Tahun");
+      if (!birthdayLocation) errors.push("Lokasi Acara Ulang Tahun");
+    } else if (templateType === 'toko-online') {
+      if (!storeName) errors.push("Nama Toko");
+      if (!storeTagline) errors.push("Tagline Toko");
+      if (!tokoWhatsapp) errors.push("Nomor WhatsApp Toko");
+      if (tokoProducts.length === 0) {
+        errors.push("Katalog Produk (Minimal harus ada 1 produk)");
+      } else {
+        tokoProducts.forEach((p, idx) => {
+          if (!p.name) errors.push(`Nama Produk #${idx + 1}`);
+          if (!p.price) errors.push(`Harga Produk #${idx + 1}`);
+        });
+      }
+    } else if (templateType === 'campaign') {
+      if (!campaignHeadline) errors.push("Headline Utama");
+      if (!campaignSubheadline) errors.push("Sub-headline");
+      if (!campaignWhatsapp) errors.push("WhatsApp Checkout");
+      campaignBenefits.forEach((b, idx) => {
+        if (!b.title || !b.desc) errors.push(`Manfaat/Fitur ke-${idx + 1}`);
+      });
+      campaignTestimonials.forEach((t, idx) => {
+        if (!t.name || !t.content) errors.push(`Testimoni ke-${idx + 1}`);
+      });
+    } else if (templateType === 'cv') {
+      if (!cvName) errors.push("Nama Lengkap");
+      if (!cvTitle) errors.push("Pekerjaan / Bidang");
+      if (!cvSummary) errors.push("Ringkasan Profesional");
+      if (!cvEmail) errors.push("Email");
+      if (!cvPhone) errors.push("Nomor Telepon/WhatsApp");
+      if (!cvLocation) errors.push("Lokasi / Kota");
+      if (cvSkills.length === 0) errors.push("Keahlian (Skills)");
+      if (cvEducations.length === 0) {
+        errors.push("Riwayat Pendidikan (Minimal 1)");
+      } else {
+        cvEducations.forEach((e, idx) => {
+          if (!e.institution || !e.degree || !e.period) errors.push(`Pendidikan #${idx + 1} (Institusi/Gelar/Periode)`);
+        });
+      }
+    } else if (templateType === 'e-course') {
+      if (!courseName) errors.push("Nama Kelas/Kursus");
+      if (!eCourseWhatsapp) errors.push("Nomor WhatsApp E-Course");
+      eCourseCurriculumModules.forEach((m, idx) => {
+        if (!m.title || !m.desc) errors.push(`Modul Kurikulum #${idx + 1}`);
+      });
+      eCourseBenefitsList.forEach((b, idx) => {
+        if (!b.title || !b.desc) errors.push(`Keuntungan/Fasilitas #${idx + 1}`);
+      });
+    } else if (templateType === 'store') {
+      if (!prompt) errors.push("Prompt Ide Landing Page");
+    }
+    return errors;
+  };
+
   // Helper to validate the form before preview generate
   const isFormInvalid = () => {
-    if (!name) return true;
-    if (templateType === 'wedding') {
-      return !groomName || !groomNickname || !groomFather || !groomMother ||
-        !brideName || !brideNickname || !brideFather || !brideMother ||
-        !akadDate || !akadTime || !akadLocation ||
-        !resepsiDate || !resepsiTime || !resepsiLocation;
-    }
-    if (templateType === 'birthday') {
-      return !celebrantName || !celebrantNickname || !celebrantAge ||
-        !birthdayDate || !birthdayTime || !birthdayLocation;
-    }
-    if (templateType === 'toko-online') {
-      return !storeName || !storeTagline || !tokoWhatsapp ||
-        tokoProducts.length === 0 ||
-        tokoProducts.some(p => !p.name || !p.price);
-    }
-    if (templateType === 'campaign') {
-      return !campaignHeadline || !campaignSubheadline || !campaignWhatsapp ||
-        campaignBenefits.some(b => !b.title || !b.desc) ||
-        campaignTestimonials.some(t => !t.name || !t.content);
-    }
-    if (templateType === 'cv') {
-      return !cvName || !cvTitle || !cvSummary || !cvEmail || !cvPhone || !cvLocation ||
-        cvSkills.length === 0 ||
-        cvEducations.length === 0 ||
-        cvEducations.some(e => !e.institution || !e.degree || !e.period);
-    }
-    if (templateType === 'e-course') {
-      return !courseName || !eCourseWhatsapp ||
-        eCourseCurriculumModules.some(m => !m.title || !m.desc) ||
-        eCourseBenefitsList.some(b => !b.title || !b.desc);
-    }
-    if (templateType === 'store') {
-      return !prompt;
-    }
-    return false;
+    return getFormValidationErrors().length > 0;
   };
 
   const handleUploadImage = async (file, target) => {
@@ -2505,7 +2555,17 @@ function GenerateContent() {
   // Handle generating preview from prompt
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (isFormInvalid()) return;
+    
+    const validationErrors = getFormValidationErrors();
+    if (validationErrors.length > 0) {
+      setError(`Silakan lengkapi bidang wajib berikut: ${validationErrors.join(', ')}`);
+      // Scroll to the error box or form top
+      const formElement = document.getElementById('generate-form');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
 
     setError('');
     setIsGenerating(true);
@@ -2937,6 +2997,17 @@ function GenerateContent() {
   const handleSaveDeployed = async (e) => {
     e.preventDefault();
     if (!projectId) return;
+
+    const validationErrors = getFormValidationErrors();
+    if (validationErrors.length > 0) {
+      setError(`Silakan lengkapi bidang wajib berikut: ${validationErrors.join(', ')}`);
+      // Scroll to the error box or form top
+      const formElement = document.getElementById('generate-form');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
 
     setError('');
     setIsPublishing(true);
@@ -3534,6 +3605,7 @@ function GenerateContent() {
                          templateType === 'campaign' ? 'Nama Campaign / Halaman Penjualan' :
                          templateType === 'cv' ? 'Nama CV / Resume' :
                          templateType === 'e-course' ? 'Nama E-Course' : 'Nama Halaman / Acara'}
+                        <span className="text-red-500 font-bold ml-1">*</span>
                       </label>
                       <input
                         type="text"
@@ -3669,12 +3741,12 @@ function GenerateContent() {
                         </div>
 
                         {/* Mempelai Pria */}
-                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Mempelai Pria</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Mempelai Pria *</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
                             required
-                            placeholder="Nama Lengkap Pria"
+                            placeholder="Nama Lengkap Pria *"
                             value={groomName}
                             onChange={(e) => setGroomName(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3682,7 +3754,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Panggilan"
+                            placeholder="Panggilan *"
                             value={groomNickname}
                             onChange={(e) => setGroomNickname(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3692,7 +3764,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Nama Ayah Pria"
+                            placeholder="Nama Ayah Pria *"
                             value={groomFather}
                             onChange={(e) => setGroomFather(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3700,7 +3772,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Nama Ibu Pria"
+                            placeholder="Nama Ibu Pria *"
                             value={groomMother}
                             onChange={(e) => setGroomMother(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3742,12 +3814,12 @@ function GenerateContent() {
                         </div>
 
                         {/* Mempelai Wanita */}
-                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Mempelai Wanita</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Mempelai Wanita *</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
                             required
-                            placeholder="Nama Lengkap Wanita"
+                            placeholder="Nama Lengkap Wanita *"
                             value={brideName}
                             onChange={(e) => setBrideName(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3755,7 +3827,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Panggilan"
+                            placeholder="Panggilan *"
                             value={brideNickname}
                             onChange={(e) => setBrideNickname(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3765,7 +3837,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Nama Ayah Wanita"
+                            placeholder="Nama Ayah Wanita *"
                             value={brideFather}
                             onChange={(e) => setBrideFather(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3773,7 +3845,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Nama Ibu Wanita"
+                            placeholder="Nama Ibu Wanita *"
                             value={brideMother}
                             onChange={(e) => setBrideMother(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3964,7 +4036,7 @@ function GenerateContent() {
                         </div>
 
                         {/* Akad Nikah */}
-                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Akad Nikah</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Akad Nikah *</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="date"
@@ -3984,7 +4056,7 @@ function GenerateContent() {
                         <input
                           type="text"
                           required
-                          placeholder="Lokasi Akad (Masjid Agung Jambi)"
+                          placeholder="Lokasi Akad (Masjid Agung Jambi) *"
                           value={akadLocation}
                           onChange={(e) => setAkadLocation(e.target.value)}
                           className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -3998,7 +4070,7 @@ function GenerateContent() {
                         />
 
                         {/* Resepsi */}
-                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Resepsi</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Resepsi *</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="date"
@@ -4018,7 +4090,7 @@ function GenerateContent() {
                         <input
                           type="text"
                           required
-                          placeholder="Lokasi Resepsi (Gedung Serbaguna)"
+                          placeholder="Lokasi Resepsi (Gedung Serbaguna) *"
                           value={resepsiLocation}
                           onChange={(e) => setResepsiLocation(e.target.value)}
                           className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -4108,12 +4180,12 @@ function GenerateContent() {
                         </div>
 
                         {/* Yang Berulang Tahun */}
-                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Yang Berulang Tahun</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Detail Yang Berulang Tahun *</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="text"
                             required
-                            placeholder="Nama Lengkap"
+                            placeholder="Nama Lengkap *"
                             value={celebrantName}
                             onChange={(e) => setCelebrantName(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -4121,7 +4193,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Nama Panggilan"
+                            placeholder="Nama Panggilan *"
                             value={celebrantNickname}
                             onChange={(e) => setCelebrantNickname(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -4131,7 +4203,7 @@ function GenerateContent() {
                           <input
                             type="text"
                             required
-                            placeholder="Umur (e.g. 5 atau Sweet 17)"
+                            placeholder="Umur (e.g. 5 atau Sweet 17) *"
                             value={celebrantAge}
                             onChange={(e) => setCelebrantAge(e.target.value)}
                             className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -4213,7 +4285,7 @@ function GenerateContent() {
                         </div>
 
                         {/* Waktu & Lokasi Acara */}
-                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Perayaan</div>
+                        <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Acara Perayaan *</div>
                         <div className="grid grid-cols-2 gap-2">
                           <input
                             type="date"
@@ -4233,7 +4305,7 @@ function GenerateContent() {
                         <input
                           type="text"
                           required
-                          placeholder="Nama Tempat / Lokasi Acara"
+                          placeholder="Nama Tempat / Lokasi Acara *"
                           value={birthdayLocation}
                           onChange={(e) => setBirthdayLocation(e.target.value)}
                           className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none"
@@ -4326,7 +4398,7 @@ function GenerateContent() {
                         <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Informasi Toko</div>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Nama Toko</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Nama Toko <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <input
                               type="text"
                               required
@@ -4338,7 +4410,7 @@ function GenerateContent() {
                           </div>
                           <div>
                             <div className="flex justify-between items-center mb-1">
-                              <label className="block text-[8px] font-semibold text-theme-text-sec">Tagline Toko</label>
+                              <label className="block text-[8px] font-semibold text-theme-text-sec">Tagline Toko <span className="text-red-500 font-bold ml-0.5">*</span></label>
                               {renderAITokoButton('store_tagline', isGeneratingStoreTagline)}
                             </div>
                             <input
@@ -4426,7 +4498,7 @@ function GenerateContent() {
 
                         {/* Katalog Produk */}
                         <div className="flex justify-between items-center border-t border-theme-border pt-4">
-                          <span className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">Katalog Produk ({tokoProducts.length}/6)</span>
+                          <span className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">Katalog Produk * ({tokoProducts.length}/6)</span>
                           {tokoProducts.length < 6 && (
                             <button
                               type="button"
@@ -4442,7 +4514,7 @@ function GenerateContent() {
                           {tokoProducts.map((product, index) => (
                             <div key={index} className="bg-theme-bg/30 p-3.5 rounded-2xl border border-theme-border space-y-3 relative">
                               <div className="flex justify-between items-center pb-1.5 border-b border-theme-border/50">
-                                <span className="text-[10px] font-bold text-theme-text-sec">Produk #{index + 1}</span>
+                                <span className="text-[10px] font-bold text-theme-text-sec">Produk #{index + 1} *</span>
                                 {tokoProducts.length > 1 && (
                                   <button
                                     type="button"
@@ -4462,7 +4534,7 @@ function GenerateContent() {
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Nama Produk"
+                                  placeholder="Nama Produk *"
                                   value={product.name}
                                   onChange={(e) => {
                                     setTokoProducts(prev => {
@@ -4476,7 +4548,7 @@ function GenerateContent() {
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Harga (e.g. 150000)"
+                                  placeholder="Harga (e.g. 150000) *"
                                   value={product.price}
                                   onChange={(e) => {
                                     setTokoProducts(prev => {
@@ -4551,7 +4623,7 @@ function GenerateContent() {
                         <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider pt-1">Kontak & Media Sosial</div>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">WhatsApp Toko</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">WhatsApp Toko <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <input
                               type="text"
                               required
@@ -4695,7 +4767,7 @@ function GenerateContent() {
                             {renderAICampaignButton('campaign_hero', isGeneratingCampaignHero)}
                           </div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Headline Utama</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Headline Utama <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <textarea
                               rows={2}
                               required
@@ -4706,7 +4778,7 @@ function GenerateContent() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Sub-headline</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Sub-headline <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <textarea
                               rows={2}
                               required
@@ -4717,7 +4789,7 @@ function GenerateContent() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Tombol CTA Utama</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Tombol CTA Utama <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <input
                               type="text"
                               required
@@ -4755,7 +4827,7 @@ function GenerateContent() {
                         <div className="space-y-2.5">
                           <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">2. Kontak & Tujuan CTA</div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">WhatsApp Checkout (Format: 628xxx)</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">WhatsApp Checkout (Format: 628xxx) <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <input
                               type="text"
                               required
@@ -4843,7 +4915,7 @@ function GenerateContent() {
                             {renderAICampaignButton('campaign_benefits', isGeneratingCampaignBenefits)}
                           </div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Judul Bagian Solusi</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Judul Bagian Solusi <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <input
                               type="text"
                               required
@@ -4864,13 +4936,13 @@ function GenerateContent() {
                             />
                           </div>
                           <div className="space-y-3">
-                            <label className="block text-[8px] font-semibold text-theme-text-sec">Poin-Poin Manfaat Utama (Max 3)</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Poin-Poin Manfaat Utama * (Max 3)</label>
                             {campaignBenefits.map((benefit, index) => (
                               <div key={index} className="bg-theme-bg/30 p-2.5 rounded-xl border border-theme-border space-y-1.5">
                                 <input
                                   type="text"
                                   required
-                                  placeholder={`Nama Manfaat #${index + 1}`}
+                                  placeholder={`Nama Manfaat #${index + 1} *`}
                                   value={benefit.title}
                                   onChange={(e) => {
                                     const updated = [...campaignBenefits];
@@ -4882,7 +4954,7 @@ function GenerateContent() {
                                 <textarea
                                   rows={2}
                                   required
-                                  placeholder={`Penjelasan Manfaat #${index + 1}`}
+                                  placeholder={`Penjelasan Manfaat #${index + 1} *`}
                                   value={benefit.desc}
                                   onChange={(e) => {
                                     const updated = [...campaignBenefits];
@@ -4903,14 +4975,14 @@ function GenerateContent() {
                             {renderAICampaignButton('campaign_testimonials', isGeneratingCampaignTestimonials)}
                           </div>
                           <div className="space-y-3">
-                            <label className="block text-[8px] font-semibold text-theme-text-sec">Contoh Testimoni Pelanggan (Max 2)</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec">Contoh Testimoni Pelanggan * (Max 2)</label>
                             {campaignTestimonials.map((t, index) => (
                               <div key={index} className="bg-theme-bg/30 p-2.5 rounded-xl border border-theme-border space-y-1.5">
                                 <div className="grid grid-cols-2 gap-2">
                                   <input
                                     type="text"
                                     required
-                                    placeholder={`Nama Testi #${index + 1}`}
+                                    placeholder={`Nama Testi #${index + 1} *`}
                                     value={t.name}
                                     onChange={(e) => {
                                       const updated = [...campaignTestimonials];
@@ -4934,7 +5006,7 @@ function GenerateContent() {
                                 <textarea
                                   rows={2}
                                   required
-                                  placeholder={`Isi Testi #${index + 1}`}
+                                  placeholder={`Isi Testi #${index + 1} *`}
                                   value={t.content}
                                   onChange={(e) => {
                                     const updated = [...campaignTestimonials];
@@ -4965,7 +5037,7 @@ function GenerateContent() {
                             {renderAICampaignButton('campaign_urgency', isGeneratingCampaignUrgency)}
                           </div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Urgensi / Kelangkaan (Scarcity)</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Urgensi / Kelangkaan (Scarcity) <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <textarea
                               rows={2}
                               required
@@ -4976,7 +5048,7 @@ function GenerateContent() {
                             />
                           </div>
                           <div>
-                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Tombol CTA Penutup</label>
+                            <label className="block text-[8px] font-semibold text-theme-text-sec mb-1">Teks Tombol CTA Penutup <span className="text-red-500 font-bold ml-0.5">*</span></label>
                             <input
                               type="text"
                               required
@@ -5105,7 +5177,7 @@ function GenerateContent() {
                           </h3>
                           <div>
                             <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
-                              Nama Kelas / E-Course
+                              Nama Kelas / E-Course <span className="text-red-500 font-bold ml-0.5">*</span>
                             </label>
                             <input
                               type="text"
@@ -5542,12 +5614,12 @@ function GenerateContent() {
                           </div>
                           <div className="space-y-3">
                             <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
-                              Daftar Modul Belajar
+                              Daftar Modul Belajar <span className="text-red-500 font-bold ml-0.5">*</span>
                             </label>
                             {eCourseCurriculumModules.map((mod, idx) => (
                               <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2 relative">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-[10px] font-bold text-theme-text-sec">Modul #0{idx + 1}</span>
+                                  <span className="text-[10px] font-bold text-theme-text-sec">Modul #0{idx + 1} *</span>
                                   {eCourseCurriculumModules.length > 1 && (
                                     <button
                                       type="button"
@@ -5561,7 +5633,7 @@ function GenerateContent() {
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Judul Modul..."
+                                  placeholder="Judul Modul... *"
                                   value={mod.title}
                                   onChange={(e) => {
                                     const next = [...eCourseCurriculumModules];
@@ -5573,7 +5645,7 @@ function GenerateContent() {
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Deskripsi Singkat Materi..."
+                                  placeholder="Deskripsi Singkat Materi... *"
                                   value={mod.desc}
                                   onChange={(e) => {
                                     const next = [...eCourseCurriculumModules];
@@ -5618,15 +5690,15 @@ function GenerateContent() {
                           </div>
                           <div className="space-y-3">
                             <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
-                              Daftar Keuntungan / Fasilitas (Maksimal 3)
+                              Daftar Keuntungan / Fasilitas <span className="text-red-500 font-bold ml-0.5">*</span> (Maksimal 3)
                             </label>
                             {eCourseBenefitsList.map((ben, idx) => (
                               <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
-                                <span className="text-[10px] font-bold text-theme-text-sec">Benefit #0{idx + 1}</span>
+                                <span className="text-[10px] font-bold text-theme-text-sec">Benefit #0{idx + 1} *</span>
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Nama Benefit (e.g. Akses Selamanya)"
+                                  placeholder="Nama Benefit (e.g. Akses Selamanya) *"
                                   value={ben.title}
                                   onChange={(e) => {
                                     const next = [...eCourseBenefitsList];
@@ -5638,7 +5710,7 @@ function GenerateContent() {
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Deskripsi Ringkas Benefit..."
+                                  placeholder="Deskripsi Ringkas Benefit... *"
                                   value={ben.desc}
                                   onChange={(e) => {
                                     const next = [...eCourseBenefitsList];
@@ -5929,7 +6001,7 @@ function GenerateContent() {
                           </h3>
                           <div>
                             <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
-                              Nomor WhatsApp Aktif (Gunakan Format 62xxxx)
+                              Nomor WhatsApp Aktif (Gunakan Format 62xxxx) <span className="text-red-500 font-bold ml-0.5">*</span>
                             </label>
                             <input
                               type="text"
@@ -6726,7 +6798,7 @@ function GenerateContent() {
             <button
               type="submit"
               form="generate-form"
-              disabled={isPublishing || isFormInvalid() || (editCount >= maxProjectEdits && (profile?.balance ?? 0) < projectEditCost)}
+              disabled={isPublishing || (editCount >= maxProjectEdits && (profile?.balance ?? 0) < projectEditCost)}
               title={editCount >= maxProjectEdits && (profile?.balance ?? 0) < projectEditCost ? 'Saldo credit tidak cukup untuk menyimpan edit berbayar' : ''}
               className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >
@@ -6750,7 +6822,7 @@ function GenerateContent() {
             <button
               type="submit"
               form="generate-form"
-              disabled={isGenerating || isFormInvalid()}
+              disabled={isGenerating}
               className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               {isGenerating ? (
