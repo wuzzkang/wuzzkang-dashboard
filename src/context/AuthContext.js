@@ -159,6 +159,26 @@ export function AuthProvider({ children }) {
             setProfile(null);
           }
         }
+
+        if (response.status === 403 && isBackendApi) {
+          const responseClone = response.clone();
+          try {
+            const body = await responseClone.json();
+            if (body?.error && body.error.toLowerCase().includes('suspended')) {
+              console.warn('[AuthContext] Intercepted suspended user session. Performing auto-logout...');
+              
+              await supabase.auth.signOut();
+              setSession(null);
+              setUser(null);
+              setProfile(null);
+              
+              window.location.href = '/login?error=suspended';
+            }
+          } catch (e) {
+            // Ignore json parse error
+          }
+        }
+
         return response;
       } catch (err) {
         throw err;
