@@ -1804,7 +1804,8 @@ function GenerateContent() {
         },
         body: JSON.stringify({
           mode: 'generate_avatar',
-          params: { prompt: userPrompt }
+          params: { prompt: userPrompt },
+          projectId: projectId || undefined,
         }),
       });
 
@@ -1917,7 +1918,7 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ fieldType, context }),
+        body: JSON.stringify({ fieldType, context, projectId: projectId || undefined }),
       });
  
       const result = await response.json();
@@ -2054,7 +2055,7 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ fieldType, context }),
+        body: JSON.stringify({ fieldType, context, projectId: projectId || undefined }),
       });
 
       const result = await response.json();
@@ -2219,7 +2220,7 @@ function GenerateContent() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ fieldType, context }),
+        body: JSON.stringify({ fieldType, context, projectId: projectId || undefined }),
       });
 
       const result = await response.json();

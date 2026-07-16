@@ -367,6 +367,9 @@ export default function AdminDashboardPage() {
                   { id: 'all', label: 'Semua' },
                   { id: 'topup', label: 'Top Up' },
                   { id: 'deployment', label: 'Publikasi' },
+                  { id: 'subdomain', label: 'Subdomain' },
+                  { id: 'ai_generation', label: 'AI Generate' },
+                  { id: 'edit', label: 'Edit' },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -483,6 +486,28 @@ export default function AdminDashboardPage() {
                           <span className="text-[9px] font-mono text-theme-text-muted mt-0.5 block">
                             ID: {tx.order_id || tx.id.slice(0, 8)}
                           </span>
+                          {tx.projects?.slug && (
+                            <span className="text-[9px] font-bold text-theme-accent mt-1 block truncate">
+                              Slug: <a href={tx.projects.live_url} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80">
+                                {tx.projects.slug}
+                              </a>
+                            </span>
+                          )}
+                          {tx.type === 'subdomain' && tx.description && (
+                            <span className="text-[9px] font-mono text-indigo-400 mt-1 block truncate" title={tx.description}>
+                              🌐 {tx.description.replace('Klaim subdomain: ', '')}
+                            </span>
+                          )}
+                          {tx.type === 'ai_generation' && tx.description && (
+                            <span className="text-[9px] font-mono text-purple-400 mt-1 block truncate" title={tx.description}>
+                              🤖 {tx.description}
+                            </span>
+                          )}
+                          {tx.type === 'edit' && (
+                            <span className="text-[9px] font-mono text-amber-400 mt-1 block">
+                              ✏️ Simpan Perubahan (Berbayar)
+                            </span>
+                          )}
                         </div>
                       </div>
 
