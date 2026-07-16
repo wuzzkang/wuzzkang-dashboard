@@ -3458,6 +3458,10 @@ function GenerateContent() {
     );
   };
 
+  if (loading || !user) {
+    return <Loading fullScreen text="Memverifikasi Autentikasi..." size="lg" />;
+  }
+
   return (
     <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
       <Sidebar />

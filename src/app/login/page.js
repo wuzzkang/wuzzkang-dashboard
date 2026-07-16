@@ -24,7 +24,9 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    console.log('[LoginPage] loading:', loading, 'user exists:', !!user);
     if (!loading && user) {
+      console.log('[LoginPage] Redirecting to /');
       router.push('/');
     }
   }, [user, loading, router]);

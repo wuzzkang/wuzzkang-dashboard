@@ -6,6 +6,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useModalHistory } from '@/hooks/useModalHistory';
 import PageLayout from '@/components/PageLayout';
 import Skeleton from '@/components/Skeleton';
+import Loading from '@/components/Loading';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import AlertBanner from '@/components/AlertBanner';
 import QrisZoomModal from '@/components/QrisZoomModal';
@@ -364,6 +365,10 @@ export default function TopUpPage() {
       setIsSimulating(false);
     }
   };
+
+  if (loading || !user) {
+    return <Loading fullScreen text="Memverifikasi Autentikasi..." size="lg" />;
+  }
 
   return (
     <>

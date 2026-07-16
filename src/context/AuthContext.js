@@ -33,11 +33,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let currentToken = null;
+    let isInitialCheckDone = false;
 
     const handleSessionChange = (newSession, event = null) => {
       const newToken = newSession?.access_token ?? null;
       const isTokenChanged = currentToken !== newToken;
       const isUserUpdated = event === 'USER_UPDATED';
+
+      console.log('[AuthContext] handleSessionChange event:', event, 'isTokenChanged:', isTokenChanged, 'newSession:', !!newSession, 'isInitialCheckDone:', isInitialCheckDone);
 
       if (isTokenChanged || isUserUpdated) {
         currentToken = newToken;
@@ -49,16 +52,27 @@ export function AuthProvider({ children }) {
           setProfile(null);
         }
       }
-      setLoading(false);
+      
+      // Hanya matikan loading jika inisialisasi selesai ATAU session aktif ditemukan
+      if (isInitialCheckDone || newSession) {
+        console.log('[AuthContext] setLoading(false) - user exists:', !!(newSession?.user));
+        setLoading(false);
+      }
     };
 
     // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[AuthContext] getSession resolved, session exists:', !!session);
+      isInitialCheckDone = true;
       handleSessionChange(session, 'INITIAL_SESSION');
     });
 
     // 2. Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[AuthContext] onAuthStateChange event:', event, 'session exists:', !!session);
+      if (session) {
+        isInitialCheckDone = true;
+      }
       handleSessionChange(session, event);
     });
 
