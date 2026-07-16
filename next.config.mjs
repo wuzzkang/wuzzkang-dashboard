@@ -6,8 +6,7 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Batasi tracing root ke parent directory (monorepo root) agar sama dengan turbopack.root
-  outputFileTracingRoot: path.resolve(__dirname, '..'),
+  /* config options here */
   ...(process.env.NODE_ENV === 'development' && {
     turbopack: {
       root: path.resolve(__dirname, '..')
