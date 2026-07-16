@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
-import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette, History, Plus } from 'lucide-react';
+import { Sparkles, LayoutDashboard, PlusCircle, CreditCard, LogOut, Wallet, User, Menu, X, Palette, History, Plus, Shield } from 'lucide-react';
 import { BRAND_NAME } from '@/config/branding';
 
 export default function Sidebar() {
@@ -42,6 +42,12 @@ export default function Sidebar() {
     { name: 'Top Up', href: '/topup', icon: CreditCard },
     { name: 'Riwayat Transaksi', href: '/payments/history', icon: History },
   ];
+
+  // Conditionally add admin panel link for admin/super_admin users
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
+  if (isAdmin) {
+    navItems.push({ name: 'Admin Panel', href: '/admin', icon: Shield });
+  }
 
   return (
     <>

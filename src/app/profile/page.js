@@ -289,6 +289,32 @@ export default function ProfilePage() {
           </div>
         </section>
 
+        {/* ── Admin Shortcut Card (Only visible to admin/super_admin) ──────────────── */}
+        {(profileData?.role === 'admin' || profileData?.role === 'super_admin') && (
+          <section className="bg-theme-surface border border-theme-border rounded-2xl p-5 mb-4 shadow-sm relative overflow-hidden group">
+            <div className="absolute right-0 top-0 h-16 w-16 bg-theme-accent/5 rounded-bl-full flex items-center justify-center shrink-0">
+              <Shield className="h-5 w-5 text-theme-accent opacity-60" />
+            </div>
+            <div>
+              <h3 className="font-bold text-theme-text flex items-center gap-1.5" style={{ fontFamily: "'Sora', sans-serif" }}>
+                <Shield className="h-4 w-4 text-theme-accent" />
+                <span>Akses Admin</span>
+              </h3>
+              <p className="text-xs text-theme-text-sec mt-1 max-w-[280px]">
+                Anda masuk sebagai administrator. Gunakan tombol di bawah ini untuk membuka Admin Panel.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push('/admin')}
+                className="mt-3.5 w-full py-2.5 px-4 bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text text-xs font-bold rounded-xl shadow transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              >
+                <span>Buka Admin Panel</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </section>
+        )}
+
         {/* ── Theme Selector Card ────────────────────────────────────────── */}
         <section className="bg-theme-surface border border-theme-border rounded-2xl p-5 mb-4 shadow-sm">
           <div className="flex items-center gap-2 mb-4">

@@ -11,7 +11,7 @@ import AlertBanner from '@/components/AlertBanner';
 import Loading from '@/components/Loading';
 
 export default function LoginPage() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const router = useRouter();
 
   const [isSignUp, setIsSignUp] = useState(false);
@@ -24,12 +24,24 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    console.log('[LoginPage] loading:', loading, 'user exists:', !!user);
-    if (!loading && user) {
+    console.log('[LoginPage] loading:', loading, 'user exists:', !!user, 'profile exists:', !!profile);
+    if (!loading && user && profile) {
+      if (profile.is_active === false) {
+        return;
+      }
       console.log('[LoginPage] Redirecting to /');
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [user, profile, loading, router]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('error') === 'suspended') {
+        setAuthError('Akun Anda telah dinonaktifkan oleh administrator.');
+      }
+    }
+  }, []);
 
   if (loading) {
     return <Loading fullScreen />;
@@ -65,8 +77,24 @@ export default function LoginPage() {
           setMessage('Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi atau langsung login jika konfirmasi email dinonaktifkan.');
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        
+        // Quick verification of account status before redirecting to '/'
+        if (data?.session?.access_token) {
+          const resProfile = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+            headers: { Authorization: `Bearer ${data.session.access_token}` },
+          });
+          
+          if (!resProfile.ok) {
+            const body = await resProfile.json().catch(() => ({}));
+            if (resProfile.status === 403 && body?.error && body.error.toLowerCase().includes('suspended')) {
+              await supabase.auth.signOut();
+              throw new Error('Akun Anda telah dinonaktifkan oleh administrator.');
+            }
+          }
+        }
+
         router.push('/');
       }
     } catch (err) {
