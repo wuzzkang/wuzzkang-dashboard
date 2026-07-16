@@ -127,7 +127,7 @@ export default function PaymentHistoryPage() {
 
   useEffect(() => {
     fetchHistory(dateFilter, startDate, endDate);
-  }, [session, dateFilter, startDate, endDate, dateValidationError]);
+  }, [session?.access_token, dateFilter, startDate, endDate, dateValidationError]);
 
   // Date Range Validation (max 1 month / 30 days)
   useEffect(() => {

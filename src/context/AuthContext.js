@@ -32,26 +32,34 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    // 1. Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session) {
-        fetchProfile(session.access_token);
+    let currentToken = null;
+
+    const handleSessionChange = (newSession, event = null) => {
+      const newToken = newSession?.access_token ?? null;
+      const isTokenChanged = currentToken !== newToken;
+      const isUserUpdated = event === 'USER_UPDATED';
+
+      if (isTokenChanged || isUserUpdated) {
+        currentToken = newToken;
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        if (newSession) {
+          fetchProfile(newSession.access_token);
+        } else {
+          setProfile(null);
+        }
       }
       setLoading(false);
+    };
+
+    // 1. Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSessionChange(session, 'INITIAL_SESSION');
     });
 
     // 2. Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session) {
-        fetchProfile(session.access_token);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      handleSessionChange(session, event);
     });
 
     return () => subscription.unsubscribe();

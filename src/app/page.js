@@ -78,7 +78,7 @@ export default function DashboardPage() {
       }
     };
     fetchProfileSettings();
-  }, [session]);
+  }, [session?.access_token]);
 
   // Fetch projects from backend with pagination, search, and filtering
   const getProjects = async (pageToFetch, isReset = false) => {
@@ -137,7 +137,7 @@ export default function DashboardPage() {
     }, searchTerm ? 400 : 0);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, filterType, session]);
+  }, [searchTerm, filterType, session?.access_token]);
 
   // Handle page change (loading more)
   useEffect(() => {
@@ -164,7 +164,7 @@ export default function DashboardPage() {
       }
     };
     fetchPricing();
-  }, [domainModalOpen, session]);
+  }, [domainModalOpen, session?.access_token]);
 
   // Auto-check subdomain availability with debounce
   useEffect(() => {
@@ -200,7 +200,7 @@ export default function DashboardPage() {
     return () => {
       if (checkDebounceRef.current) clearTimeout(checkDebounceRef.current);
     };
-  }, [subdomainInput, session]);
+  }, [subdomainInput, session?.access_token]);
 
   const openDomainModal = (project) => {
     setDomainProject(project);

@@ -64,7 +64,7 @@ export default function TopUpPage() {
       }
     };
     fetchProducts();
-  }, [session]);
+  }, [session?.access_token]);
 
   // Fetch active payment methods list from backend
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function TopUpPage() {
       }
     };
     fetchPaymentMethods();
-  }, [session]);
+  }, [session?.access_token]);
 
   // Fetch active pending topup transaction from backend
   useEffect(() => {
@@ -128,7 +128,7 @@ export default function TopUpPage() {
       }
     };
     fetchPendingTransaction();
-  }, [session]);
+  }, [session?.access_token]);
 
   // Countdown timer for pending payment expiration
   useEffect(() => {
@@ -188,7 +188,7 @@ export default function TopUpPage() {
   // Fetch transaction history reactively
   useEffect(() => {
     fetchHistory();
-  }, [session, activeTransaction]);
+  }, [session?.access_token, activeTransaction]);
 
   // Helper to determine payment options based on dynamic database setting
   const getActivePaymentChannels = () => {

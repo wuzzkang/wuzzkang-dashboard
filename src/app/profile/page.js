@@ -139,7 +139,7 @@ export default function ProfilePage() {
       }
     };
     fetchProfile();
-  }, [session]);
+  }, [session?.access_token]);
 
   // ── Hash scroll to #tracking ────────────────────────────────────────────
   useEffect(() => {

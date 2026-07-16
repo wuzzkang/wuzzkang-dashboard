@@ -516,7 +516,7 @@ function GenerateContent() {
       }
     };
     fetchTrackingConfig();
-  }, [session]);
+  }, [session?.access_token]);
 
   // Load existing draft if ID in query params
   useEffect(() => {
@@ -809,7 +809,7 @@ function GenerateContent() {
     if (session && draftId) {
       fetchDraft();
     }
-  }, [session, draftId]);
+  }, [session?.access_token, draftId]);
 
   // Keep sessionRef updated to avoid stale closure during unmount cleanup
   useEffect(() => {
@@ -1290,7 +1290,7 @@ function GenerateContent() {
       }
     };
     fetchProducts();
-  }, [session, draftId]);
+  }, [session?.access_token, draftId]);
 
   const getDisplayProducts = () => {
     if (products && products.length > 0) {
