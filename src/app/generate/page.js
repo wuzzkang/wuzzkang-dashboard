@@ -829,6 +829,9 @@ function GenerateContent() {
         uploadedImagesRef.current.forEach(url => {
           executeDeleteImage(url);
         });
+        try {
+          localStorage.removeItem('wuzzkang_unsaved_uploads');
+        } catch (e) {}
       }
     };
   }, []);
@@ -1533,6 +1536,13 @@ function GenerateContent() {
 
       console.log(`[Dashboard] Upload successful. Public URL: ${publicUrl}`);
       uploadedImagesRef.current.push(publicUrl);
+      try {
+        const unsaved = JSON.parse(localStorage.getItem('wuzzkang_unsaved_uploads') || '[]');
+        unsaved.push(publicUrl);
+        localStorage.setItem('wuzzkang_unsaved_uploads', JSON.stringify(unsaved));
+      } catch (e) {
+        console.error('[Dashboard] Error saving uploaded image URL to localStorage:', e);
+      }
 
       if (isGroom) {
         if (groomImage) handleDeleteImage(groomImage);
@@ -2900,6 +2910,9 @@ function GenerateContent() {
           if (saveResponse.ok && saveResult.success) {
             hasSavedRef.current = true;
             uploadedImagesRef.current = [];
+            try {
+              localStorage.removeItem('wuzzkang_unsaved_uploads');
+            } catch (e) {}
             await cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
             originalPageDataRef.current = compiledPageData;
             if (!projectId) {
@@ -3205,6 +3218,9 @@ function GenerateContent() {
       if (response.ok && result.success) {
         hasSavedRef.current = true;
         uploadedImagesRef.current = [];
+        try {
+          localStorage.removeItem('wuzzkang_unsaved_uploads');
+        } catch (e) {}
         await cleanupOrphanedAssets(originalPageDataRef.current, compiledPageData);
         originalPageDataRef.current = compiledPageData;
         setPageData(compiledPageData);
@@ -3257,6 +3273,9 @@ function GenerateContent() {
       if (response.ok && result.success) {
         hasSavedRef.current = true;
         uploadedImagesRef.current = [];
+        try {
+          localStorage.removeItem('wuzzkang_unsaved_uploads');
+        } catch (e) {}
         await cleanupOrphanedAssets(originalPageDataRef.current, pageData);
         originalPageDataRef.current = pageData;
         if (pendingDeleteImages.length > 0) {

@@ -34,6 +34,60 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let currentToken = null;
 
+    const cleanupOrphanedSessionImages = async (token) => {
+      try {
+        if (typeof window === 'undefined') return;
+        const unsavedStr = localStorage.getItem('wuzzkang_unsaved_uploads');
+        if (!unsavedStr) return;
+
+        const unsaved = JSON.parse(unsavedStr);
+        if (Array.isArray(unsaved) && unsaved.length > 0) {
+          console.log('[AuthContext] Unsaved uploads from a crashed/aborted session detected. Cleaning up:', unsaved);
+
+          for (const url of unsaved) {
+            if (!url || url.includes('/defaults/')) continue;
+
+            let path = '';
+            try {
+              const bucketMarker = '/wuzzkang-bucket/';
+              const markerIdx = url.indexOf(bucketMarker);
+              if (markerIdx !== -1) {
+                path = url.substring(markerIdx + bucketMarker.length);
+                const queryIdx = path.indexOf('?');
+                if (queryIdx !== -1) {
+                  path = path.substring(0, queryIdx);
+                }
+              }
+            } catch (e) {
+              console.error('[AuthContext] Error parsing image storage path during orphan cleanup:', e);
+            }
+
+            if (path) {
+              try {
+                console.log(`[AuthContext] Requesting server deletion for orphaned path: "${path}"`);
+                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ path }),
+                });
+              } catch (err) {
+                console.error('[AuthContext] Error calling delete media API for orphaned asset:', err);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[AuthContext] Error in orphaned image cleanup flow:', err);
+      } finally {
+        try {
+          localStorage.removeItem('wuzzkang_unsaved_uploads');
+        } catch (e) {}
+      }
+    };
+
     const handleSessionChange = (newSession, event = null) => {
       const newToken = newSession?.access_token ?? null;
       const isTokenChanged = currentToken !== newToken;
@@ -45,6 +99,7 @@ export function AuthProvider({ children }) {
         setUser(newSession?.user ?? null);
         if (newSession) {
           fetchProfile(newSession.access_token);
+          cleanupOrphanedSessionImages(newSession.access_token);
         } else {
           setProfile(null);
         }
