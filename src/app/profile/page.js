@@ -6,6 +6,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useTheme } from '@/hooks/useTheme';
 import Sidebar from '@/components/Sidebar';
 import Skeleton from '@/components/Skeleton';
+import Loading from '@/components/Loading';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import AlertBanner from '@/components/AlertBanner';
 import {
@@ -206,7 +207,11 @@ export default function ProfilePage() {
     setVisibleFields((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  if (loading || isFetching) {
+  if (loading) {
+    return <Loading fullScreen text="Memverifikasi Autentikasi..." size="lg" />;
+  }
+
+  if (isFetching) {
     return (
       <div className="min-h-screen bg-theme-bg transition-theme" style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
         <Sidebar />

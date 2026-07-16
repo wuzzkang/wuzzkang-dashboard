@@ -10,6 +10,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import AlertBanner from '@/components/AlertBanner';
 import { Plus, Globe, Calendar, CheckCircle, Clock, AlertTriangle, ExternalLink, Share2, Copy, Send, X, Search, Link2, Loader2, Trash2, ChevronRight } from 'lucide-react';
 import Skeleton from '@/components/Skeleton';
+import Loading from '@/components/Loading';
 
 export default function DashboardPage() {
   const { user, session, loading } = useRequireAuth();
@@ -421,6 +422,10 @@ export default function DashboardPage() {
     }
     return null;
   };
+
+  if (loading || !user) {
+    return <Loading fullScreen text="Memverifikasi Autentikasi..." size="lg" />;
+  }
 
   return (
     <PageLayout>
