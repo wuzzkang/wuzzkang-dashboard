@@ -247,9 +247,9 @@ export default function AdminDashboardPage() {
           onClick={handleRefresh}
           className="p-2 rounded-xl border border-theme-border bg-theme-card/30 hover:bg-theme-card/70 transition-colors"
           title="Muat ulang data"
-          disabled={isStatsLoading || isTxLoading || isUsersLoading}
+          disabled={isStatsLoading || (activeTab === 'transactions' ? isTxLoading : isUsersLoading)}
         >
-          <RefreshCw className={`h-4 w-4 text-theme-text-sec ${(isStatsLoading || isTxLoading || isUsersLoading) ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 text-theme-text-sec ${(isStatsLoading || (activeTab === 'transactions' ? isTxLoading : isUsersLoading)) ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
