@@ -494,6 +494,7 @@ function GenerateContent() {
   const [jasaClosingCtaText, setJasaClosingCtaText] = useState('');
 
   // Jasa AI assist loading states
+  const [isGeneratingJasaTagline, setIsGeneratingJasaTagline] = useState(false);
   const [isGeneratingJasaHero, setIsGeneratingJasaHero] = useState(false);
   const [isGeneratingJasaHowItWorks, setIsGeneratingJasaHowItWorks] = useState(false);
   const [isGeneratingJasaAbout, setIsGeneratingJasaAbout] = useState(false);
@@ -2690,8 +2691,8 @@ function GenerateContent() {
   const handleAIJasaAssist = async (fieldType) => {
     if (!session?.access_token) return;
 
-    if (!jasaBrandDesc.trim() && !jasaBrandName.trim()) {
-      alert('Harap isi Nama Brand dan Deskripsi Layanan terlebih dahulu sebagai acuan AI.');
+    if (!jasaBrandDesc.trim()) {
+      alert('Harap isi Deskripsi Layanan (Brief AI) terlebih dahulu sebagai acuan AI.');
       return;
     }
 
@@ -2705,6 +2706,7 @@ function GenerateContent() {
       if (!confirmCharge) return;
     }
 
+    if (fieldType === 'jasa_tagline') setIsGeneratingJasaTagline(true);
     if (fieldType === 'jasa_hero') setIsGeneratingJasaHero(true);
     if (fieldType === 'jasa_how_it_works') setIsGeneratingJasaHowItWorks(true);
     if (fieldType === 'jasa_about') setIsGeneratingJasaAbout(true);
@@ -2760,6 +2762,9 @@ function GenerateContent() {
 
       if (!finalContent) throw new Error('Waktu tunggu AI habis (timeout).');
 
+      if (fieldType === 'jasa_tagline') {
+        setJasaBrandTagline(finalContent.tagline || '');
+      }
       if (fieldType === 'jasa_hero') {
         setJasaHeroHeadline(finalContent.headline || '');
         setJasaHeroSubheadline(finalContent.subheadline || '');
@@ -2802,6 +2807,7 @@ function GenerateContent() {
       console.error('[Dashboard] Jasa AI Assist error:', err);
       alert('Terjadi kesalahan jaringan saat memanggil AI.');
     } finally {
+      if (fieldType === 'jasa_tagline') setIsGeneratingJasaTagline(false);
       if (fieldType === 'jasa_hero') setIsGeneratingJasaHero(false);
       if (fieldType === 'jasa_how_it_works') setIsGeneratingJasaHowItWorks(false);
       if (fieldType === 'jasa_about') setIsGeneratingJasaAbout(false);
@@ -6794,9 +6800,12 @@ function GenerateContent() {
 
                         {/* Brand Info */}
                         <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
-                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
-                            <span>🏷️</span> Informasi Brand / Penyedia Jasa
-                          </h3>
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>🏷️</span> Informasi Brand / Penyedia Jasa
+                            </h3>
+                            {renderAIJasaButton('jasa_tagline', isGeneratingJasaTagline)}
+                          </div>
                           <div>
                             <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
                               Nama Brand / Perusahaan <span className="text-red-500 font-bold ml-0.5">*</span>
