@@ -34,7 +34,7 @@
     <script type="module">
         // Version stamp — bump this (matching LP_VERSION in wuzzkang-lp/script.js) 
         // to invalidate cached template modules after a deployment to GitHub Pages.
-        const PREVIEW_VERSION = '1.2.2';
+        const PREVIEW_VERSION = '1.2.3';
         const cacheBust = `?v=${PREVIEW_VERSION}`;
 
         // Global Branding Config
@@ -162,6 +162,18 @@
                         await module.render(pageData, 'Tamu');
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template E-Course: ${err.message}</div>`;
+                    }
+                } else if (templateType === 'jasa') {
+                    try {
+                        const templateVersion = pageData.meta?.template_version || 1;
+                        const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
+                        // Dynamically import the Jasa template module with cache-bust
+                        const module = await import(`./templates/jasa/${resolvedFile}${cacheBust}`);
+                        
+                        // Execute the template renderer
+                        await module.render(pageData, 'Tamu', BRAND_CONFIG);
+                    } catch (err) {
+                        appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template Jasa: ${err.message}</div>`;
                     }
                 } else {
                     // Default mockup preview for Store template

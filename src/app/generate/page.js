@@ -22,6 +22,7 @@ const getProductIcon = (id) => {
     case 'campaign': return '⚡';
     case 'cv': return '📄';
     case 'e-course': return '🎓';
+    case 'jasa': return '🛠️';
     default: return '📄';
   }
 };
@@ -35,6 +36,7 @@ const getProductDefaultDescription = (id) => {
     case 'campaign': return 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.';
     case 'cv': return 'Web CV profesional yang ATS-friendly, siap dibagikan sebagai link atau di-export ke PDF.';
     case 'e-course': return 'Landing page e-course profesional dengan kurikulum modul, ulasan alumni, bonus penawaran, dan countdown urgensi.';
+    case 'jasa': return 'Landing page jasa profesional lengkap dengan portofolio, daftar layanan, paket harga, testimoni, FAQ, dan form kontak.';
     default: return 'Rancang landing page instan sesuai kebutuhan Anda.';
   }
 };
@@ -123,7 +125,9 @@ const TEMPLATE_LATEST_VERSIONS = {
   // CV
   'professional-dark': 1,
   // E-Course
-  'purple-academy': 1
+  'purple-academy': 1,
+  // Jasa
+  'professional-navy': 1
 };
 
 function GenerateContent() {
@@ -410,6 +414,96 @@ function GenerateContent() {
   const [isGeneratingECourseTestimonials, setIsGeneratingECourseTestimonials] = useState(false);
   const [isGeneratingECourseFaq, setIsGeneratingECourseFaq] = useState(false);
 
+  // Jasa form states
+  const [jasaBrandName, setJasaBrandName] = useState('');
+  const [jasaBrandTagline, setJasaBrandTagline] = useState('');
+  const [jasaBrandDesc, setJasaBrandDesc] = useState('');
+  const [jasaBrandLogo, setJasaBrandLogo] = useState('');
+  const [isUploadingJasaBrandLogo, setIsUploadingJasaBrandLogo] = useState(false);
+  const [jasaHeroHeadline, setJasaHeroHeadline] = useState('');
+  const [jasaHeroSubheadline, setJasaHeroSubheadline] = useState('');
+  const [jasaHeroCtaText, setJasaHeroCtaText] = useState('Mulai Konsultasi');
+  const [jasaHeroCtaSecondaryText, setJasaHeroCtaSecondaryText] = useState('Lihat Layanan');
+  const [jasaHeroImage, setJasaHeroImage] = useState('');
+  const [generateJasaHeroImage, setGenerateJasaHeroImage] = useState(false);
+  const [jasaHeroImageSource, setJasaHeroImageSource] = useState('unsplash');
+  const [isGeneratingJasaHeroImage, setIsGeneratingJasaHeroImage] = useState(false);
+  const [isUploadingJasaHeroImage, setIsUploadingJasaHeroImage] = useState(false);
+  const [jasaSocialClientCount, setJasaSocialClientCount] = useState('100+');
+  const [jasaSocialProjectCount, setJasaSocialProjectCount] = useState('250+');
+  const [jasaSocialProductCount, setJasaSocialProductCount] = useState('50+');
+  const [jasaSocialLabelClients, setJasaSocialLabelClients] = useState('Klien Puas');
+  const [jasaSocialLabelProjects, setJasaSocialLabelProjects] = useState('Project Selesai');
+  const [jasaSocialLabelProducts, setJasaSocialLabelProducts] = useState('Produk Aktif');
+  const [jasaHowItWorksTitle, setJasaHowItWorksTitle] = useState('Cara Kerja Kami');
+  const [jasaHowItWorksSteps, setJasaHowItWorksSteps] = useState([
+    { title: 'Konsultasi Kebutuhan', desc: 'Diskusikan kebutuhan proyek Anda secara mendalam dengan tim ahli kami.' },
+    { title: 'Perencanaan & Desain', desc: 'Kami menyusun rencana kerja terstruktur dan konsep awal untuk persetujuan Anda.' },
+    { title: 'Eksekusi & Deliver', desc: 'Pengerjaan proyek secara profesional dengan jaminan selesai tepat waktu.' }
+  ]);
+  const [jasaAboutTitle, setJasaAboutTitle] = useState('Tentang Kami');
+  const [jasaAboutDesc, setJasaAboutDesc] = useState('');
+  const [jasaAboutImage, setJasaAboutImage] = useState('');
+  const [generateJasaAboutImage, setGenerateJasaAboutImage] = useState(false);
+  const [jasaAboutImageSource, setJasaAboutImageSource] = useState('unsplash');
+  const [isGeneratingJasaAboutImage, setIsGeneratingJasaAboutImage] = useState(false);
+  const [isUploadingJasaAboutImage, setIsUploadingJasaAboutImage] = useState(false);
+  const [jasaAboutCtaPortfolioText, setJasaAboutCtaPortfolioText] = useState('Lihat Portofolio');
+  const [jasaAboutCtaOrderText, setJasaAboutCtaOrderText] = useState('Pesan Sekarang');
+  const [jasaServicesTitle, setJasaServicesTitle] = useState('Layanan Kami');
+  const [jasaServicesList, setJasaServicesList] = useState([
+    { name: 'Konsultasi Bisnis', desc: 'Analisis mendalam untuk menemukan strategi pertumbuhan bisnis terbaik.', features: ['Strategi Pemasaran', 'Analisis Kompetitor', 'Optimasi Operasional'], image_url: '' },
+    { name: 'Pengembangan Web', desc: 'Pembuatan website profesional yang cepat, responsif, dan SEO-friendly.', features: ['Desain Custom', 'Mobile Responsive', 'SEO Optimization'], image_url: '' }
+  ]);
+  const [jasaWhyUsTitle, setJasaWhyUsTitle] = useState('Mengapa Memilih Kami?');
+  const [jasaWhyUsPoints, setJasaWhyUsPoints] = useState([
+    { title: 'Tim Profesional', desc: 'Dikerjakan oleh tenaga ahli berpengalaman di bidangnya.' },
+    { title: 'Tepat Waktu', desc: 'Komitmen penuh pada tenggat waktu penyelesaian proyek.' },
+    { title: 'Kualitas Premium', desc: 'Standar kualitas tinggi untuk setiap hasil kerja kami.' },
+    { title: 'Dukungan Penuh', desc: 'Layanan konsultasi dan support responsif pasca proyek.' }
+  ]);
+  const [jasaDeliverablesTitle, setJasaDeliverablesTitle] = useState('Apa yang Anda Dapatkan');
+  const [jasaDeliverablesList, setJasaDeliverablesList] = useState([
+    { title: 'Laporan Analisis Lengkap', desc: 'Dokumen evaluasi mendalam mengenai performa bisnis Anda.' },
+    { title: 'Aset Digital Siap Pakai', desc: 'File source code, desain grafis, atau konten dalam format premium.' },
+    { title: 'Panduan Operasional', desc: 'Petunjuk praktis untuk mengelola dan mengembangkan sistem baru Anda.' }
+  ]);
+  const [jasaPricingTitle, setJasaPricingTitle] = useState('Pilih Paket Terbaik Anda');
+  const [jasaPricingPlans, setJasaPricingPlans] = useState([
+    { name: 'Paket Silver', badge: '', original_price: 'Rp 1.500.000', sale_price: 'Rp 990.000', features: ['1x Sesi Konsultasi', 'Laporan Dasar', 'Revisi 1x'], highlighted: false },
+    { name: 'Paket Gold', badge: 'Terpopuler', original_price: 'Rp 3.000.000', sale_price: 'Rp 1.990.000', features: ['3x Sesi Konsultasi', 'Laporan Lengkap', 'Revisi 3x', 'Prioritas Support'], highlighted: true },
+    { name: 'Paket Platinum', badge: '', original_price: 'Rp 5.000.000', sale_price: 'Rp 3.490.000', features: ['Sesi Unlimited', 'Implementasi Sistem', 'Revisi Unlimited', 'Support 24/7'], highlighted: false }
+  ]);
+  const [jasaGuaranteeTitle, setJasaGuaranteeTitle] = useState('Garansi Kepuasan 100%');
+  const [jasaGuaranteeDesc, setJasaGuaranteeDesc] = useState('Kami berkomitmen memberikan hasil terbaik. Jika tidak puas, kami siap melakukan revisi hingga sesuai dengan ekspektasi Anda.');
+  const [jasaTestimonialsTitle, setJasaTestimonialsTitle] = useState('Kata Klien Kami');
+  const [jasaTestimonialsList, setJasaTestimonialsList] = useState([
+    { name: 'Ahmad Subardjo', role: 'CEO TechStart', content: 'Layanan yang sangat luar biasa. Tim sangat responsif dan hasil kerjanya melebihi ekspektasi kami.', avatar_url: '' },
+    { name: 'Siti Aminah', role: 'Owner Crafty', content: 'Sangat puas dengan kolaborasi ini. Penjualan kami meningkat pesat setelah menerapkan rekomendasi dari mereka.', avatar_url: '' }
+  ]);
+  const [jasaFaqs, setJasaFaqs] = useState([
+    { question: 'Berapa lama proses pengerjaan?', answer: 'Proses pengerjaan bergantung pada skala proyek, umumnya berkisar antara 7 hingga 30 hari kerja.' },
+    { question: 'Apakah ada garansi revisi?', answer: 'Ya, setiap paket memiliki kuota revisi masing-masing untuk memastikan kepuasan Anda.' }
+  ]);
+  const [jasaWhatsapp, setJasaWhatsapp] = useState('');
+  const [jasaEmail, setJasaEmail] = useState('');
+  const [jasaAddress, setJasaAddress] = useState('');
+  const [jasaCtaUrl, setJasaCtaUrl] = useState('');
+  const [jasaCopyright, setJasaCopyright] = useState('');
+  const [jasaClosingTitle, setJasaClosingTitle] = useState('');
+  const [jasaClosingCtaText, setJasaClosingCtaText] = useState('');
+
+  // Jasa AI assist loading states
+  const [isGeneratingJasaHero, setIsGeneratingJasaHero] = useState(false);
+  const [isGeneratingJasaHowItWorks, setIsGeneratingJasaHowItWorks] = useState(false);
+  const [isGeneratingJasaAbout, setIsGeneratingJasaAbout] = useState(false);
+  const [isGeneratingJasaServices, setIsGeneratingJasaServices] = useState(false);
+  const [isGeneratingJasaWhyUs, setIsGeneratingJasaWhyUs] = useState(false);
+  const [isGeneratingJasaDeliverables, setIsGeneratingJasaDeliverables] = useState(false);
+  const [isGeneratingJasaPricing, setIsGeneratingJasaPricing] = useState(false);
+  const [isGeneratingJasaTestimonials, setIsGeneratingJasaTestimonials] = useState(false);
+  const [isGeneratingJasaFaq, setIsGeneratingJasaFaq] = useState(false);
+
   // Toko Online upload & AI loader states
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
@@ -476,6 +570,8 @@ function GenerateContent() {
       raw = `${cvName}-cv`;
     } else if (templateType === 'e-course' && courseName) {
       raw = `${courseName}-kelas`;
+    } else if (templateType === 'jasa' && jasaBrandName) {
+      raw = `${jasaBrandName}-jasa`;
     } else {
       raw = name; // fallback to project name
     }
@@ -796,6 +892,123 @@ function GenerateContent() {
               
               setDesignKey(pageConfig.meta?.design_key || 'purple-academy');
               setDesignVersion(pageConfig.meta?.template_version || 1);
+            } else if (pageConfig && pageConfig.meta?.template_type === 'jasa') {
+              setTemplateType('jasa');
+              const content = pageConfig.content || {};
+              setJasaBrandName(content.brand?.name || '');
+              setJasaBrandTagline(content.brand?.tagline || '');
+              setJasaBrandDesc(content.brand?.description || '');
+              setJasaBrandLogo(content.brand?.logo_url || '');
+
+              setJasaHeroHeadline(content.hero?.headline || '');
+              setJasaHeroSubheadline(content.hero?.subheadline || '');
+              setJasaHeroCtaText(content.hero?.cta_text || 'Mulai Konsultasi');
+              setJasaHeroCtaSecondaryText(content.hero?.cta_secondary_text || 'Lihat Layanan');
+              setJasaHeroImage(content.hero?.image_url || '');
+              if (content.hero?.image_url) {
+                setGenerateJasaHeroImage(true);
+                if (content.hero.image_url.includes('images.unsplash.com')) {
+                  setJasaHeroImageSource('unsplash');
+                } else {
+                  setJasaHeroImageSource('upload');
+                }
+              } else {
+                setGenerateJasaHeroImage(false);
+                setJasaHeroImageSource('unsplash');
+              }
+
+              const sp = content.social_proof || {};
+              setJasaSocialClientCount(sp.client_count || '100+');
+              setJasaSocialProjectCount(sp.project_count || '250+');
+              setJasaSocialProductCount(sp.product_count || '50+');
+              setJasaSocialLabelClients(sp.label_clients || 'Klien Puas');
+              setJasaSocialLabelProjects(sp.label_projects || 'Project Selesai');
+              setJasaSocialLabelProducts(sp.label_products || 'Produk Aktif');
+
+              const hiw = content.how_it_works || {};
+              setJasaHowItWorksTitle(hiw.title || 'Cara Kerja Kami');
+              setJasaHowItWorksSteps(hiw.steps || [
+                { title: 'Konsultasi Kebutuhan', desc: 'Diskusikan kebutuhan proyek Anda secara mendalam dengan tim ahli kami.' },
+                { title: 'Perencanaan & Desain', desc: 'Kami menyusun rencana kerja terstruktur dan konsep awal untuk persetujuan Anda.' },
+                { title: 'Eksekusi & Deliver', desc: 'Pengerjaan proyek secara profesional dengan jaminan selesai tepat waktu.' }
+              ]);
+
+              const ab = content.about || {};
+              setJasaAboutTitle(ab.title || 'Tentang Kami');
+              setJasaAboutDesc(ab.desc || '');
+              setJasaAboutImage(ab.image_url || '');
+              if (ab.image_url) {
+                setGenerateJasaAboutImage(true);
+                if (ab.image_url.includes('images.unsplash.com')) {
+                  setJasaAboutImageSource('unsplash');
+                } else {
+                  setJasaAboutImageSource('upload');
+                }
+              } else {
+                setGenerateJasaAboutImage(false);
+                setJasaAboutImageSource('unsplash');
+              }
+              setJasaAboutCtaPortfolioText(ab.cta_portfolio_text || 'Lihat Portofolio');
+              setJasaAboutCtaOrderText(ab.cta_order_text || 'Pesan Sekarang');
+
+              const svcs = content.services || {};
+              setJasaServicesTitle(svcs.title || 'Layanan Kami');
+              setJasaServicesList(svcs.list || [
+                { name: 'Konsultasi Bisnis', desc: 'Analisis mendalam untuk menemukan strategi pertumbuhan bisnis terbaik.', features: ['Strategi Pemasaran', 'Analisis Kompetitor', 'Optimasi Operasional'], image_url: '' },
+                { name: 'Pengembangan Web', desc: 'Pembuatan website profesional yang cepat, responsif, dan SEO-friendly.', features: ['Desain Custom', 'Mobile Responsive', 'SEO Optimization'], image_url: '' }
+              ]);
+
+              const wu = content.why_us || {};
+              setJasaWhyUsTitle(wu.title || 'Mengapa Memilih Kami?');
+              setJasaWhyUsPoints(wu.points || [
+                { title: 'Tim Profesional', desc: 'Dikerjakan oleh tenaga ahli berpengalaman di bidangnya.' },
+                { title: 'Tepat Waktu', desc: 'Komitmen penuh pada tenggat waktu penyelesaian proyek.' },
+                { title: 'Kualitas Premium', desc: 'Standar kualitas tinggi untuk setiap hasil kerja kami.' },
+                { title: 'Dukungan Penuh', desc: 'Layanan konsultasi dan support responsif pasca proyek.' }
+              ]);
+
+              const del = content.deliverables || {};
+              setJasaDeliverablesTitle(del.title || 'Apa yang Anda Dapatkan');
+              setJasaDeliverablesList(del.list || [
+                { title: 'Laporan Analisis Lengkap', desc: 'Dokumen evaluasi mendalam mengenai performa bisnis Anda.' },
+                { title: 'Aset Digital Siap Pakai', desc: 'File source code, desain grafis, atau konten dalam format premium.' },
+                { title: 'Panduan Operasional', desc: 'Petunjuk praktis untuk mengelola dan mengembangkan sistem baru Anda.' }
+              ]);
+
+              const pr = content.pricing || {};
+              setJasaPricingTitle(pr.title || 'Pilih Paket Terbaik Anda');
+              setJasaPricingPlans(pr.plans || [
+                { name: 'Paket Silver', badge: '', original_price: 'Rp 1.500.000', sale_price: 'Rp 990.000', features: ['1x Sesi Konsultasi', 'Laporan Dasar', 'Revisi 1x'], highlighted: false },
+                { name: 'Paket Gold', badge: 'Terpopuler', original_price: 'Rp 3.000.000', sale_price: 'Rp 1.990.000', features: ['3x Sesi Konsultasi', 'Laporan Lengkap', 'Revisi 3x', 'Prioritas Support'], highlighted: true },
+                { name: 'Paket Platinum', badge: '', original_price: 'Rp 5.000.000', sale_price: 'Rp 3.490.000', features: ['Sesi Unlimited', 'Implementasi Sistem', 'Revisi Unlimited', 'Support 24/7'], highlighted: false }
+              ]);
+
+              const gt = content.guarantee || {};
+              setJasaGuaranteeTitle(gt.title || 'Garansi Kepuasan 100%');
+              setJasaGuaranteeDesc(gt.desc || 'Kami berkomitmen memberikan hasil terbaik. Jika tidak puas, kami siap melakukan revisi hingga sesuai dengan ekspektasi Anda.');
+
+              const tst = content.testimonials || {};
+              setJasaTestimonialsTitle(tst.title || 'Kata Klien Kami');
+              setJasaTestimonialsList(tst.list || [
+                { name: 'Ahmad Subardjo', role: 'CEO TechStart', content: 'Layanan yang sangat luar biasa. Tim sangat responsif dan hasil kerjanya melebihi ekspektasi kami.', avatar_url: '' },
+                { name: 'Siti Aminah', role: 'Owner Crafty', content: 'Sangat puas dengan kolaborasi ini. Penjualan kami meningkat pesat setelah menerapkan rekomendasi dari mereka.', avatar_url: '' }
+              ]);
+
+              setJasaFaqs(content.faqs || [
+                { question: 'Berapa lama proses pengerjaan?', answer: 'Proses pengerjaan bergantung pada skala proyek, umumnya berkisar antara 7 hingga 30 hari kerja.' },
+                { question: 'Apakah ada garansi revisi?', answer: 'Ya, setiap paket memiliki kuota revisi masing-masing untuk memastikan kepuasan Anda.' }
+              ]);
+
+              setJasaWhatsapp(content.contact?.whatsapp || '');
+              setJasaEmail(content.contact?.email || '');
+              setJasaAddress(content.contact?.address || '');
+              setJasaCtaUrl(content.contact?.cta_url || '');
+              setJasaCopyright(content.contact?.copyright || '');
+              setJasaClosingTitle(content.closing_cta?.title || '');
+              setJasaClosingCtaText(content.closing_cta?.cta_text || '');
+
+              setDesignKey(pageConfig.meta?.design_key || 'professional-navy');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
             } else {
               setTemplateType('store');
             }
@@ -946,6 +1159,95 @@ function GenerateContent() {
         closing_message: pageData?.content?.closing_message || null,
         style_palette: pageData?.content?.style_palette || null,
         scene_description: pageData?.content?.scene_description || null,
+      };
+    } else if (templateType === 'jasa') {
+      metaTitle = name || 'Layanan Jasa';
+      assembledContent = {
+        brand: {
+          name: jasaBrandName,
+          tagline: jasaBrandTagline,
+          description: jasaBrandDesc || null,
+          logo_url: jasaBrandLogo || null,
+        },
+        hero: {
+          headline: jasaHeroHeadline,
+          subheadline: jasaHeroSubheadline,
+          cta_text: jasaHeroCtaText,
+          cta_secondary_text: jasaHeroCtaSecondaryText || null,
+          image_url: generateJasaHeroImage ? (jasaHeroImage || null) : null
+        },
+        social_proof: {
+          client_count: jasaSocialClientCount || null,
+          project_count: jasaSocialProjectCount || null,
+          product_count: jasaSocialProductCount || null,
+          label_clients: jasaSocialLabelClients || null,
+          label_projects: jasaSocialLabelProjects || null,
+          label_products: jasaSocialLabelProducts || null,
+        },
+        how_it_works: {
+          title: jasaHowItWorksTitle || 'Cara Kerja Kami',
+          steps: jasaHowItWorksSteps.filter(s => s.title && s.desc)
+        },
+        about: {
+          title: jasaAboutTitle || 'Tentang Kami',
+          desc: jasaAboutDesc,
+          image_url: generateJasaAboutImage ? (jasaAboutImage || null) : null,
+          cta_portfolio_text: jasaAboutCtaPortfolioText || null,
+          cta_order_text: jasaAboutCtaOrderText || null,
+        },
+        services: {
+          title: jasaServicesTitle || 'Layanan Kami',
+          list: jasaServicesList.filter(s => s.name && s.desc).map(s => ({
+            name: s.name,
+            desc: s.desc,
+            features: Array.isArray(s.features) ? s.features.filter(Boolean) : [],
+            image_url: s.image_url || null
+          }))
+        },
+        why_us: {
+          title: jasaWhyUsTitle || 'Mengapa Memilih Kami?',
+          points: jasaWhyUsPoints.filter(p => p.title && p.desc)
+        },
+        deliverables: {
+          title: jasaDeliverablesTitle || 'Apa yang Anda Dapatkan',
+          list: jasaDeliverablesList.filter(d => d.title && d.desc)
+        },
+        pricing: {
+          title: jasaPricingTitle || 'Pilih Paket Terbaik Anda',
+          plans: jasaPricingPlans.filter(p => p.name && (p.original_price || p.sale_price)).map(p => ({
+            name: p.name,
+            badge: p.badge || null,
+            original_price: p.original_price || '',
+            sale_price: p.sale_price || '',
+            features: Array.isArray(p.features) ? p.features.filter(Boolean) : [],
+            highlighted: !!p.highlighted
+          }))
+        },
+        guarantee: {
+          title: jasaGuaranteeTitle || 'Garansi Kepuasan 100%',
+          desc: jasaGuaranteeDesc,
+        },
+        testimonials: {
+          title: jasaTestimonialsTitle || 'Kata Klien Kami',
+          list: jasaTestimonialsList.filter(t => t.name && t.content).map(t => ({
+            name: t.name,
+            role: t.role || null,
+            content: t.content,
+            avatar_url: t.avatar_url || null
+          }))
+        },
+        faqs: jasaFaqs.filter(f => f.question && f.answer),
+        contact: {
+          whatsapp: jasaWhatsapp,
+          email: jasaEmail || null,
+          address: jasaAddress || null,
+          cta_url: jasaCtaUrl || null,
+          copyright: jasaCopyright || null
+        },
+        closing_cta: {
+          title: jasaClosingTitle || null,
+          cta_text: jasaClosingCtaText || null
+        }
       };
     } else if (templateType === 'cv') {
       metaTitle = cvName ? `CV — ${cvName}` : 'Curriculum Vitae';
@@ -1195,6 +1497,48 @@ function GenerateContent() {
     eCourseCtaUrl,
     eCourseCopyright,
     hideFooter,
+    jasaBrandName,
+    jasaBrandTagline,
+    jasaBrandDesc,
+    jasaBrandLogo,
+    jasaHeroHeadline,
+    jasaHeroSubheadline,
+    jasaHeroCtaText,
+    jasaHeroCtaSecondaryText,
+    jasaHeroImage,
+    generateJasaHeroImage,
+    jasaSocialClientCount,
+    jasaSocialProjectCount,
+    jasaSocialProductCount,
+    jasaSocialLabelClients,
+    jasaSocialLabelProjects,
+    jasaSocialLabelProducts,
+    jasaHowItWorksTitle,
+    jasaHowItWorksSteps,
+    jasaAboutTitle,
+    jasaAboutDesc,
+    jasaAboutImage,
+    generateJasaAboutImage,
+    jasaAboutCtaPortfolioText,
+    jasaAboutCtaOrderText,
+    jasaServicesTitle,
+    jasaServicesList,
+    jasaWhyUsTitle,
+    jasaWhyUsPoints,
+    jasaDeliverablesTitle,
+    jasaDeliverablesList,
+    jasaPricingTitle,
+    jasaPricingPlans,
+    jasaGuaranteeTitle,
+    jasaGuaranteeDesc,
+    jasaTestimonialsTitle,
+    jasaTestimonialsList,
+    jasaFaqs,
+    jasaWhatsapp,
+    jasaEmail,
+    jasaAddress,
+    jasaCtaUrl,
+    jasaCopyright,
   ]);
 
   // Synchronize state with live preview iframe
@@ -1283,6 +1627,9 @@ function GenerateContent() {
                 } else if (defaultProduct.id === 'e-course') {
                   setDesignKey('purple-academy');
                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['purple-academy'] || 1);
+                } else if (defaultProduct.id === 'jasa') {
+                  setDesignKey('professional-navy');
+                  setDesignVersion(TEMPLATE_LATEST_VERSIONS['professional-navy'] || 1);
                 }
               }
             }
@@ -1300,10 +1647,11 @@ function GenerateContent() {
       return products;
     }
     const defaultProducts = [
-      { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 10000, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko', priority: null, created_at: '2026-06-20T00:00:00Z' },
-      { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 15000, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Campaign', priority: null, created_at: '2026-06-21T00:00:00Z' },
-      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 10000, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan', priority: null, created_at: '2026-06-22T00:00:00Z' },
-      { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 19000, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.', unit: 'Undangan', priority: null, created_at: '2026-06-23T00:00:00Z' }
+      { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 100, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko', priority: null, created_at: '2026-06-20T00:00:00Z' },
+      { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 150, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Campaign', priority: null, created_at: '2026-06-21T00:00:00Z' },
+      { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 100, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan', priority: null, created_at: '2026-06-22T00:00:00Z' },
+      { id: 'birthday', name: 'Undangan Ulang Tahun', is_active: true, cost: 190, description: 'Desain ceria dan elegan untuk pesta ulang tahun anak maupun dewasa.', unit: 'Undangan', priority: null, created_at: '2026-06-23T00:00:00Z' },
+      { id: 'jasa', name: 'Jasa Landing Page', is_active: true, cost: 100, description: 'Landing page jasa profesional lengkap dengan portofolio, daftar layanan, paket harga, testimoni, FAQ, dan form kontak.', unit: 'Project', priority: null, created_at: '2026-07-18T00:00:00Z' }
     ];
 
     return [...defaultProducts].sort((a, b) => {
@@ -1321,10 +1669,10 @@ function GenerateContent() {
 
   const displayProducts = getDisplayProducts();
   const currentProduct = displayProducts.find(p => p.id === templateType);
-  const currentCost = currentProduct?.cost ?? 10000;
+  const currentCost = currentProduct?.cost ?? 100;
 
   const getFinalCost = () => {
-    const baseCost = currentProduct?.cost ?? 10000;
+    const baseCost = currentProduct?.cost ?? 100;
     if (!appliedCoupon) return baseCost;
     if (appliedCoupon.discount_type === 'percentage') {
       const discount = Math.round((baseCost * appliedCoupon.discount_value) / 100);
@@ -1397,7 +1745,8 @@ function GenerateContent() {
                   templateType === 'toko-online' ? 'Nama Toko Online' :
                   templateType === 'campaign' ? 'Nama Campaign / Halaman Penjualan' :
                   templateType === 'cv' ? 'Nama CV / Resume' :
-                  templateType === 'e-course' ? 'Nama E-Course' : 'Nama Halaman / Acara');
+                  templateType === 'e-course' ? 'Nama E-Course' :
+                  templateType === 'jasa' ? 'Nama Proyek Jasa' : 'Nama Halaman / Acara');
     }
     if (templateType === 'wedding') {
       if (!groomName) errors.push("Nama Lengkap Pria");
@@ -1466,6 +1815,13 @@ function GenerateContent() {
       });
       eCourseBenefitsList.forEach((b, idx) => {
         if (!b.title || !b.desc) errors.push(`Keuntungan/Fasilitas #${idx + 1}`);
+      });
+    } else if (templateType === 'jasa') {
+      if (!jasaBrandName) errors.push("Nama Brand / Penyedia Jasa");
+      if (!jasaHeroHeadline) errors.push("Headline Utama Jasa");
+      if (!jasaWhatsapp) errors.push("Nomor WhatsApp Kontak");
+      jasaServicesList.forEach((s, idx) => {
+        if (!s.name || !s.desc) errors.push(`Layanan ke-${idx + 1} (Nama/Deskripsi)`);
       });
     } else if (templateType === 'store') {
       if (!prompt) errors.push("Prompt Ide Landing Page");
@@ -2331,6 +2687,149 @@ function GenerateContent() {
     }
   };
 
+  const handleAIJasaAssist = async (fieldType) => {
+    if (!session?.access_token) return;
+
+    if (!jasaBrandDesc.trim() && !jasaBrandName.trim()) {
+      alert('Harap isi Nama Brand dan Deskripsi Layanan terlebih dahulu sebagai acuan AI.');
+      return;
+    }
+
+    const remainingFree = profile?.remainingFree ?? 0;
+    const cost = profile?.ai_generate_cost ?? 1;
+
+    if (remainingFree === 0) {
+      const confirmCharge = window.confirm(
+        `Jatah generate gratis harian Anda telah habis.\n\nGenerate berikutnya akan dikenakan biaya ${cost} Credit yang dipotong dari saldo dompet Anda.\n\nApakah Anda ingin melanjutkan?`
+      );
+      if (!confirmCharge) return;
+    }
+
+    if (fieldType === 'jasa_hero') setIsGeneratingJasaHero(true);
+    if (fieldType === 'jasa_how_it_works') setIsGeneratingJasaHowItWorks(true);
+    if (fieldType === 'jasa_about') setIsGeneratingJasaAbout(true);
+    if (fieldType === 'jasa_services') setIsGeneratingJasaServices(true);
+    if (fieldType === 'jasa_why_us') setIsGeneratingJasaWhyUs(true);
+    if (fieldType === 'jasa_deliverables') setIsGeneratingJasaDeliverables(true);
+    if (fieldType === 'jasa_pricing') setIsGeneratingJasaPricing(true);
+    if (fieldType === 'jasa_testimonials') setIsGeneratingJasaTestimonials(true);
+    if (fieldType === 'jasa_faq') setIsGeneratingJasaFaq(true);
+
+    const context = {
+      brandName: jasaBrandName,
+      brandDesc: jasaBrandDesc,
+      brandTagline: jasaBrandTagline,
+    };
+
+    if (fieldType === 'jasa_faq') {
+      const filledFaqs = jasaFaqs.filter(f => f.question?.trim() && f.answer?.trim());
+      context.filledFaqs = filledFaqs;
+      context.faqCount = jasaFaqs.length > 1 ? (jasaFaqs.length - filledFaqs.length) || jasaFaqs.length : 3;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ fieldType, context, projectId: projectId || undefined }),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Gagal mengirim tugas copywriting ke antrean.');
+      }
+
+      const jobId = result.jobId;
+      let attempts = 0;
+      let finalContent = null;
+
+      while (attempts < 60) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/status`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (!statusRes.ok) throw new Error('Gagal memeriksa status pekerjaan copywriting.');
+        const jobData = await statusRes.json();
+        if (jobData.state === 'completed') { finalContent = jobData.result?.content; break; }
+        else if (jobData.state === 'failed') throw new Error(jobData.failedReason || 'Gagal memproses copywriting AI.');
+        attempts++;
+      }
+
+      if (!finalContent) throw new Error('Waktu tunggu AI habis (timeout).');
+
+      if (fieldType === 'jasa_hero') {
+        setJasaHeroHeadline(finalContent.headline || '');
+        setJasaHeroSubheadline(finalContent.subheadline || '');
+        if (finalContent.cta_text) setJasaHeroCtaText(finalContent.cta_text);
+      }
+      if (fieldType === 'jasa_how_it_works') {
+        setJasaHowItWorksTitle(finalContent.title || 'Cara Kerja Kami');
+        setJasaHowItWorksSteps(finalContent.steps || []);
+      }
+      if (fieldType === 'jasa_about') {
+        setJasaAboutTitle(finalContent.title || 'Tentang Kami');
+        setJasaAboutDesc(finalContent.desc || '');
+      }
+      if (fieldType === 'jasa_services') {
+        setJasaServicesTitle(finalContent.title || 'Layanan Kami');
+        setJasaServicesList(finalContent.list || []);
+      }
+      if (fieldType === 'jasa_why_us') {
+        setJasaWhyUsTitle(finalContent.title || 'Mengapa Memilih Kami?');
+        setJasaWhyUsPoints(finalContent.points || []);
+      }
+      if (fieldType === 'jasa_deliverables') {
+        setJasaDeliverablesTitle(finalContent.title || 'Apa yang Anda Dapatkan');
+        setJasaDeliverablesList(finalContent.list || []);
+      }
+      if (fieldType === 'jasa_pricing') {
+        setJasaPricingTitle(finalContent.title || 'Pilih Paket Terbaik Anda');
+        setJasaPricingPlans(finalContent.plans || []);
+      }
+      if (fieldType === 'jasa_testimonials') {
+        setJasaTestimonialsTitle(finalContent.title || 'Kata Klien Kami');
+        setJasaTestimonialsList(finalContent.list || []);
+      }
+      if (fieldType === 'jasa_faq') {
+        setJasaFaqs(finalContent.faqs || [{ question: '', answer: '' }]);
+      }
+
+      await refreshProfile();
+    } catch (err) {
+      console.error('[Dashboard] Jasa AI Assist error:', err);
+      alert('Terjadi kesalahan jaringan saat memanggil AI.');
+    } finally {
+      if (fieldType === 'jasa_hero') setIsGeneratingJasaHero(false);
+      if (fieldType === 'jasa_how_it_works') setIsGeneratingJasaHowItWorks(false);
+      if (fieldType === 'jasa_about') setIsGeneratingJasaAbout(false);
+      if (fieldType === 'jasa_services') setIsGeneratingJasaServices(false);
+      if (fieldType === 'jasa_why_us') setIsGeneratingJasaWhyUs(false);
+      if (fieldType === 'jasa_deliverables') setIsGeneratingJasaDeliverables(false);
+      if (fieldType === 'jasa_pricing') setIsGeneratingJasaPricing(false);
+      if (fieldType === 'jasa_testimonials') setIsGeneratingJasaTestimonials(false);
+      if (fieldType === 'jasa_faq') setIsGeneratingJasaFaq(false);
+    }
+  };
+
+  const renderAIJasaButton = (fieldType, isLoading) => {
+    const remainingFree = profile?.remainingFree ?? 15;
+    const cost = profile?.ai_generate_cost ?? 1;
+    const isFree = remainingFree > 0;
+    return (
+      <button
+        type="button"
+        disabled={isLoading || (!jasaBrandDesc.trim() && !jasaBrandName.trim())}
+        onClick={() => handleAIJasaAssist(fieldType)}
+        className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
+      >
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
+      </button>
+    );
+  };
+
   const renderAITokoButton = (fieldType, isLoading, index = null) => {
     const remainingFree = profile?.remainingFree ?? 15;
     const cost = profile?.ai_generate_cost ?? 100;
@@ -2709,6 +3208,103 @@ function GenerateContent() {
               certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
             }
           };
+        } else if (templateType === 'jasa') {
+          compiledPageData = {
+            meta: {
+              title: name || 'Layanan Jasa Profesional',
+              theme: designKey || 'professional-navy',
+              template_type: 'jasa',
+              design_key: designKey || 'professional-navy',
+              template_version: designVersion,
+            },
+            content: {
+              brand: {
+                name: jasaBrandName,
+                tagline: jasaBrandTagline,
+                description: jasaBrandDesc || null,
+                logo_url: jasaBrandLogo || null,
+              },
+              hero: {
+                headline: jasaHeroHeadline,
+                subheadline: jasaHeroSubheadline,
+                cta_text: jasaHeroCtaText,
+                cta_secondary_text: jasaHeroCtaSecondaryText || null,
+                image_url: generateJasaHeroImage ? (jasaHeroImage || null) : null
+              },
+              social_proof: {
+                client_count: jasaSocialClientCount || null,
+                project_count: jasaSocialProjectCount || null,
+                product_count: jasaSocialProductCount || null,
+                label_clients: jasaSocialLabelClients || null,
+                label_projects: jasaSocialLabelProjects || null,
+                label_products: jasaSocialLabelProducts || null,
+              },
+              how_it_works: {
+                title: jasaHowItWorksTitle || 'Cara Kerja Kami',
+                steps: jasaHowItWorksSteps.filter(s => s.title && s.desc)
+              },
+              about: {
+                title: jasaAboutTitle || 'Tentang Kami',
+                desc: jasaAboutDesc,
+                image_url: generateJasaAboutImage ? (jasaAboutImage || null) : null,
+                cta_portfolio_text: jasaAboutCtaPortfolioText || null,
+                cta_order_text: jasaAboutCtaOrderText || null,
+              },
+              services: {
+                title: jasaServicesTitle || 'Layanan Kami',
+                list: jasaServicesList.filter(s => s.name && s.desc).map(s => ({
+                  name: s.name,
+                  desc: s.desc,
+                  features: Array.isArray(s.features) ? s.features.filter(Boolean) : [],
+                  image_url: s.image_url || null
+                }))
+              },
+              why_us: {
+                title: jasaWhyUsTitle || 'Mengapa Memilih Kami?',
+                points: jasaWhyUsPoints.filter(p => p.title && p.desc)
+              },
+              deliverables: {
+                title: jasaDeliverablesTitle || 'Apa yang Anda Dapatkan',
+                list: jasaDeliverablesList.filter(d => d.title && d.desc)
+              },
+              pricing: {
+                title: jasaPricingTitle || 'Pilih Paket Terbaik Anda',
+                plans: jasaPricingPlans.filter(p => p.name && (p.original_price || p.sale_price)).map(p => ({
+                  name: p.name,
+                  badge: p.badge || null,
+                  original_price: p.original_price || '',
+                  sale_price: p.sale_price || '',
+                  features: Array.isArray(p.features) ? p.features.filter(Boolean) : [],
+                  highlighted: !!p.highlighted
+                }))
+              },
+              guarantee: {
+                title: jasaGuaranteeTitle || 'Garansi Kepuasan 100%',
+                desc: jasaGuaranteeDesc,
+              },
+              testimonials: {
+                title: jasaTestimonialsTitle || 'Kata Klien Kami',
+                list: jasaTestimonialsList.filter(t => t.name && t.content).map(t => ({
+                  name: t.name,
+                  role: t.role || null,
+                  content: t.content,
+                  avatar_url: t.avatar_url || null
+                }))
+              },
+              faqs: jasaFaqs.filter(f => f.question && f.answer),
+              contact: {
+                whatsapp: jasaWhatsapp,
+                email: jasaEmail || null,
+                address: jasaAddress || null,
+                cta_url: jasaCtaUrl || null,
+                copyright: jasaCopyright || null
+              },
+              closing_cta: {
+                title: jasaClosingTitle || null,
+                cta_text: jasaClosingCtaText || null
+              }
+            }
+          };
         } else if (templateType === 'e-course') {
           compiledPageData = {
             meta: {
@@ -3054,6 +3650,103 @@ function GenerateContent() {
           skills: cvSkills,
           languages: cvLanguages.filter(l => l.language && l.level),
           certifications: cvCertifications.filter(c => c.name && c.issuer && c.year),
+        }
+      };
+    } else if (templateType === 'jasa') {
+      compiledPageData = {
+        meta: {
+          title: name || 'Layanan Jasa Profesional',
+          theme: designKey || 'professional-navy',
+          template_type: 'jasa',
+          design_key: designKey || 'professional-navy',
+          template_version: designVersion,
+        },
+        content: {
+          brand: {
+            name: jasaBrandName,
+            tagline: jasaBrandTagline,
+            description: jasaBrandDesc || null,
+            logo_url: jasaBrandLogo || null,
+          },
+          hero: {
+            headline: jasaHeroHeadline,
+            subheadline: jasaHeroSubheadline,
+            cta_text: jasaHeroCtaText,
+            cta_secondary_text: jasaHeroCtaSecondaryText || null,
+            image_url: generateJasaHeroImage ? (jasaHeroImage || null) : null
+          },
+          social_proof: {
+            client_count: jasaSocialClientCount || null,
+            project_count: jasaSocialProjectCount || null,
+            product_count: jasaSocialProductCount || null,
+            label_clients: jasaSocialLabelClients || null,
+            label_projects: jasaSocialLabelProjects || null,
+            label_products: jasaSocialLabelProducts || null,
+          },
+          how_it_works: {
+            title: jasaHowItWorksTitle || 'Cara Kerja Kami',
+            steps: jasaHowItWorksSteps.filter(s => s.title && s.desc)
+          },
+          about: {
+            title: jasaAboutTitle || 'Tentang Kami',
+            desc: jasaAboutDesc,
+            image_url: generateJasaAboutImage ? (jasaAboutImage || null) : null,
+            cta_portfolio_text: jasaAboutCtaPortfolioText || null,
+            cta_order_text: jasaAboutCtaOrderText || null,
+          },
+          services: {
+            title: jasaServicesTitle || 'Layanan Kami',
+            list: jasaServicesList.filter(s => s.name && s.desc).map(s => ({
+              name: s.name,
+              desc: s.desc,
+              features: Array.isArray(s.features) ? s.features.filter(Boolean) : [],
+              image_url: s.image_url || null
+            }))
+          },
+          why_us: {
+            title: jasaWhyUsTitle || 'Mengapa Memilih Kami?',
+            points: jasaWhyUsPoints.filter(p => p.title && p.desc)
+          },
+          deliverables: {
+            title: jasaDeliverablesTitle || 'Apa yang Anda Dapatkan',
+            list: jasaDeliverablesList.filter(d => d.title && d.desc)
+          },
+          pricing: {
+            title: jasaPricingTitle || 'Pilih Paket Terbaik Anda',
+            plans: jasaPricingPlans.filter(p => p.name && (p.original_price || p.sale_price)).map(p => ({
+              name: p.name,
+              badge: p.badge || null,
+              original_price: p.original_price || '',
+              sale_price: p.sale_price || '',
+              features: Array.isArray(p.features) ? p.features.filter(Boolean) : [],
+              highlighted: !!p.highlighted
+            }))
+          },
+          guarantee: {
+            title: jasaGuaranteeTitle || 'Garansi Kepuasan 100%',
+            desc: jasaGuaranteeDesc,
+          },
+          testimonials: {
+            title: jasaTestimonialsTitle || 'Kata Klien Kami',
+            list: jasaTestimonialsList.filter(t => t.name && t.content).map(t => ({
+              name: t.name,
+              role: t.role || null,
+              content: t.content,
+              avatar_url: t.avatar_url || null
+            }))
+          },
+          faqs: jasaFaqs.filter(f => f.question && f.answer),
+          contact: {
+            whatsapp: jasaWhatsapp,
+            email: jasaEmail || null,
+            address: jasaAddress || null,
+            cta_url: jasaCtaUrl || null,
+            copyright: jasaCopyright || null
+          },
+          closing_cta: {
+            title: jasaClosingTitle || null,
+            cta_text: jasaClosingCtaText || null
+          }
         }
       };
     } else if (templateType === 'e-course') {
@@ -6065,9 +6758,437 @@ function GenerateContent() {
                       </div>
                     )}
 
+                    {/* Jasa Fields */}
+                    {templateType === 'jasa' && (
+                      <div className="space-y-5 border-t border-theme-border pt-4">
+
+                        {/* Design Picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                            Pilih Desain Tema
+                          </label>
+                          <div className="flex gap-3">
+                            <div className="flex flex-col gap-1.5 flex-shrink-0 w-36">
+                              <button
+                                type="button"
+                                onClick={() => handleSelectDesign('professional-navy')}
+                                className={`w-full p-3.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1.5 cursor-pointer ${
+                                  designKey === 'professional-navy'
+                                    ? 'border-theme-accent bg-theme-accent/10 text-theme-accent'
+                                    : 'border-theme-border hover:border-theme-text-sec text-theme-text-muted bg-theme-bg'
+                                }`}
+                              >
+                                <span className="text-xl">🏢</span>
+                                <div className="text-[10px] font-black tracking-wide uppercase">Professional Navy</div>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDesignKey('professional-navy')}
+                                className="text-[9px] font-semibold text-theme-accent hover:underline text-center"
+                              >
+                                Lihat Contoh Desain
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Brand Info */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                            <span>🏷️</span> Informasi Brand / Penyedia Jasa
+                          </h3>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Nama Brand / Perusahaan <span className="text-red-500 font-bold ml-0.5">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g., DigitalPro Agency"
+                              value={jasaBrandName}
+                              onChange={(e) => setJasaBrandName(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Tagline Brand <span className="text-red-500 font-bold ml-0.5">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g., Solusi Digital Terpercaya untuk Bisnis Anda"
+                              value={jasaBrandTagline}
+                              onChange={(e) => setJasaBrandTagline(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Deskripsi Layanan (Brief AI) <span className="text-red-500 font-bold ml-0.5">*</span>
+                            </label>
+                            <textarea
+                              rows={3}
+                              required
+                              placeholder="Ceritakan layanan utama, keunggulan, dan target klien Anda. Ini akan menjadi acuan AI untuk generate konten."
+                              value={jasaBrandDesc}
+                              onChange={(e) => setJasaBrandDesc(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none resize-none leading-relaxed transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Logo Brand (Opsional)
+                            </label>
+                            <div className="flex gap-2 items-center">
+                              {jasaBrandLogo && <img src={jasaBrandLogo} alt="Logo" className="h-10 w-10 object-contain rounded border border-theme-border bg-white/10" />}
+                              <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-theme-text-sec hover:text-theme-text text-[9px] font-bold py-1.5 px-2.5 rounded-xl text-center cursor-pointer transition-colors">
+                                {isUploadingJasaBrandLogo ? 'Mengunggah...' : 'Upload Logo'}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  disabled={isUploadingJasaBrandLogo}
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0]; if (!file) return;
+                                    setIsUploadingJasaBrandLogo(true);
+                                    try {
+                                      const compressed = await compressImage(file);
+                                      const formData = new FormData(); formData.append('file', compressed);
+                                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}` }, body: formData });
+                                      const data = await res.json();
+                                      if (res.ok && data.url) setJasaBrandLogo(data.url);
+                                    } catch { alert('Gagal upload logo.'); } finally { setIsUploadingJasaBrandLogo(false); }
+                                  }}
+                                />
+                              </label>
+                              {jasaBrandLogo && <button type="button" onClick={() => setJasaBrandLogo('')} className="text-[9px] text-red-400 hover:underline">Hapus</button>}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Hero Section */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                              <span>🚀</span> Hero / Banner Utama
+                            </h3>
+                            {renderAIJasaButton('jasa_hero', isGeneratingJasaHero)}
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Headline Utama <span className="text-red-500 font-bold ml-0.5">*</span>
+                            </label>
+                            <input type="text" required placeholder="e.g., Wujudkan Bisnis Digital Impian Anda Bersama Kami" value={jasaHeroHeadline} onChange={(e) => setJasaHeroHeadline(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Sub-headline</label>
+                            <textarea rows={2} placeholder="Deskripsi singkat yang menjelaskan nilai utama layanan Anda..." value={jasaHeroSubheadline} onChange={(e) => setJasaHeroSubheadline(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none resize-none transition-colors" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Teks CTA Utama</label>
+                              <input type="text" value={jasaHeroCtaText} onChange={(e) => setJasaHeroCtaText(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Teks CTA Sekunder</label>
+                              <input type="text" value={jasaHeroCtaSecondaryText} onChange={(e) => setJasaHeroCtaSecondaryText(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <input type="checkbox" id="jasa-generate-hero-img" checked={generateJasaHeroImage} onChange={(e) => setGenerateJasaHeroImage(e.target.checked)} className="w-3.5 h-3.5 text-theme-accent bg-theme-bg border-theme-border rounded cursor-pointer" />
+                              <label htmlFor="jasa-generate-hero-img" className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider cursor-pointer">Gunakan Foto Hero</label>
+                            </div>
+                            {generateJasaHeroImage && (
+                              <div className="flex gap-2 items-center">
+                                <select value={jasaHeroImageSource} onChange={(e) => setJasaHeroImageSource(e.target.value)} className="px-2 py-1.5 bg-theme-bg-muted border border-theme-border rounded-lg text-[9px] text-theme-text focus:outline-none">
+                                  <option value="unsplash">Unsplash (Otomatis)</option>
+                                  <option value="upload">Upload Manual</option>
+                                </select>
+                                {jasaHeroImageSource === 'upload' && (
+                                  <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-[9px] font-bold py-1.5 px-2.5 rounded-xl text-center cursor-pointer text-theme-text-sec">
+                                    {isUploadingJasaHeroImage ? 'Mengunggah...' : jasaHeroImage ? 'Ganti Foto' : 'Upload Foto'}
+                                    <input type="file" accept="image/*" className="hidden" disabled={isUploadingJasaHeroImage} onChange={async (e) => {
+                                      const file = e.target.files?.[0]; if (!file) return;
+                                      setIsUploadingJasaHeroImage(true);
+                                      try {
+                                        const compressed = await compressImage(file); const fd = new FormData(); fd.append('file', compressed);
+                                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}` }, body: fd });
+                                        const data = await res.json(); if (res.ok && data.url) setJasaHeroImage(data.url);
+                                      } catch { alert('Upload gagal.'); } finally { setIsUploadingJasaHeroImage(false); }
+                                    }} />
+                                  </label>
+                                )}
+                                {jasaHeroImage && <img src={jasaHeroImage} alt="Hero" className="h-8 w-12 object-cover rounded border border-theme-border" />}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Stats / Social Proof */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                            <span>📊</span> Statistik Bisnis
+                          </h3>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { label: 'Jumlah Klien', value: jasaSocialClientCount, set: setJasaSocialClientCount, labelField: jasaSocialLabelClients, setLabel: setJasaSocialLabelClients, labelPh: 'Klien Puas' },
+                              { label: 'Project Selesai', value: jasaSocialProjectCount, set: setJasaSocialProjectCount, labelField: jasaSocialLabelProjects, setLabel: setJasaSocialLabelProjects, labelPh: 'Project Selesai' },
+                              { label: 'Produk/Layanan', value: jasaSocialProductCount, set: setJasaSocialProductCount, labelField: jasaSocialLabelProducts, setLabel: setJasaSocialLabelProducts, labelPh: 'Produk Aktif' },
+                            ].map((stat, i) => (
+                              <div key={i} className="space-y-1.5">
+                                <label className="block text-[8px] font-bold text-theme-text-sec uppercase">{stat.label}</label>
+                                <input type="text" placeholder="e.g. 100+" value={stat.value} onChange={(e) => stat.set(e.target.value)} className="block w-full px-2 py-1.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-lg text-[10px] text-theme-text focus:outline-none" />
+                                <input type="text" placeholder={stat.labelPh} value={stat.labelField} onChange={(e) => stat.setLabel(e.target.value)} className="block w-full px-2 py-1.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-lg text-[10px] text-theme-text focus:outline-none" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* How It Works */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>⚙️</span> Cara Kerja</h3>
+                            {renderAIJasaButton('jasa_how_it_works', isGeneratingJasaHowItWorks)}
+                          </div>
+                          <input type="text" placeholder="Judul bagian..." value={jasaHowItWorksTitle} onChange={(e) => setJasaHowItWorksTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <div className="space-y-2">
+                            {jasaHowItWorksSteps.map((step, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                                <span className="text-[9px] font-bold text-theme-text-sec">Langkah #{idx + 1}</span>
+                                <input type="text" placeholder="Judul langkah..." value={step.title} onChange={(e) => { const n = [...jasaHowItWorksSteps]; n[idx].title = e.target.value; setJasaHowItWorksSteps(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <input type="text" placeholder="Deskripsi singkat..." value={step.desc} onChange={(e) => { const n = [...jasaHowItWorksSteps]; n[idx].desc = e.target.value; setJasaHowItWorksSteps(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                              </div>
+                            ))}
+                            {jasaHowItWorksSteps.length < 5 && <button type="button" onClick={() => setJasaHowItWorksSteps(p => [...p, { title: '', desc: '' }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Langkah</button>}
+                          </div>
+                        </div>
+
+                        {/* About */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>👥</span> Tentang Kami</h3>
+                            {renderAIJasaButton('jasa_about', isGeneratingJasaAbout)}
+                          </div>
+                          <input type="text" placeholder="Judul bagian..." value={jasaAboutTitle} onChange={(e) => setJasaAboutTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <textarea rows={3} placeholder="Ceritakan tentang perusahaan/tim Anda..." value={jasaAboutDesc} onChange={(e) => setJasaAboutDesc(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none resize-none transition-colors" />
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Teks Tombol Portofolio</label>
+                              <input type="text" value={jasaAboutCtaPortfolioText} onChange={(e) => setJasaAboutCtaPortfolioText(e.target.value)} className="block w-full px-3 py-2 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Teks Tombol Order</label>
+                              <input type="text" value={jasaAboutCtaOrderText} onChange={(e) => setJasaAboutCtaOrderText(e.target.value)} className="block w-full px-3 py-2 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                            </div>
+                          </div>
+                          {/* About Photo */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <input type="checkbox" id="jasa-generate-about-img" checked={generateJasaAboutImage} onChange={(e) => setGenerateJasaAboutImage(e.target.checked)} className="w-3.5 h-3.5 text-theme-accent bg-theme-bg border-theme-border rounded cursor-pointer" />
+                              <label htmlFor="jasa-generate-about-img" className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider cursor-pointer">Gunakan Foto About</label>
+                            </div>
+                            {generateJasaAboutImage && (
+                              <div className="flex gap-2 items-center">
+                                <select value={jasaAboutImageSource} onChange={(e) => setJasaAboutImageSource(e.target.value)} className="px-2 py-1.5 bg-theme-bg-muted border border-theme-border rounded-lg text-[9px] text-theme-text focus:outline-none">
+                                  <option value="unsplash">Unsplash (Otomatis)</option>
+                                  <option value="upload">Upload Manual</option>
+                                </select>
+                                {jasaAboutImageSource === 'upload' && (
+                                  <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-[9px] font-bold py-1.5 px-2.5 rounded-xl text-center cursor-pointer text-theme-text-sec">
+                                    {isUploadingJasaAboutImage ? 'Mengunggah...' : jasaAboutImage ? 'Ganti Foto' : 'Upload Foto About'}
+                                    <input type="file" accept="image/*" className="hidden" disabled={isUploadingJasaAboutImage} onChange={async (e) => {
+                                      const file = e.target.files?.[0]; if (!file) return;
+                                      setIsUploadingJasaAboutImage(true);
+                                      try { const c = await compressImage(file); const fd = new FormData(); fd.append('file', c); const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}` }, body: fd }); const d = await res.json(); if (res.ok && d.url) setJasaAboutImage(d.url); } catch { alert('Upload gagal.'); } finally { setIsUploadingJasaAboutImage(false); }
+                                    }} />
+                                  </label>
+                                )}
+                                {jasaAboutImage && <img src={jasaAboutImage} alt="About" className="h-8 w-12 object-cover rounded border border-theme-border" />}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Services */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>🛠️</span> Daftar Layanan <span className="text-red-500 ml-0.5">*</span></h3>
+                            {renderAIJasaButton('jasa_services', isGeneratingJasaServices)}
+                          </div>
+                          <input type="text" placeholder="Judul bagian layanan..." value={jasaServicesTitle} onChange={(e) => setJasaServicesTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <div className="space-y-3">
+                            {jasaServicesList.map((svc, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2 relative">
+                                {jasaServicesList.length > 1 && <button type="button" onClick={() => setJasaServicesList(p => p.filter((_, i) => i !== idx))} className="absolute top-2 right-2 text-[9px] text-red-400 hover:underline">Hapus</button>}
+                                <span className="text-[9px] font-bold text-theme-text-sec">Layanan #{idx + 1} *</span>
+                                <input type="text" required placeholder="Nama Layanan..." value={svc.name} onChange={(e) => { const n = [...jasaServicesList]; n[idx].name = e.target.value; setJasaServicesList(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <textarea rows={2} required placeholder="Deskripsi layanan..." value={svc.desc} onChange={(e) => { const n = [...jasaServicesList]; n[idx].desc = e.target.value; setJasaServicesList(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none resize-none" />
+                                <div>
+                                  <label className="text-[8px] font-bold text-theme-text-sec">Fitur/Checklist (pisahkan Enter)</label>
+                                  <textarea rows={2} placeholder="Fitur 1&#10;Fitur 2&#10;Fitur 3" value={(svc.features || []).join('\n')} onChange={(e) => { const n = [...jasaServicesList]; n[idx].features = e.target.value.split('\n').filter(Boolean); setJasaServicesList(n); }} className="block w-full px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none resize-none mt-1" />
+                                </div>
+                              </div>
+                            ))}
+                            {jasaServicesList.length < 4 && <button type="button" onClick={() => setJasaServicesList(p => [...p, { name: '', desc: '', features: [], image_url: '' }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Layanan</button>}
+                          </div>
+                        </div>
+
+                        {/* Why Us */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>✅</span> Keunggulan Kami</h3>
+                            {renderAIJasaButton('jasa_why_us', isGeneratingJasaWhyUs)}
+                          </div>
+                          <input type="text" placeholder="Judul bagian..." value={jasaWhyUsTitle} onChange={(e) => setJasaWhyUsTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <div className="space-y-2">
+                            {jasaWhyUsPoints.map((pt, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                                <div className="flex justify-between"><span className="text-[9px] font-bold text-theme-text-sec">Keunggulan #{idx + 1}</span>{jasaWhyUsPoints.length > 2 && <button type="button" onClick={() => setJasaWhyUsPoints(p => p.filter((_, i) => i !== idx))} className="text-[9px] text-red-400 hover:underline">Hapus</button>}</div>
+                                <input type="text" placeholder="Judul keunggulan..." value={pt.title} onChange={(e) => { const n = [...jasaWhyUsPoints]; n[idx].title = e.target.value; setJasaWhyUsPoints(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <input type="text" placeholder="Deskripsi singkat..." value={pt.desc} onChange={(e) => { const n = [...jasaWhyUsPoints]; n[idx].desc = e.target.value; setJasaWhyUsPoints(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                              </div>
+                            ))}
+                            {jasaWhyUsPoints.length < 6 && <button type="button" onClick={() => setJasaWhyUsPoints(p => [...p, { title: '', desc: '' }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Keunggulan</button>}
+                          </div>
+                        </div>
+
+                        {/* Deliverables */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>📦</span> Yang Anda Dapatkan</h3>
+                            {renderAIJasaButton('jasa_deliverables', isGeneratingJasaDeliverables)}
+                          </div>
+                          <input type="text" placeholder="Judul bagian..." value={jasaDeliverablesTitle} onChange={(e) => setJasaDeliverablesTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <div className="space-y-2">
+                            {jasaDeliverablesList.map((del, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                                <div className="flex justify-between"><span className="text-[9px] font-bold text-theme-text-sec">Deliverable #{idx + 1}</span>{jasaDeliverablesList.length > 1 && <button type="button" onClick={() => setJasaDeliverablesList(p => p.filter((_, i) => i !== idx))} className="text-[9px] text-red-400 hover:underline">Hapus</button>}</div>
+                                <input type="text" placeholder="Nama deliverable..." value={del.title} onChange={(e) => { const n = [...jasaDeliverablesList]; n[idx].title = e.target.value; setJasaDeliverablesList(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <input type="text" placeholder="Deskripsi singkat..." value={del.desc} onChange={(e) => { const n = [...jasaDeliverablesList]; n[idx].desc = e.target.value; setJasaDeliverablesList(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                              </div>
+                            ))}
+                            {jasaDeliverablesList.length < 5 && <button type="button" onClick={() => setJasaDeliverablesList(p => [...p, { title: '', desc: '' }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Deliverable</button>}
+                          </div>
+                        </div>
+
+                        {/* Pricing Plans */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>💰</span> Paket Harga</h3>
+                            {renderAIJasaButton('jasa_pricing', isGeneratingJasaPricing)}
+                          </div>
+                          <input type="text" placeholder="Judul bagian harga..." value={jasaPricingTitle} onChange={(e) => setJasaPricingTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <div className="space-y-3">
+                            {jasaPricingPlans.map((plan, idx) => (
+                              <div key={idx} className={`bg-theme-bg-muted rounded-xl p-3 border space-y-2 ${plan.highlighted ? 'border-theme-accent/50 bg-theme-accent/5' : 'border-theme-border/40'}`}>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[9px] font-bold text-theme-text-sec">Paket #{idx + 1}</span>
+                                  <div className="flex items-center gap-2">
+                                    <label className="flex items-center gap-1 text-[8px] text-theme-text-sec cursor-pointer"><input type="checkbox" checked={plan.highlighted} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].highlighted = e.target.checked; setJasaPricingPlans(n); }} className="w-3 h-3 rounded" /> Highlight</label>
+                                    {jasaPricingPlans.length > 1 && <button type="button" onClick={() => setJasaPricingPlans(p => p.filter((_, i) => i !== idx))} className="text-[9px] text-red-400 hover:underline">Hapus</button>}
+                                  </div>
+                                </div>
+                                <input type="text" placeholder="Nama paket (e.g. Paket Gold)" value={plan.name} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].name = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <input type="text" placeholder="Badge (e.g. Terpopuler) - opsional" value={plan.badge || ''} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].badge = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <input type="text" placeholder="Harga Normal (dicoret)" value={plan.original_price} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].original_price = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                  <input type="text" placeholder="Harga Promo (aktif)" value={plan.sale_price} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].sale_price = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                </div>
+                                <textarea rows={2} placeholder="Fitur-fitur paket (satu per baris)" value={(plan.features || []).join('\n')} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].features = e.target.value.split('\n').filter(Boolean); setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none resize-none" />
+                              </div>
+                            ))}
+                            {jasaPricingPlans.length < 4 && <button type="button" onClick={() => setJasaPricingPlans(p => [...p, { name: '', badge: '', original_price: '', sale_price: '', features: [], highlighted: false }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Paket</button>}
+                          </div>
+                        </div>
+
+                        {/* Guarantee */}
+                        <div className="space-y-3 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>🛡️</span> Garansi Kepuasan</h3>
+                          <input type="text" placeholder="Judul garansi..." value={jasaGuaranteeTitle} onChange={(e) => setJasaGuaranteeTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <textarea rows={2} placeholder="Deskripsi garansi..." value={jasaGuaranteeDesc} onChange={(e) => setJasaGuaranteeDesc(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none resize-none transition-colors" />
+                        </div>
+
+                        {/* Testimonials */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>💬</span> Testimoni Klien</h3>
+                            {renderAIJasaButton('jasa_testimonials', isGeneratingJasaTestimonials)}
+                          </div>
+                          <input type="text" value={jasaTestimonialsTitle} onChange={(e) => setJasaTestimonialsTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          <div className="space-y-3">
+                            {jasaTestimonialsList.map((tst, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                                <div className="flex justify-between"><span className="text-[9px] font-bold text-theme-text-sec">Klien #{idx + 1}</span>{jasaTestimonialsList.length > 1 && <button type="button" onClick={() => setJasaTestimonialsList(p => p.filter((_, i) => i !== idx))} className="text-[9px] text-red-400 hover:underline">Hapus</button>}</div>
+                                <input type="text" placeholder="Nama klien..." value={tst.name} onChange={(e) => { const n = [...jasaTestimonialsList]; n[idx].name = e.target.value; setJasaTestimonialsList(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <input type="text" placeholder="Jabatan / Perusahaan (opsional)" value={tst.role || ''} onChange={(e) => { const n = [...jasaTestimonialsList]; n[idx].role = e.target.value; setJasaTestimonialsList(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <textarea rows={2} placeholder="Isi testimoni..." value={tst.content} onChange={(e) => { const n = [...jasaTestimonialsList]; n[idx].content = e.target.value; setJasaTestimonialsList(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none resize-y" />
+                              </div>
+                            ))}
+                            {jasaTestimonialsList.length < 4 && <button type="button" onClick={() => setJasaTestimonialsList(p => [...p, { name: '', role: '', content: '', avatar_url: '' }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Testimoni</button>}
+                          </div>
+                        </div>
+
+                        {/* FAQ */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>❓</span> FAQ</h3>
+                            {renderAIJasaButton('jasa_faq', isGeneratingJasaFaq)}
+                          </div>
+                          <div className="space-y-3">
+                            {jasaFaqs.map((faq, idx) => (
+                              <div key={idx} className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2 relative">
+                                <div className="flex justify-between items-center"><span className="text-[9px] font-bold text-theme-text-sec">FAQ #{idx + 1}</span>{jasaFaqs.length > 1 && <button type="button" onClick={() => setJasaFaqs(p => p.filter((_, i) => i !== idx))} className="text-[9px] font-bold text-red-400 hover:underline">Hapus</button>}</div>
+                                <input type="text" placeholder="Pertanyaan..." value={faq.question} onChange={(e) => { const n = [...jasaFaqs]; n[idx].question = e.target.value; setJasaFaqs(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                <input type="text" placeholder="Jawaban..." value={faq.answer} onChange={(e) => { const n = [...jasaFaqs]; n[idx].answer = e.target.value; setJasaFaqs(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                              </div>
+                            ))}
+                            {jasaFaqs.length < 8 && <button type="button" onClick={() => setJasaFaqs(p => [...p, { question: '', answer: '' }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah FAQ</button>}
+                          </div>
+                        </div>
+
+                        {/* Contact */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>📞</span> Kontak & Footer</h3>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Nomor WhatsApp <span className="text-red-500">*</span></label>
+                            <input type="text" required placeholder="Contoh: 628123456789" value={jasaWhatsapp} onChange={(e) => setJasaWhatsapp(e.target.value.replace(/\D/g, ''))} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Email (Opsional)</label>
+                            <input type="email" placeholder="halo@bisnis.com" value={jasaEmail} onChange={(e) => setJasaEmail(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Alamat (Opsional)</label>
+                            <input type="text" placeholder="Jl. Contoh No. 1, Jakarta" value={jasaAddress} onChange={(e) => setJasaAddress(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Custom CTA URL (Opsional)</label>
+                            <input type="text" placeholder="https://wa.me/628..." value={jasaCtaUrl} onChange={(e) => setJasaCtaUrl(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Copyright Footer (Opsional)</label>
+                            <input type="text" placeholder="© 2026 DigitalPro Agency. Hak Cipta Dilindungi." value={jasaCopyright} onChange={(e) => setJasaCopyright(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                          {/* Closing CTA */}
+                          <div className="pt-2 border-t border-theme-border">
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Judul Closing CTA (Opsional)</label>
+                            <input type="text" placeholder="Siap Memulai Project Bersama Kami?" value={jasaClosingTitle} onChange={(e) => setJasaClosingTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">Teks Tombol Closing CTA (Opsional)</label>
+                            <input type="text" placeholder="Konsultasi Gratis — Tanpa Komitmen" value={jasaClosingCtaText} onChange={(e) => setJasaClosingCtaText(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                          </div>
+                        </div>
+
+                      </div>
+                    )}
+
                     {/* CV Fields */}
                     {templateType === 'cv' && (
                       <div className="space-y-5 border-t border-theme-border pt-4">
+
 
                         {/* Design Picker */}
                         <div>
@@ -6769,7 +7890,7 @@ function GenerateContent() {
                   </div>
                 )}
 
-                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course') ? (
+                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course' || templateType === 'jasa') ? (
                   <iframe
                     ref={iframeRef}
                     src="/preview/index.html"
@@ -6992,6 +8113,9 @@ function GenerateContent() {
                                  } else if (product.id === 'e-course') {
                                    setDesignKey('purple-academy');
                                    setDesignVersion(TEMPLATE_LATEST_VERSIONS['purple-academy'] || 1);
+                                 } else if (product.id === 'jasa') {
+                                   setDesignKey('professional-navy');
+                                   setDesignVersion(TEMPLATE_LATEST_VERSIONS['professional-navy'] || 1);
                                  }
                               }
                             }}
@@ -7123,6 +8247,7 @@ function GenerateContent() {
                   const isCampaign = ['neon-conversion', 'clean-trust'].includes(previewDesignKey);
                   const isCv = previewDesignKey === 'professional-dark';
                   const isECourse = previewDesignKey === 'purple-academy';
+                  const isJasa = previewDesignKey === 'professional-navy';
                   const isGold = previewDesignKey === 'elegant-gold';
                   const isMidnight = previewDesignKey === 'midnight-dark';
 
@@ -7327,6 +8452,111 @@ function GenerateContent() {
                             year: '2024'
                           }
                         ]
+                      }
+                    };
+                  } else if (isJasa) {
+                    mockData = {
+                      meta: {
+                        title: 'Siluet Agency — Jasa Profesional',
+                        theme: 'professional-navy',
+                        template_type: 'jasa',
+                        design_key: 'professional-navy',
+                        template_version: TEMPLATE_LATEST_VERSIONS['professional-navy'] || 1
+                      },
+                      content: {
+                        brand: {
+                          name: 'Siluet Agency',
+                          tagline: 'Solusi Digital Kreatif & Terpercaya',
+                          description: 'Agensi kreatif yang membantu bisnis Anda tumbuh pesat di era digital.',
+                          logo_url: ''
+                        },
+                        hero: {
+                          headline: 'Akselerasi Bisnis Anda dengan Solusi Digital Kreatif 🚀',
+                          subheadline: 'Web design, digital branding, dan strategi marketing premium untuk meningkatkan omzet dan kredibilitas bisnis Anda.',
+                          cta_text: 'Konsultasi Gratis Sekarang',
+                          cta_secondary_text: 'Lihat Layanan Kami',
+                          image_url: ''
+                        },
+                        social_proof: {
+                          client_count: '150+',
+                          project_count: '320+',
+                          product_count: '45+',
+                          label_clients: 'Klien Puas',
+                          label_projects: 'Project Selesai',
+                          label_products: 'Brand Partner'
+                        },
+                        how_it_works: {
+                          title: 'Cara Kerja Kami',
+                          steps: [
+                            { title: 'Diskusi & Konsultasi', desc: 'Kami mempelajari bisnis Anda, kompetitor, serta target audiens secara mendalam.' },
+                            { title: 'Desain & Strategi', desc: 'Tim kami merancang konsep visual dan menyusun roadmap eksekusi yang terukur.' },
+                            { title: 'Peluncuran & Support', desc: 'Proyek diluncurkan tepat waktu dengan jaminan optimasi dan dukungan teknis penuh.' }
+                          ]
+                        },
+                        about: {
+                          title: 'Tentang Siluet Agency',
+                          desc: 'Siluet Agency berdiri sejak 2020 dengan misi mendemokrasikan teknologi bagi pelaku bisnis. Kami percaya setiap brand memiliki cerita unik, dan tugas kami adalah mengemas cerita tersebut menjadi identitas digital yang profesional dan menghasilkan konversi.',
+                          image_url: '',
+                          cta_portfolio_text: 'Lihat Portofolio',
+                          cta_order_text: 'Pesan Sekarang'
+                        },
+                        services: {
+                          title: 'Layanan Utama Kami',
+                          list: [
+                            { name: 'Pembuatan Website', desc: 'Website company profile, e-commerce, atau landing page custom berkecepatan tinggi.', features: ['Responsive Design', 'SEO-Friendly', 'Integrasi Analytics'], image_url: '' },
+                            { name: 'Branding & Identitas', desc: 'Logo, visual guidelines, dan marketing collateral untuk memperkuat identitas brand.', features: ['Desain Logo Custom', 'Brand Guidelines', 'Social Media Kit'], image_url: '' }
+                          ]
+                        },
+                        why_us: {
+                          title: 'Mengapa Klien Memilih Kami?',
+                          points: [
+                            { title: 'Tepat Waktu', desc: 'Setiap milestone diselesaikan sesuai timeline yang disepakati tanpa kompromi.' },
+                            { title: 'Orientasi Hasil', desc: 'Setiap elemen desain yang kami buat ditargetkan untuk meningkatkan penjualan.' },
+                            { title: 'Harga Transparan', desc: 'Tanpa biaya tersembunyi. Anda mendapatkan update berkala selama pengerjaan.' },
+                            { title: 'Dukungan Penuh', desc: 'Tim support siap membantu Anda bahkan setelah project selesai diluncurkan.' }
+                          ]
+                        },
+                        deliverables: {
+                          title: 'Apa yang Anda Dapatkan',
+                          list: [
+                            { title: 'Aset Digital Eksklusif', desc: 'Semua file desain master dan source code menjadi hak milik penuh Anda.' },
+                            { title: 'Dokumentasi & Panduan', desc: 'Video tutorial praktis cara mengoperasikan dan mengupdate konten website secara mandiri.' },
+                            { title: 'Maintenance 30 Hari', desc: 'Support gratis berupa backup data dan perbaikan bug selama satu bulan penuh.' }
+                          ]
+                        },
+                        pricing: {
+                          title: 'Pilih Paket Investasi Anda',
+                          plans: [
+                            { name: 'Paket Starter', badge: '', original_price: 'Rp 2.500.000', sale_price: 'Rp 1.490.000', features: ['Landing Page 1 Halaman', 'Responsive Design', 'Free Domain & Hosting 1 Th', 'Revisi 2x'], highlighted: false },
+                            { name: 'Paket Growth', badge: 'Terpopuler', original_price: 'Rp 5.000.000', sale_price: 'Rp 3.490.000', features: ['Multi-Page (Up to 5)', 'Desain Custom Premium', 'Free Domain & Hosting 1 Th', 'Revisi 5x', 'Basic SEO Setup'], highlighted: true },
+                            { name: 'Paket Enterprise', badge: '', original_price: 'Rp 10.000.000', sale_price: 'Rp 7.490.000', features: ['Full Custom Web App', 'Sistem Admin Panel', 'Integrasi API', 'Revisi Unlimited', 'Support 24/7'], highlighted: false }
+                          ]
+                        },
+                        guarantee: {
+                          title: 'Garansi Kepuasan 100%',
+                          desc: 'Kami menjamin kualitas setiap project yang kami kerjakan. Jika hasil tidak sesuai brief awal yang disepakati, kami siap melakukan revisi intensif demi kepuasan kerja sama yang terbaik.'
+                        },
+                        testimonials: {
+                          title: 'Ulasan Klien Kami',
+                          list: [
+                            { name: 'Budi Hartono', role: 'Owner Kuliner Hits', content: 'Website yang dibuat Siluet Agency sangat meningkatkan kredibilitas brand kami di mata investor. Sangat profesional!', avatar_url: '' },
+                            { name: 'Santi Wijaya', role: 'Founder Fashionista', content: 'Sejak landing page baru diluncurkan, konversi iklan berbayar kami naik 42%. Terima kasih atas rekomendasinya!', avatar_url: '' }
+                          ]
+                        },
+                        faqs: [
+                          { question: 'Apakah saya bisa mengedit isi website sendiri?', answer: 'Ya! Kami menyertakan panduan video lengkap sehingga Anda bisa mengupdate teks, gambar, atau produk secara mandiri dengan mudah.' },
+                          { question: 'Apakah domain dan hosting sudah termasuk?', answer: 'Ya, semua paket sudah termasuk domain .com/.id dan hosting performa tinggi gratis selama 1 tahun pertama.' }
+                        ],
+                        contact: {
+                          whatsapp: '6281234567890',
+                          email: 'halo@siluet.web.id',
+                          address: 'SCBD, Jakarta Selatan',
+                          copyright: '© 2026 Siluet Agency. Seluruh hak cipta dilindungi.'
+                        },
+                        closing_cta: {
+                          title: 'Siap Memulai Project Bersama Kami?',
+                          cta_text: 'Konsultasi Gratis — Tanpa Komitmen'
+                        }
                       }
                     };
                   } else if (isECourse) {
