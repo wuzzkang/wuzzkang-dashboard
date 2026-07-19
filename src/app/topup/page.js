@@ -11,7 +11,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import AlertBanner from '@/components/AlertBanner';
 import QrisZoomModal from '@/components/QrisZoomModal';
 import TransactionStatusBadge from '@/components/TransactionStatusBadge';
-import { CreditCard, ArrowRight, CheckCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X } from 'lucide-react';
+import { CreditCard, ArrowRight, CheckCircle, RefreshCw, Smartphone, Clock, Maximize2, Download, X, ChevronDown } from 'lucide-react';
 import { BRAND_NAME } from '@/config/branding';
 
 export default function TopUpPage() {
@@ -35,6 +35,8 @@ export default function TopUpPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isQrisZoomed, setIsQrisZoomed] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [isPricingExpanded, setIsPricingExpanded] = useState(false);
+
 
   // Modal / Detail close handlers to handle popstate / browser back button
   const prevActiveTxRef = useRef(null);
@@ -623,38 +625,57 @@ export default function TopUpPage() {
             )}
           </div>
 
-          {/* Pricing Info Card */}
+          {/* Pricing Info Card - Collapsible Accordion (Solusi 1) */}
           <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5">
-            <h3 className="text-xs font-bold text-theme-text mb-3" style={{ fontFamily: "'Sora', sans-serif" }}>Informasi Biaya</h3>
-            <ul className="space-y-3 text-xs text-theme-text-sec">
-              <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
-                <span>Generate Landing Page AI</span>
-                <span className="font-semibold text-emerald-400">Gratis (Draft)</span>
-              </li>
-              {products && products.length > 0 ? (
-                products.map((prod) => (
-                  <li key={prod.id} className="flex justify-between items-center py-1.5 border-b border-theme-border animate-fadeIn">
-                    <span>Publikasi ({prod.name})</span>
-                    <span className="font-semibold text-theme-text">
-                      {prod.is_active ? `${prod.cost.toLocaleString('id-ID')} Credit / ${prod.unit || 'Halaman'}` : 'Dinonaktifkan'}
-                    </span>
-                  </li>
-                ))
-              ) : (
+            <div 
+              onClick={() => setIsPricingExpanded(!isPricingExpanded)}
+              className="flex justify-between items-center cursor-pointer select-none"
+            >
+              <h3 className="text-xs font-bold text-theme-text" style={{ fontFamily: "'Sora', sans-serif" }}>
+                Informasi Biaya & Tarif Layanan
+              </h3>
+              <ChevronDown 
+                className={`h-4 w-4 text-theme-text-sec transition-transform duration-300 ${
+                  isPricingExpanded ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
+            </div>
+            
+            <div 
+              className={`transition-all duration-300 overflow-hidden ${
+                isPricingExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <ul className="space-y-3 text-xs text-theme-text-sec">
                 <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
-                  <span>Publikasi Website</span>
-                  <span className="font-semibold text-theme-text">100 Credit / Halaman</span>
+                  <span>Generate Landing Page AI</span>
+                  <span className="font-semibold text-emerald-400">Gratis (Draft)</span>
                 </li>
-              )}
-              <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
-                <span>Hosting Website</span>
-                <span className="font-semibold text-emerald-400">Selamanya Gratis</span>
-              </li>
-              <li className="flex justify-between items-center py-1.5">
-                <span>SSL & Custom Domain</span>
-                <span className="font-semibold text-theme-text">Segera Hadir</span>
-              </li>
-            </ul>
+                {products && products.length > 0 ? (
+                  products.map((prod) => (
+                    <li key={prod.id} className="flex justify-between items-center py-1.5 border-b border-theme-border animate-fadeIn">
+                      <span>Publikasi ({prod.name})</span>
+                      <span className="font-semibold text-theme-text">
+                        {prod.is_active ? `${prod.cost.toLocaleString('id-ID')} Credit / ${prod.unit || 'Halaman'}` : 'Dinonaktifkan'}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
+                    <span>Publikasi Website</span>
+                    <span className="font-semibold text-theme-text">100 Credit / Halaman</span>
+                  </li>
+                )}
+                <li className="flex justify-between items-center py-1.5 border-b border-theme-border">
+                  <span>Hosting Website</span>
+                  <span className="font-semibold text-emerald-400">Selamanya Gratis</span>
+                </li>
+                <li className="flex justify-between items-center py-1.5">
+                  <span>SSL & Custom Domain</span>
+                  <span className="font-semibold text-theme-text">Segera Hadir</span>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Riwayat Transaksi Card */}
