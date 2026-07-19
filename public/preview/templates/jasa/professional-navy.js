@@ -856,9 +856,11 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
                     </div>
                     <span>${brand.name || 'Jasa Profesional'}</span>
                 </div>
-                <a href="${ctaHref}" target="_blank" rel="noopener noreferrer" class="btn-orange" style="padding:0.55rem 1.25rem;font-size:0.8rem;">
-                    Hubungi Kami
+                ${brand.cta_text ? `
+                <a href="${brand.cta_url || ctaHref}" target="_blank" rel="noopener noreferrer" class="btn-orange" style="padding:0.55rem 1.25rem;font-size:0.8rem;">
+                    ${brand.cta_text}
                 </a>
+                ` : ''}
             </nav>
 
             <!-- HERO -->

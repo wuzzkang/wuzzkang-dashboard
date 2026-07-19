@@ -419,6 +419,8 @@ function GenerateContent() {
   const [jasaBrandTagline, setJasaBrandTagline] = useState('');
   const [jasaBrandDesc, setJasaBrandDesc] = useState('');
   const [jasaBrandLogo, setJasaBrandLogo] = useState('');
+  const [jasaBrandCtaText, setJasaBrandCtaText] = useState('Hubungi Kami');
+  const [jasaBrandCtaUrl, setJasaBrandCtaUrl] = useState('');
   const [isUploadingJasaBrandLogo, setIsUploadingJasaBrandLogo] = useState(false);
   const [jasaHeroHeadline, setJasaHeroHeadline] = useState('');
   const [jasaHeroSubheadline, setJasaHeroSubheadline] = useState('');
@@ -901,6 +903,8 @@ function GenerateContent() {
               setJasaBrandTagline(content.brand?.tagline || '');
               setJasaBrandDesc(content.brand?.description || '');
               setJasaBrandLogo(content.brand?.logo_url || '');
+              setJasaBrandCtaText(content.brand?.cta_text === undefined ? 'Hubungi Kami' : (content.brand?.cta_text || ''));
+              setJasaBrandCtaUrl(content.brand?.cta_url || '');
 
               setJasaHeroHeadline(content.hero?.headline || '');
               setJasaHeroSubheadline(content.hero?.subheadline || '');
@@ -1173,6 +1177,8 @@ function GenerateContent() {
           tagline: jasaBrandTagline,
           description: jasaBrandDesc || null,
           logo_url: jasaBrandLogo || null,
+          cta_text: jasaBrandCtaText || null,
+          cta_url: jasaBrandCtaUrl || null,
         },
         hero: {
           headline: jasaHeroHeadline,
@@ -3296,6 +3302,8 @@ function GenerateContent() {
                 tagline: jasaBrandTagline,
                 description: jasaBrandDesc || null,
                 logo_url: jasaBrandLogo || null,
+                cta_text: jasaBrandCtaText || null,
+                cta_url: jasaBrandCtaUrl || null,
               },
               hero: {
                 headline: jasaHeroHeadline,
@@ -3744,6 +3752,8 @@ function GenerateContent() {
             tagline: jasaBrandTagline,
             description: jasaBrandDesc || null,
             logo_url: jasaBrandLogo || null,
+            cta_text: jasaBrandCtaText || null,
+            cta_url: jasaBrandCtaUrl || null,
           },
           hero: {
             headline: jasaHeroHeadline,
@@ -6945,6 +6955,35 @@ function GenerateContent() {
                               }} className="text-[9px] text-red-400 hover:underline">Hapus</button>}
                             </div>
                           </div>
+                          
+                          <div className="grid grid-cols-2 gap-3 pt-1 border-t border-theme-border/30">
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                                Teks Tombol Header (Navbar)
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g., Hubungi Kami"
+                                value={jasaBrandCtaText}
+                                onChange={(e) => setJasaBrandCtaText(e.target.value)}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                              <p className="text-[8px] text-theme-text-muted mt-1">Kosongkan untuk menyembunyikan tombol.</p>
+                            </div>
+                            <div>
+                              <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                                Link Tombol Header (Navbar)
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g., https://wa.me/... atau #"
+                                value={jasaBrandCtaUrl}
+                                onChange={(e) => setJasaBrandCtaUrl(e.target.value)}
+                                className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors"
+                              />
+                              <p className="text-[8px] text-theme-text-muted mt-1">Gunakan link kustom, default ke link utama.</p>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Hero Section */}
@@ -8551,7 +8590,9 @@ function GenerateContent() {
                           name: 'Siluet Agency',
                           tagline: 'Solusi Digital Kreatif & Terpercaya',
                           description: 'Agensi kreatif yang membantu bisnis Anda tumbuh pesat di era digital.',
-                          logo_url: ''
+                          logo_url: '',
+                          cta_text: 'Hubungi Kami',
+                          cta_url: ''
                         },
                         hero: {
                           headline: 'Akselerasi Bisnis Anda dengan Solusi Digital Kreatif 🚀',
