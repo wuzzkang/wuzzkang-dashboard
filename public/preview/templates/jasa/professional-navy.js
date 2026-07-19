@@ -872,23 +872,7 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
         });
     }
 
-    // FAQ
-    let faqHtml = '';
-    if (Array.isArray(faqs) && faqs.length > 0) {
-        faqs.forEach((faq, idx) => {
-            faqHtml += `
-                <div class="jasa-faq-item" id="jasa-faq-${idx}">
-                    <button class="jasa-faq-header" onclick="toggleJasaFaq(${idx})">
-                        <span class="jasa-faq-question">${faq.question || ''}</span>
-                        <span class="jasa-faq-icon" id="jasa-faq-icon-${idx}">+</span>
-                    </button>
-                    <div class="jasa-faq-body" id="jasa-faq-body-${idx}">
-                        <div class="jasa-faq-answer">${faq.answer || ''}</div>
-                    </div>
-                </div>
-            `;
-        });
-    }
+
 
     // ── Main Render ────────────────────────────────────────────────────────
     appEl.innerHTML = `
@@ -1121,7 +1105,7 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
             ` : ''}
 
             <!-- FAQ -->
-            ${faqHtml ? `
+            ${faqs && faqs.length > 0 ? `
             <section class="jasa-section" style="background:#fafbff;" id="faq">
                 <div class="jasa-container">
                     <div style="text-align:center;margin-bottom:2.5rem;">
@@ -1129,9 +1113,7 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
                         <h2 class="jasa-section-title">Pertanyaan yang Sering Diajukan</h2>
                         <p class="jasa-section-sub">Temukan jawaban atas pertanyaan umum seputar layanan kami</p>
                     </div>
-                    <div style="max-width:720px;margin:0 auto;">
-                        ${faqHtml}
-                    </div>
+                    <div id="jasa-faq-root"></div>
                 </div>
             </section>
             ` : ''}
@@ -1165,34 +1147,14 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
         </div>
     `;
 
-    // ── FAQ Accordion Logic ────────────────────────────────────────────────
-    window.toggleJasaFaq = function (idx) {
-        const item = document.getElementById(`jasa-faq-${idx}`);
-        const body = document.getElementById(`jasa-faq-body-${idx}`);
-        const icon = document.getElementById(`jasa-faq-icon-${idx}`);
-        if (!item || !body || !icon) return;
-
-        const isOpen = item.classList.contains('open');
-
-        // Close all
-        document.querySelectorAll('.jasa-faq-item').forEach(el => {
-            el.classList.remove('open');
-            const b = el.querySelector('.jasa-faq-body');
-            const ic = el.querySelector('.jasa-faq-icon');
-            if (b) b.style.maxHeight = '0px';
-            if (ic) ic.textContent = '+';
+    // Initialize FAQ component
+    const faqRoot = document.getElementById('jasa-faq-root');
+    if (faqRoot && Array.isArray(faqs) && faqs.length > 0) {
+        const { initFaq } = await import('../components/Faq.js');
+        await initFaq(faqRoot, faqs, {
+            theme: 'professional-navy',
+            title: 'Pertanyaan yang Sering Diajukan',
+            subtitle: 'Temukan jawaban atas pertanyaan umum seputar layanan kami'
         });
-
-        // Toggle clicked
-        if (!isOpen) {
-            item.classList.add('open');
-            body.style.maxHeight = body.scrollHeight + 'px';
-            icon.textContent = '×';
-        }
-    };
-
-    // Open first FAQ by default
-    if (faqs.length > 0) {
-        window.toggleJasaFaq(0);
     }
 }

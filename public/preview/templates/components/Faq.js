@@ -29,6 +29,13 @@ export function initFaq(containerEl, faqs, options = {}) {
         questionClass = 'flex justify-between items-center w-full p-5 text-left text-sm md:text-base font-bold text-white hover:text-pink-400 transition-colors cursor-pointer select-none';
         answerClass = 'p-5 pt-0 text-xs md:text-sm text-gray-400 leading-relaxed border-t border-gray-850/50 hidden';
         arrowClass = 'text-pink-500 transition-transform duration-300 text-lg';
+    } else if (theme === 'professional-navy') {
+        sectionTitleClass = 'jasa-section-title';
+        sectionSubtitleClass = 'jasa-section-sub';
+        cardClass = 'jasa-faq-item';
+        questionClass = 'jasa-faq-header';
+        answerClass = 'jasa-faq-body';
+        arrowClass = 'jasa-faq-icon';
     } else {
         // clean-trust default
         sectionTitleClass = 'text-2xl md:text-4xl font-extrabold text-slate-900 text-center';
@@ -39,32 +46,49 @@ export function initFaq(containerEl, faqs, options = {}) {
         arrowClass = 'text-teal-600 transition-transform duration-300 text-lg';
     }
 
+    const arrowSymbol = theme === 'professional-navy' ? '+' : '▼';
+
     let faqItemsHtml = faqs.map((faq, index) => {
+        const innerContent = theme === 'professional-navy'
+            ? `<div class="jasa-faq-answer">${faq.answer}</div>`
+            : faq.answer;
+        const qSpan = theme === 'professional-navy'
+            ? `<span class="jasa-faq-question">${faq.question}</span>`
+            : `<span>${faq.question}</span>`;
+
         return `
             <div class="${cardClass}" data-faq-index="${index}">
                 <button type="button" class="${questionClass}" aria-expanded="false">
-                    <span>${faq.question}</span>
-                    <span class="${arrowClass}">▼</span>
+                    ${qSpan}
+                    <span class="${arrowClass}">${arrowSymbol}</span>
                 </button>
                 <div class="${answerClass}">
-                    ${faq.answer}
+                    ${innerContent}
                 </div>
             </div>
         `;
     }).join('');
 
-    containerEl.innerHTML = `
-        <div class="${containerClass}">
-            <div class="text-center mb-10">
-                <h3 class="${sectionTitleClass}">${title}</h3>
-                <p class="${sectionSubtitleClass}">${subtitle}</p>
-                ${theme === 'neon-conversion' ? '<div class="h-1 w-12 bg-pink-500 mx-auto rounded-full mt-3"></div>' : ''}
-            </div>
-            <div class="space-y-3">
+    if (theme === 'professional-navy') {
+        containerEl.innerHTML = `
+            <div style="max-width:720px;margin:0 auto;">
                 ${faqItemsHtml}
             </div>
-        </div>
-    `;
+        `;
+    } else {
+        containerEl.innerHTML = `
+            <div class="${containerClass}">
+                <div class="text-center mb-10">
+                    <h3 class="${sectionTitleClass}">${title}</h3>
+                    <p class="${sectionSubtitleClass}">${subtitle}</p>
+                    ${theme === 'neon-conversion' ? '<div class="h-1 w-12 bg-pink-500 mx-auto rounded-full mt-3"></div>' : ''}
+                </div>
+                <div class="space-y-3">
+                    ${faqItemsHtml}
+                </div>
+            </div>
+        `;
+    }
 
     // Add interactivity
     const cards = containerEl.querySelectorAll('[data-faq-index]');
@@ -84,12 +108,18 @@ export function initFaq(containerEl, faqs, options = {}) {
                     const otherArrow = otherCard.querySelector('span:last-child');
                     
                     otherBtn.setAttribute('aria-expanded', 'false');
-                    otherContent.classList.add('hidden');
-                    otherArrow.style.transform = 'rotate(0deg)';
-                    if (theme === 'neon-conversion') {
-                        otherCard.classList.remove('border-pink-500/50', 'bg-gray-900/80');
+                    if (theme === 'professional-navy') {
+                        otherContent.style.maxHeight = '0px';
+                        otherArrow.textContent = '+';
+                        otherCard.classList.remove('open');
                     } else {
-                        otherCard.classList.remove('border-teal-500', 'bg-slate-50/50');
+                        otherContent.classList.add('hidden');
+                        otherArrow.style.transform = 'rotate(0deg)';
+                        if (theme === 'neon-conversion') {
+                            otherCard.classList.remove('border-pink-500/50', 'bg-gray-900/80');
+                        } else {
+                            otherCard.classList.remove('border-teal-500', 'bg-slate-50/50');
+                        }
                     }
                 }
             });
@@ -97,23 +127,48 @@ export function initFaq(containerEl, faqs, options = {}) {
             // Toggle current
             if (isExpanded) {
                 btn.setAttribute('aria-expanded', 'false');
-                content.classList.add('hidden');
-                arrow.style.transform = 'rotate(0deg)';
-                if (theme === 'neon-conversion') {
-                    card.classList.remove('border-pink-500/50', 'bg-gray-900/80');
+                if (theme === 'professional-navy') {
+                    content.style.maxHeight = '0px';
+                    arrow.textContent = '+';
+                    card.classList.remove('open');
                 } else {
-                    card.classList.remove('border-teal-500', 'bg-slate-50/50');
+                    content.classList.add('hidden');
+                    arrow.style.transform = 'rotate(0deg)';
+                    if (theme === 'neon-conversion') {
+                        card.classList.remove('border-pink-500/50', 'bg-gray-900/80');
+                    } else {
+                        card.classList.remove('border-teal-500', 'bg-slate-50/50');
+                    }
                 }
             } else {
                 btn.setAttribute('aria-expanded', 'true');
-                content.classList.remove('hidden');
-                arrow.style.transform = 'rotate(180deg)';
-                if (theme === 'neon-conversion') {
-                    card.classList.add('border-pink-500/50', 'bg-gray-900/80');
+                if (theme === 'professional-navy') {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    arrow.textContent = '×';
+                    card.classList.add('open');
                 } else {
-                    card.classList.add('border-teal-500', 'bg-slate-50/50');
+                    content.classList.remove('hidden');
+                    arrow.style.transform = 'rotate(180deg)';
+                    if (theme === 'neon-conversion') {
+                        card.classList.add('border-pink-500/50', 'bg-gray-900/80');
+                    } else {
+                        card.classList.add('border-teal-500', 'bg-slate-50/50');
+                    }
                 }
             }
         });
     });
+
+    // Open first FAQ by default for professional-navy theme
+    if (theme === 'professional-navy' && cards.length > 0) {
+        const firstCard = cards[0];
+        const firstBtn = firstCard.querySelector('button');
+        const firstContent = firstCard.querySelector('div');
+        const firstArrow = firstCard.querySelector('span:last-child');
+        
+        firstBtn.setAttribute('aria-expanded', 'true');
+        firstContent.style.maxHeight = firstContent.scrollHeight + 'px';
+        firstArrow.textContent = '×';
+        firstCard.classList.add('open');
+    }
 }

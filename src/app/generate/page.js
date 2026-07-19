@@ -2685,7 +2685,26 @@ function GenerateContent() {
         setECourseTestimonialsList(finalContent.list || [{ name: '', role: '', content: '' }, { name: '', role: '', content: '' }]);
       }
       if (fieldType === 'e_course_faq') {
-        setECourseFaqs(finalContent.faqs || [{ question: '', answer: '' }]);
+        const generated = finalContent.faqs || [];
+        const originalFaqs = [...eCourseFaqs];
+        let genIndex = 0;
+        
+        // Merge generated FAQ into original empty slots
+        const mergedFaqs = originalFaqs.map(faq => {
+          const isFilled = faq.question?.trim() && faq.answer?.trim();
+          if (isFilled && context.filledFaqs && context.filledFaqs.length > 0) {
+            return faq;
+          }
+          const next = generated[genIndex++];
+          return next || faq;
+        });
+
+        let finalFaqs = [...mergedFaqs];
+        while (genIndex < generated.length && finalFaqs.length < 5) {
+          finalFaqs.push(generated[genIndex]);
+          genIndex++;
+        }
+        setECourseFaqs(finalFaqs);
       }
 
       await refreshProfile();
@@ -2818,7 +2837,26 @@ function GenerateContent() {
         setJasaTestimonialsList(finalContent.list || []);
       }
       if (fieldType === 'jasa_faq') {
-        setJasaFaqs(finalContent.faqs || [{ question: '', answer: '' }]);
+        const generated = finalContent.faqs || [];
+        const originalFaqs = [...jasaFaqs];
+        let genIndex = 0;
+        
+        // Merge generated FAQ into original empty slots
+        const mergedFaqs = originalFaqs.map(faq => {
+          const isFilled = faq.question?.trim() && faq.answer?.trim();
+          if (isFilled && context.filledFaqs && context.filledFaqs.length > 0) {
+            return faq;
+          }
+          const next = generated[genIndex++];
+          return next || faq;
+        });
+
+        let finalFaqs = [...mergedFaqs];
+        while (genIndex < generated.length && finalFaqs.length < 5) {
+          finalFaqs.push(generated[genIndex]);
+          genIndex++;
+        }
+        setJasaFaqs(finalFaqs);
       }
 
       await refreshProfile();
