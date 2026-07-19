@@ -427,7 +427,6 @@ function GenerateContent() {
   const [jasaHeroImage, setJasaHeroImage] = useState('');
   const [generateJasaHeroImage, setGenerateJasaHeroImage] = useState(false);
   const [jasaHeroImageSource, setJasaHeroImageSource] = useState('unsplash');
-  const [isGeneratingJasaHeroImage, setIsGeneratingJasaHeroImage] = useState(false);
   const [isUploadingJasaHeroImage, setIsUploadingJasaHeroImage] = useState(false);
   const [jasaSocialClientCount, setJasaSocialClientCount] = useState('100+');
   const [jasaSocialProjectCount, setJasaSocialProjectCount] = useState('250+');
@@ -446,7 +445,6 @@ function GenerateContent() {
   const [jasaAboutImage, setJasaAboutImage] = useState('');
   const [generateJasaAboutImage, setGenerateJasaAboutImage] = useState(false);
   const [jasaAboutImageSource, setJasaAboutImageSource] = useState('unsplash');
-  const [isGeneratingJasaAboutImage, setIsGeneratingJasaAboutImage] = useState(false);
   const [isUploadingJasaAboutImage, setIsUploadingJasaAboutImage] = useState(false);
   const [jasaAboutCtaPortfolioText, setJasaAboutCtaPortfolioText] = useState('Lihat Portofolio');
   const [jasaAboutCtaOrderText, setJasaAboutCtaOrderText] = useState('Pesan Sekarang');
@@ -1863,13 +1861,16 @@ function GenerateContent() {
     const isCv = target === 'cv' || target === 'cvPhoto';
     const isECourseHero = target === 'eCourseHero';
     const isECourseMentor = target === 'eCourseMentor';
+    const isJasaHero = target === 'jasaHero';
+    const isJasaAbout = target === 'jasaAbout';
+    const isJasaBrandLogo = target === 'jasaBrandLogo';
 
     let category = 'other';
     if (isGroom || isBride || isCelebrant || isECourseMentor) category = 'avatar';
-    else if (isPrewedding || isCampaignHero || isBanner || isECourseHero) category = 'background';
+    else if (isPrewedding || isCampaignHero || isBanner || isECourseHero || isJasaHero || isJasaAbout) category = 'background';
     else if (isGallery) category = 'gallery';
     else if (isStory) category = 'story';
-    else if (isLogo) category = 'logo';
+    else if (isLogo || isJasaBrandLogo) category = 'logo';
     else if (isProduct) category = 'product';
     else if (isCv) category = 'cv';
 
@@ -1886,6 +1887,9 @@ function GenerateContent() {
     if (isCv) setIsUploadingCvPhoto(true);
     if (isECourseHero) setIsUploadingECourseHeroImage(true);
     if (isECourseMentor) setIsUploadingECourseMentorAvatar(true);
+    if (isJasaHero) setIsUploadingJasaHeroImage(true);
+    if (isJasaAbout) setIsUploadingJasaAboutImage(true);
+    if (isJasaBrandLogo) setIsUploadingJasaBrandLogo(true);
 
     try {
       let fileToUpload = file;
@@ -1938,7 +1942,7 @@ function GenerateContent() {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Gagal mengunggah file langsung ke storage.');
+        throw new Error('Gagal mengunggah file langsung to storage.');
       }
 
       console.log(`[Dashboard] Upload successful. Public URL: ${publicUrl}`);
@@ -1996,6 +2000,18 @@ function GenerateContent() {
         if (eCourseMentorAvatar) handleDeleteImage(eCourseMentorAvatar);
         setECourseMentorAvatar(publicUrl);
       }
+      if (isJasaHero) {
+        if (jasaHeroImage) handleDeleteImage(jasaHeroImage);
+        setJasaHeroImage(publicUrl);
+      }
+      if (isJasaAbout) {
+        if (jasaAboutImage) handleDeleteImage(jasaAboutImage);
+        setJasaAboutImage(publicUrl);
+      }
+      if (isJasaBrandLogo) {
+        if (jasaBrandLogo) handleDeleteImage(jasaBrandLogo);
+        setJasaBrandLogo(publicUrl);
+      }
       if (isProduct) {
         const oldProductImageUrl = tokoProducts[productIndex]?.image_url;
         if (oldProductImageUrl) handleDeleteImage(oldProductImageUrl);
@@ -2022,6 +2038,9 @@ function GenerateContent() {
       if (isCv) setIsUploadingCvPhoto(false);
       if (isECourseHero) setIsUploadingECourseHeroImage(false);
       if (isECourseMentor) setIsUploadingECourseMentorAvatar(false);
+      if (isJasaHero) setIsUploadingJasaHeroImage(false);
+      if (isJasaAbout) setIsUploadingJasaAboutImage(false);
+      if (isJasaBrandLogo) setIsUploadingJasaBrandLogo(false);
     }
   };
 
@@ -6858,20 +6877,16 @@ function GenerateContent() {
                                   accept="image/*"
                                   className="hidden"
                                   disabled={isUploadingJasaBrandLogo}
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0]; if (!file) return;
-                                    setIsUploadingJasaBrandLogo(true);
-                                    try {
-                                      const compressed = await compressImage(file);
-                                      const formData = new FormData(); formData.append('file', compressed);
-                                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}` }, body: formData });
-                                      const data = await res.json();
-                                      if (res.ok && data.url) setJasaBrandLogo(data.url);
-                                    } catch { alert('Gagal upload logo.'); } finally { setIsUploadingJasaBrandLogo(false); }
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleUploadImage(file, 'jasaBrandLogo');
                                   }}
                                 />
                               </label>
-                              {jasaBrandLogo && <button type="button" onClick={() => setJasaBrandLogo('')} className="text-[9px] text-red-400 hover:underline">Hapus</button>}
+                              {jasaBrandLogo && <button type="button" onClick={() => {
+                                if (jasaBrandLogo) handleDeleteImage(jasaBrandLogo);
+                                setJasaBrandLogo('');
+                              }} className="text-[9px] text-red-400 hover:underline">Hapus</button>}
                             </div>
                           </div>
                         </div>
@@ -6904,35 +6919,26 @@ function GenerateContent() {
                               <input type="text" value={jasaHeroCtaSecondaryText} onChange={(e) => setJasaHeroCtaSecondaryText(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
                             </div>
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <input type="checkbox" id="jasa-generate-hero-img" checked={generateJasaHeroImage} onChange={(e) => setGenerateJasaHeroImage(e.target.checked)} className="w-3.5 h-3.5 text-theme-accent bg-theme-bg border-theme-border rounded cursor-pointer" />
-                              <label htmlFor="jasa-generate-hero-img" className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider cursor-pointer">Gunakan Foto Hero</label>
-                            </div>
-                            {generateJasaHeroImage && (
-                              <div className="flex gap-2 items-center">
-                                <select value={jasaHeroImageSource} onChange={(e) => setJasaHeroImageSource(e.target.value)} className="px-2 py-1.5 bg-theme-bg-muted border border-theme-border rounded-lg text-[9px] text-theme-text focus:outline-none">
-                                  <option value="unsplash">Unsplash (Otomatis)</option>
-                                  <option value="upload">Upload Manual</option>
-                                </select>
-                                {jasaHeroImageSource === 'upload' && (
-                                  <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-[9px] font-bold py-1.5 px-2.5 rounded-xl text-center cursor-pointer text-theme-text-sec">
-                                    {isUploadingJasaHeroImage ? 'Mengunggah...' : jasaHeroImage ? 'Ganti Foto' : 'Upload Foto'}
-                                    <input type="file" accept="image/*" className="hidden" disabled={isUploadingJasaHeroImage} onChange={async (e) => {
-                                      const file = e.target.files?.[0]; if (!file) return;
-                                      setIsUploadingJasaHeroImage(true);
-                                      try {
-                                        const compressed = await compressImage(file); const fd = new FormData(); fd.append('file', compressed);
-                                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}` }, body: fd });
-                                        const data = await res.json(); if (res.ok && data.url) setJasaHeroImage(data.url);
-                                      } catch { alert('Upload gagal.'); } finally { setIsUploadingJasaHeroImage(false); }
-                                    }} />
-                                  </label>
-                                )}
-                                {jasaHeroImage && <img src={jasaHeroImage} alt="Hero" className="h-8 w-12 object-cover rounded border border-theme-border" />}
-                              </div>
-                            )}
-                          </div>
+                          <ImagePickerField
+                            checkboxId="generateJasaHeroImage"
+                            checkboxLabel="Gunakan Foto Hero"
+                            unsplashQuery="professional service,business,team,corporate"
+                            imageUrl={jasaHeroImage}
+                            onImageChange={(val) => {
+                              if (!val && jasaHeroImage && jasaHeroImageSource === 'upload') {
+                                handleDeleteImage(jasaHeroImage);
+                              }
+                              setJasaHeroImage(val);
+                            }}
+                            apiToken={session?.access_token}
+                            apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                            isEnabled={generateJasaHeroImage}
+                            onEnabledChange={setGenerateJasaHeroImage}
+                            source={jasaHeroImageSource}
+                            onSourceChange={setJasaHeroImageSource}
+                            onUpload={handleUploadImage}
+                            uploadType="jasaHero"
+                          />
                         </div>
 
                         {/* Stats / Social Proof */}
@@ -6993,31 +6999,26 @@ function GenerateContent() {
                             </div>
                           </div>
                           {/* About Photo */}
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <input type="checkbox" id="jasa-generate-about-img" checked={generateJasaAboutImage} onChange={(e) => setGenerateJasaAboutImage(e.target.checked)} className="w-3.5 h-3.5 text-theme-accent bg-theme-bg border-theme-border rounded cursor-pointer" />
-                              <label htmlFor="jasa-generate-about-img" className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider cursor-pointer">Gunakan Foto About</label>
-                            </div>
-                            {generateJasaAboutImage && (
-                              <div className="flex gap-2 items-center">
-                                <select value={jasaAboutImageSource} onChange={(e) => setJasaAboutImageSource(e.target.value)} className="px-2 py-1.5 bg-theme-bg-muted border border-theme-border rounded-lg text-[9px] text-theme-text focus:outline-none">
-                                  <option value="unsplash">Unsplash (Otomatis)</option>
-                                  <option value="upload">Upload Manual</option>
-                                </select>
-                                {jasaAboutImageSource === 'upload' && (
-                                  <label className="flex-1 bg-theme-card hover:bg-theme-bg border border-theme-border text-[9px] font-bold py-1.5 px-2.5 rounded-xl text-center cursor-pointer text-theme-text-sec">
-                                    {isUploadingJasaAboutImage ? 'Mengunggah...' : jasaAboutImage ? 'Ganti Foto' : 'Upload Foto About'}
-                                    <input type="file" accept="image/*" className="hidden" disabled={isUploadingJasaAboutImage} onChange={async (e) => {
-                                      const file = e.target.files?.[0]; if (!file) return;
-                                      setIsUploadingJasaAboutImage(true);
-                                      try { const c = await compressImage(file); const fd = new FormData(); fd.append('file', c); const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/upload`, { method: 'POST', headers: { Authorization: `Bearer ${session.access_token}` }, body: fd }); const d = await res.json(); if (res.ok && d.url) setJasaAboutImage(d.url); } catch { alert('Upload gagal.'); } finally { setIsUploadingJasaAboutImage(false); }
-                                    }} />
-                                  </label>
-                                )}
-                                {jasaAboutImage && <img src={jasaAboutImage} alt="About" className="h-8 w-12 object-cover rounded border border-theme-border" />}
-                              </div>
-                            )}
-                          </div>
+                          <ImagePickerField
+                            checkboxId="generateJasaAboutImage"
+                            checkboxLabel="Gunakan Foto About"
+                            unsplashQuery="business meeting,office,workspace,corporate team"
+                            imageUrl={jasaAboutImage}
+                            onImageChange={(val) => {
+                              if (!val && jasaAboutImage && jasaAboutImageSource === 'upload') {
+                                handleDeleteImage(jasaAboutImage);
+                              }
+                              setJasaAboutImage(val);
+                            }}
+                            apiToken={session?.access_token}
+                            apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                            isEnabled={generateJasaAboutImage}
+                            onEnabledChange={setGenerateJasaAboutImage}
+                            source={jasaAboutImageSource}
+                            onSourceChange={setJasaAboutImageSource}
+                            onUpload={handleUploadImage}
+                            uploadType="jasaAbout"
+                          />
                         </div>
 
                         {/* Services */}
