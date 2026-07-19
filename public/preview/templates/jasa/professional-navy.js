@@ -817,37 +817,7 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
         });
     }
 
-    // Pricing Plans
-    let plansHtml = '';
-    if (Array.isArray(pricing.plans) && pricing.plans.length > 0) {
-        pricing.plans.forEach(plan => {
-            const featHtml = Array.isArray(plan.features)
-                ? plan.features.map(f => `
-                    <li>
-                        <span class="jasa-check-icon">✔</span>
-                        <span>${f}</span>
-                    </li>`).join('')
-                : '';
-            plansHtml += `
-                <div class="jasa-plan-card ${plan.highlighted ? 'highlighted' : ''}">
-                    ${plan.badge ? `<div class="jasa-plan-badge">${plan.badge}</div>` : ''}
-                    <div class="jasa-plan-name">${plan.name || ''}</div>
-                    <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:0.35rem;margin:0.5rem 0 1rem;">
-                        <span class="jasa-plan-price">${plan.sale_price || plan.original_price || ''}</span>
-                        ${plan.original_price && plan.sale_price && plan.original_price !== plan.sale_price
-                            ? `<span class="jasa-plan-original">${plan.original_price}</span>`
-                            : ''}
-                    </div>
-                    ${featHtml ? `<ul class="jasa-plan-features">${featHtml}</ul>` : ''}
-                    <a href="${ctaHref}" target="_blank" rel="noopener noreferrer"
-                       class="${plan.highlighted ? 'btn-orange' : 'btn-outline-navy'}"
-                       style="display:block;text-align:center;width:100%;box-sizing:border-box;">
-                        Pesan Paket Ini
-                    </a>
-                </div>
-            `;
-        });
-    }
+
 
     // Testimonials
     let testimonialsHtml = '';
@@ -1059,17 +1029,15 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
             ` : ''}
 
             <!-- PRICING -->
-            ${plansHtml ? `
+            ${pricing ? `
             <section class="jasa-section" id="pricing">
                 <div class="jasa-container">
                     <div style="text-align:center;margin-bottom:2.5rem;">
                         <div class="jasa-divider" style="margin:0 auto 1rem;"></div>
                         <h2 class="jasa-section-title">${pricing.title || 'Pilih Paket Terbaik Anda'}</h2>
-                        <p class="jasa-section-sub">Harga transparan tanpa biaya tersembunyi</p>
+                        <p class="jasa-section-sub">${pricing.subtitle || 'Harga transparan tanpa biaya tersembunyi'}</p>
                     </div>
-                    <div class="jasa-grid-3p" style="align-items:start;">
-                        ${plansHtml}
-                    </div>
+                    <div id="jasa-pricing-root"></div>
                 </div>
             </section>
             ` : ''}
@@ -1155,6 +1123,18 @@ export async function render(pageConfig, guestName = 'Tamu', brandConfig = { nam
             theme: 'professional-navy',
             title: 'Pertanyaan yang Sering Diajukan',
             subtitle: 'Temukan jawaban atas pertanyaan umum seputar layanan kami'
+        });
+    }
+
+    // Initialize Pricing component
+    const pricingRoot = document.getElementById('jasa-pricing-root');
+    if (pricingRoot) {
+        const { initPricing } = await import('../components/Pricing.js');
+        await initPricing(pricingRoot, pricing.plans || [], {
+            theme: 'professional-navy',
+            ctaHref: ctaHref,
+            ctaOnly: !!pricing.cta_only,
+            ctaText: pricing.cta_text || 'Konsultasi Sekarang'
         });
     }
 }

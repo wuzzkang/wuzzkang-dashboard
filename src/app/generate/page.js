@@ -467,10 +467,13 @@ function GenerateContent() {
     { title: 'Panduan Operasional', desc: 'Petunjuk praktis untuk mengelola dan mengembangkan sistem baru Anda.' }
   ]);
   const [jasaPricingTitle, setJasaPricingTitle] = useState('Pilih Paket Terbaik Anda');
+  const [jasaPricingSubtitle, setJasaPricingSubtitle] = useState('Harga transparan tanpa biaya tersembunyi');
+  const [jasaPricingCtaOnly, setJasaPricingCtaOnly] = useState(false);
+  const [jasaPricingCtaText, setJasaPricingCtaText] = useState('Konsultasi Sekarang');
   const [jasaPricingPlans, setJasaPricingPlans] = useState([
-    { name: 'Paket Silver', badge: '', original_price: 'Rp 1.500.000', sale_price: 'Rp 990.000', features: ['1x Sesi Konsultasi', 'Laporan Dasar', 'Revisi 1x'], highlighted: false },
-    { name: 'Paket Gold', badge: 'Terpopuler', original_price: 'Rp 3.000.000', sale_price: 'Rp 1.990.000', features: ['3x Sesi Konsultasi', 'Laporan Lengkap', 'Revisi 3x', 'Prioritas Support'], highlighted: true },
-    { name: 'Paket Platinum', badge: '', original_price: 'Rp 5.000.000', sale_price: 'Rp 3.490.000', features: ['Sesi Unlimited', 'Implementasi Sistem', 'Revisi Unlimited', 'Support 24/7'], highlighted: false }
+    { name: 'Paket Silver', badge: '', original_price: 'Rp 1.500.000', sale_price: 'Rp 990.000', cta_text: '', features: ['1x Sesi Konsultasi', 'Laporan Dasar', 'Revisi 1x'], highlighted: false },
+    { name: 'Paket Gold', badge: 'Terpopuler', original_price: 'Rp 3.000.000', sale_price: 'Rp 1.990.000', cta_text: '', features: ['3x Sesi Konsultasi', 'Laporan Lengkap', 'Revisi 3x', 'Prioritas Support'], highlighted: true },
+    { name: 'Paket Platinum', badge: '', original_price: 'Rp 5.000.000', sale_price: 'Rp 3.490.000', cta_text: '', features: ['Sesi Unlimited', 'Implementasi Sistem', 'Revisi Unlimited', 'Support 24/7'], highlighted: false }
   ]);
   const [jasaGuaranteeTitle, setJasaGuaranteeTitle] = useState('Garansi Kepuasan 100%');
   const [jasaGuaranteeDesc, setJasaGuaranteeDesc] = useState('Kami berkomitmen memberikan hasil terbaik. Jika tidak puas, kami siap melakukan revisi hingga sesuai dengan ekspektasi Anda.');
@@ -902,7 +905,7 @@ function GenerateContent() {
               setJasaHeroHeadline(content.hero?.headline || '');
               setJasaHeroSubheadline(content.hero?.subheadline || '');
               setJasaHeroCtaText(content.hero?.cta_text || 'Mulai Konsultasi');
-              setJasaHeroCtaSecondaryText(content.hero?.cta_secondary_text || 'Lihat Layanan');
+              setJasaHeroCtaSecondaryText(content.hero?.cta_secondary_text === undefined ? 'Lihat Layanan' : (content.hero?.cta_secondary_text || ''));
               setJasaHeroImage(content.hero?.image_url || '');
               if (content.hero?.image_url) {
                 setGenerateJasaHeroImage(true);
@@ -947,7 +950,7 @@ function GenerateContent() {
                 setGenerateJasaAboutImage(false);
                 setJasaAboutImageSource('unsplash');
               }
-              setJasaAboutCtaPortfolioText(ab.cta_portfolio_text || 'Lihat Portofolio');
+              setJasaAboutCtaPortfolioText(ab.cta_portfolio_text === undefined ? 'Lihat Portofolio' : (ab.cta_portfolio_text || ''));
               setJasaAboutCtaOrderText(ab.cta_order_text || 'Pesan Sekarang');
 
               const svcs = content.services || {};
@@ -976,10 +979,13 @@ function GenerateContent() {
 
               const pr = content.pricing || {};
               setJasaPricingTitle(pr.title || 'Pilih Paket Terbaik Anda');
+              setJasaPricingSubtitle(pr.subtitle || 'Harga transparan tanpa biaya tersembunyi');
+              setJasaPricingCtaOnly(!!pr.cta_only);
+              setJasaPricingCtaText(pr.cta_text || 'Konsultasi Sekarang');
               setJasaPricingPlans(pr.plans || [
-                { name: 'Paket Silver', badge: '', original_price: 'Rp 1.500.000', sale_price: 'Rp 990.000', features: ['1x Sesi Konsultasi', 'Laporan Dasar', 'Revisi 1x'], highlighted: false },
-                { name: 'Paket Gold', badge: 'Terpopuler', original_price: 'Rp 3.000.000', sale_price: 'Rp 1.990.000', features: ['3x Sesi Konsultasi', 'Laporan Lengkap', 'Revisi 3x', 'Prioritas Support'], highlighted: true },
-                { name: 'Paket Platinum', badge: '', original_price: 'Rp 5.000.000', sale_price: 'Rp 3.490.000', features: ['Sesi Unlimited', 'Implementasi Sistem', 'Revisi Unlimited', 'Support 24/7'], highlighted: false }
+                { name: 'Paket Silver', badge: '', original_price: 'Rp 1.500.000', sale_price: 'Rp 990.000', cta_text: '', features: ['1x Sesi Konsultasi', 'Laporan Dasar', 'Revisi 1x'], highlighted: false },
+                { name: 'Paket Gold', badge: 'Terpopuler', original_price: 'Rp 3.000.000', sale_price: 'Rp 1.990.000', cta_text: '', features: ['3x Sesi Konsultasi', 'Laporan Lengkap', 'Revisi 3x', 'Prioritas Support'], highlighted: true },
+                { name: 'Paket Platinum', badge: '', original_price: 'Rp 5.000.000', sale_price: 'Rp 3.490.000', cta_text: '', features: ['Sesi Unlimited', 'Implementasi Sistem', 'Revisi Unlimited', 'Support 24/7'], highlighted: false }
               ]);
 
               const gt = content.guarantee || {};
@@ -1213,11 +1219,15 @@ function GenerateContent() {
         },
         pricing: {
           title: jasaPricingTitle || 'Pilih Paket Terbaik Anda',
-          plans: jasaPricingPlans.filter(p => p.name && (p.original_price || p.sale_price)).map(p => ({
+          subtitle: jasaPricingSubtitle || 'Harga transparan tanpa biaya tersembunyi',
+          cta_only: !!jasaPricingCtaOnly,
+          cta_text: jasaPricingCtaText || 'Konsultasi Sekarang',
+          plans: jasaPricingCtaOnly ? [] : jasaPricingPlans.filter(p => p.name).map(p => ({
             name: p.name,
             badge: p.badge || null,
-            original_price: p.original_price || '',
-            sale_price: p.sale_price || '',
+            original_price: p.original_price || null,
+            sale_price: p.sale_price || null,
+            cta_text: p.cta_text || null,
             features: Array.isArray(p.features) ? p.features.filter(Boolean) : [],
             highlighted: !!p.highlighted
           }))
@@ -3332,11 +3342,15 @@ function GenerateContent() {
               },
               pricing: {
                 title: jasaPricingTitle || 'Pilih Paket Terbaik Anda',
-                plans: jasaPricingPlans.filter(p => p.name && (p.original_price || p.sale_price)).map(p => ({
+                subtitle: jasaPricingSubtitle || 'Harga transparan tanpa biaya tersembunyi',
+                cta_only: !!jasaPricingCtaOnly,
+                cta_text: jasaPricingCtaText || 'Konsultasi Sekarang',
+                plans: jasaPricingCtaOnly ? [] : jasaPricingPlans.filter(p => p.name).map(p => ({
                   name: p.name,
                   badge: p.badge || null,
-                  original_price: p.original_price || '',
-                  sale_price: p.sale_price || '',
+                  original_price: p.original_price || null,
+                  sale_price: p.sale_price || null,
+                  cta_text: p.cta_text || null,
                   features: Array.isArray(p.features) ? p.features.filter(Boolean) : [],
                   highlighted: !!p.highlighted
                 }))
@@ -3776,11 +3790,15 @@ function GenerateContent() {
           },
           pricing: {
             title: jasaPricingTitle || 'Pilih Paket Terbaik Anda',
-            plans: jasaPricingPlans.filter(p => p.name && (p.original_price || p.sale_price)).map(p => ({
+            subtitle: jasaPricingSubtitle || 'Harga transparan tanpa biaya tersembunyi',
+            cta_only: !!jasaPricingCtaOnly,
+            cta_text: jasaPricingCtaText || 'Konsultasi Sekarang',
+            plans: jasaPricingCtaOnly ? [] : jasaPricingPlans.filter(p => p.name).map(p => ({
               name: p.name,
               badge: p.badge || null,
-              original_price: p.original_price || '',
-              sale_price: p.sale_price || '',
+              original_price: p.original_price || null,
+              sale_price: p.sale_price || null,
+              cta_text: p.cta_text || null,
               features: Array.isArray(p.features) ? p.features.filter(Boolean) : [],
               highlighted: !!p.highlighted
             }))
@@ -7127,28 +7145,45 @@ function GenerateContent() {
                             <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide"><span>💰</span> Paket Harga</h3>
                             {renderAIJasaButton('jasa_pricing', isGeneratingJasaPricing)}
                           </div>
-                          <input type="text" placeholder="Judul bagian harga..." value={jasaPricingTitle} onChange={(e) => setJasaPricingTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
-                          <div className="space-y-3">
-                            {jasaPricingPlans.map((plan, idx) => (
-                              <div key={idx} className={`bg-theme-bg-muted rounded-xl p-3 border space-y-2 ${plan.highlighted ? 'border-theme-accent/50 bg-theme-accent/5' : 'border-theme-border/40'}`}>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-[9px] font-bold text-theme-text-sec">Paket #{idx + 1}</span>
-                                  <div className="flex items-center gap-2">
-                                    <label className="flex items-center gap-1 text-[8px] text-theme-text-sec cursor-pointer"><input type="checkbox" checked={plan.highlighted} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].highlighted = e.target.checked; setJasaPricingPlans(n); }} className="w-3 h-3 rounded" /> Highlight</label>
-                                    {jasaPricingPlans.length > 1 && <button type="button" onClick={() => setJasaPricingPlans(p => p.filter((_, i) => i !== idx))} className="text-[9px] text-red-400 hover:underline">Hapus</button>}
-                                  </div>
-                                </div>
-                                <input type="text" placeholder="Nama paket (e.g. Paket Gold)" value={plan.name} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].name = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
-                                <input type="text" placeholder="Badge (e.g. Terpopuler) - opsional" value={plan.badge || ''} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].badge = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
-                                <div className="grid grid-cols-2 gap-2">
-                                  <input type="text" placeholder="Harga Normal (dicoret)" value={plan.original_price} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].original_price = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
-                                  <input type="text" placeholder="Harga Promo (aktif)" value={plan.sale_price} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].sale_price = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
-                                </div>
-                                <textarea rows={2} placeholder="Fitur-fitur paket (satu per baris)" value={(plan.features || []).join('\n')} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].features = e.target.value.split('\n').filter(Boolean); setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none resize-none" />
-                              </div>
-                            ))}
-                            {jasaPricingPlans.length < 4 && <button type="button" onClick={() => setJasaPricingPlans(p => [...p, { name: '', badge: '', original_price: '', sale_price: '', features: [], highlighted: false }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Paket</button>}
+                          <div className="space-y-2">
+                            <input type="text" placeholder="Judul bagian harga..." value={jasaPricingTitle} onChange={(e) => setJasaPricingTitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                            <input type="text" placeholder="Subjudul bagian harga..." value={jasaPricingSubtitle} onChange={(e) => setJasaPricingSubtitle(e.target.value)} className="block w-full px-3.5 py-2.5 bg-theme-bg-muted border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none transition-colors" />
+                            
+                            <label className="flex items-center gap-2 text-xs font-medium text-theme-text cursor-pointer py-1 select-none">
+                              <input type="checkbox" checked={jasaPricingCtaOnly} onChange={(e) => setJasaPricingCtaOnly(e.target.checked)} className="w-4 h-4 rounded text-theme-accent border-theme-border focus:ring-theme-accent" />
+                              Hanya Tombol CTA (Tanpa Paket)
+                            </label>
                           </div>
+
+                          {jasaPricingCtaOnly ? (
+                            <div className="bg-theme-bg-muted rounded-xl p-3 border border-theme-border/40 space-y-2">
+                              <span className="text-[9px] font-bold text-theme-text-sec">Konfigurasi Tombol</span>
+                              <input type="text" placeholder="Teks Tombol Aksi (e.g. Daftar Sekarang)" value={jasaPricingCtaText} onChange={(e) => setJasaPricingCtaText(e.target.value)} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {jasaPricingPlans.map((plan, idx) => (
+                                <div key={idx} className={`bg-theme-bg-muted rounded-xl p-3 border space-y-2 ${plan.highlighted ? 'border-theme-accent/50 bg-theme-accent/5' : 'border-theme-border/40'}`}>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[9px] font-bold text-theme-text-sec">Paket #{idx + 1}</span>
+                                    <div className="flex items-center gap-2">
+                                      <label className="flex items-center gap-1 text-[8px] text-theme-text-sec cursor-pointer"><input type="checkbox" checked={plan.highlighted} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].highlighted = e.target.checked; setJasaPricingPlans(n); }} className="w-3 h-3 rounded" /> Highlight</label>
+                                      {jasaPricingPlans.length > 1 && <button type="button" onClick={() => setJasaPricingPlans(p => p.filter((_, i) => i !== idx))} className="text-[9px] text-red-400 hover:underline">Hapus</button>}
+                                    </div>
+                                  </div>
+                                  <input type="text" placeholder="Nama paket (e.g. Paket Gold)" value={plan.name} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].name = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                  <input type="text" placeholder="Badge (e.g. Terpopuler) - opsional" value={plan.badge || ''} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].badge = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <input type="text" placeholder="Harga Normal (dicoret) - opsional" value={plan.original_price || ''} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].original_price = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                    <input type="text" placeholder="Harga Promo (aktif) - opsional" value={plan.sale_price || ''} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].sale_price = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                  </div>
+                                  <input type="text" placeholder="Teks Tombol Aksi (e.g. Pesan Paket Ini)" value={plan.cta_text || ''} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].cta_text = e.target.value; setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none" />
+                                  <textarea rows={2} placeholder="Fitur-fitur paket (satu per baris)" value={(plan.features || []).join('\n')} onChange={(e) => { const n = [...jasaPricingPlans]; n[idx].features = e.target.value.split('\n').filter(Boolean); setJasaPricingPlans(n); }} className="block w-full px-3 py-2 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-lg text-xs text-theme-text focus:outline-none resize-none" />
+                                </div>
+                              ))}
+                              {jasaPricingPlans.length < 4 && <button type="button" onClick={() => setJasaPricingPlans(p => [...p, { name: '', badge: '', original_price: '', sale_price: '', cta_text: '', features: [], highlighted: false }])} className="text-[9px] font-bold text-theme-accent hover:underline">+ Tambah Paket</button>}
+                            </div>
+                          )}
                         </div>
 
                         {/* Guarantee */}
