@@ -496,6 +496,276 @@ function GenerateContent() {
   const [jasaClosingTitle, setJasaClosingTitle] = useState('');
   const [jasaClosingCtaText, setJasaClosingCtaText] = useState('');
 
+  // Dynamic Builder (V2) Modular Section States
+  const [isGeneratingV2Section, setIsGeneratingV2Section] = useState(null);
+  // Ref that always holds the latest v2Sections value.
+  // Used inside async handlers to avoid stale-closure bugs.
+  const v2SectionsRef = useRef([]);
+  const [v2BrandName, setV2BrandName] = useState('');
+  const [v2BrandBrief, setV2BrandBrief] = useState('');
+  const [v2Sections, setV2Sections] = useState([
+    {
+      id: 'sec-hero-1',
+      type: 'hero',
+      variant: 'split-navy',
+      content: {
+        headline: '',
+        subheadline: '',
+        cta_text: ''
+      }
+    },
+    {
+      id: 'sec-about-1',
+      type: 'about',
+      variant: 'simple-navy',
+      content: {
+        title: '',
+        description: ''
+      }
+    },
+    {
+      id: 'sec-services-1',
+      type: 'services',
+      variant: 'grid-navy',
+      content: {
+        title: '',
+        items: []
+      }
+    },
+    {
+      id: 'sec-pricing-1',
+      type: 'pricing',
+      variant: 'grid-navy',
+      content: {
+        title: '',
+        plans: []
+      }
+    },
+    {
+      id: 'sec-faq-1',
+      type: 'faq',
+      variant: 'accordion-navy',
+      content: {
+        title: '',
+        faqs: []
+      }
+    },
+    {
+      id: 'sec-contact-1',
+      type: 'contact',
+      variant: 'footer-navy',
+      content: {
+        title: '',
+        subheadline: '',
+        whatsapp: ''
+      }
+    }
+  ]);
+
+  const handleAddSection = (type) => {
+    const newSec = {
+      id: `sec-${type}-${Date.now()}`,
+      type: type,
+      variant: type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : 'footer-navy',
+      content: {
+        title: '',
+        headline: '',
+        subheadline: '',
+        description: '',
+        whatsapp: ''
+      }
+    };
+    setV2Sections(prev => [...prev, newSec]);
+  };
+
+  const handleRemoveSection = (id) => {
+    setV2Sections(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleMoveSection = (id, direction) => {
+    setV2Sections(prev => {
+      const idx = prev.findIndex(s => s.id === id);
+      if (idx < 0) return prev;
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+      const next = [...prev];
+      const temp = next[idx];
+      next[idx] = next[targetIdx];
+      next[targetIdx] = temp;
+      return next;
+    });
+  };
+
+  const handleUpdateSectionContent = (id, newContent) => {
+    setV2Sections(prev => prev.map(s => s.id === id ? { ...s, content: { ...s.content, ...newContent } } : s));
+  };
+
+  // Keep ref in sync with the latest v2Sections state so async handlers
+  // always read fresh data even after rapid state updates.
+  useEffect(() => {
+    v2SectionsRef.current = v2Sections;
+  }, [v2Sections]);
+
+  const handleAISectionAssist = async (id, sectionType) => {
+    if (!session?.access_token) return;
+    try {
+      // ── Read the absolute-latest state from the React scheduler ────────────
+      const { latestSec } = await new Promise((resolve) => {
+        setV2Sections(prev => {
+          const latestSec = prev.find(s => s.id === id) || null;
+          resolve({ latestSec });
+          return prev; // read-only peek — state unchanged
+        });
+      });
+
+      if (!latestSec) return;
+
+      setIsGeneratingV2Section(id);
+      const fieldType = `v2_${sectionType}`;
+
+      // ── Build context with existing filled items so AI only fills empty slots ─
+      let context = {
+        brandName: v2BrandName || name,
+        brief: v2BrandBrief,
+      };
+
+      if (sectionType === 'services') {
+        const allItems = latestSec.content?.items || latestSec.content?.list || [];
+        const filledItems = allItems.filter(it => (it.title || it.name || '').trim() !== '');
+        const emptyCount = allItems.length - filledItems.length;
+        if (emptyCount > 0) {
+          // Partial: generate only missing items, keep filled ones
+          context.existingItems = filledItems;
+          context.emptyCount = emptyCount;
+        } else {
+          // No empty items: regenerate all
+          context.itemCount = allItems.length || 2;
+        }
+      } else if (sectionType === 'pricing') {
+        const allPlans = latestSec.content?.plans || [];
+        const filledPlans = allPlans.filter(p => (p.name || '').trim() !== '');
+        const emptyCount = allPlans.length - filledPlans.length;
+        if (emptyCount > 0) {
+          context.existingPlans = filledPlans;
+          context.emptyCount = emptyCount;
+        } else {
+          context.itemCount = allPlans.length || 2;
+        }
+      } else if (sectionType === 'faq') {
+        const allFaqs = latestSec.content?.faqs || [];
+        const filledFaqs = allFaqs.filter(f => (f.question || '').trim() !== '');
+        const emptyCount = allFaqs.length - filledFaqs.length;
+        if (emptyCount > 0) {
+          context.existingFaqs = filledFaqs;
+          context.emptyCount = emptyCount;
+        } else {
+          context.itemCount = allFaqs.length || 3;
+        }
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ fieldType, context, projectId: projectId || undefined }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error && typeof result.error === 'object' ? JSON.stringify(result.error) : (result.error || 'Gagal mengirim tugas copywriting ke antrean.'));
+      }
+
+      const jobId = result.jobId;
+      let attempts = 0;
+      let finalContent = null;
+
+      while (attempts < 60) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/status`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (!statusRes.ok) break;
+        const jobData = await statusRes.json();
+        if (jobData.state === 'completed') {
+          finalContent = jobData.result?.content;
+          break;
+        } else if (jobData.state === 'failed') {
+          throw new Error(jobData.failedReason || 'Gagal memproses copywriting AI di antrean.');
+        }
+        attempts++;
+      }
+
+      if (finalContent) {
+        let parsed = finalContent;
+        if (typeof parsed === 'string') {
+          try {
+            const cleaned = parsed.replace(/^```(json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+            parsed = JSON.parse(cleaned);
+          } catch (e) {
+            console.error('Failed to parse finalContent string:', e);
+          }
+        }
+
+        if (parsed && typeof parsed === 'object') {
+          if (parsed.data && typeof parsed.data === 'object' && !Array.isArray(parsed.data)) {
+            parsed = parsed.data;
+          }
+
+          // ── Merge AI result with existing filled items ──────────────────────
+          // Read current state once more for the merge
+          setV2Sections(prev => {
+            const currentSec = prev.find(s => s.id === id);
+            if (!currentSec) return prev;
+
+            let newContent = { ...parsed };
+
+            if (sectionType === 'services') {
+              const allItems = currentSec.content?.items || currentSec.content?.list || [];
+              const filledItems = allItems.filter(it => (it.title || it.name || '').trim() !== '');
+              const newItems = Array.isArray(parsed.newItems) ? parsed.newItems
+                : (Array.isArray(parsed.items) ? parsed.items : (Array.isArray(parsed.list) ? parsed.list : []));
+              const normalizedNew = newItems.map(item => ({
+                title: item.title || item.name || '',
+                name: item.title || item.name || '',
+                desc: item.desc || item.description || '',
+                description: item.desc || item.description || '',
+              }));
+              const mergedItems = [...filledItems, ...normalizedNew];
+              newContent = { ...newContent, items: mergedItems, list: mergedItems };
+              delete newContent.newItems;
+            } else if (sectionType === 'pricing') {
+              const allPlans = currentSec.content?.plans || [];
+              const filledPlans = allPlans.filter(p => (p.name || '').trim() !== '');
+              const newPlans = Array.isArray(parsed.newPlans) ? parsed.newPlans
+                : (Array.isArray(parsed.plans) ? parsed.plans : []);
+              const mergedPlans = [...filledPlans, ...newPlans];
+              newContent = { ...newContent, plans: mergedPlans };
+              delete newContent.newPlans;
+            } else if (sectionType === 'faq') {
+              const allFaqs = currentSec.content?.faqs || [];
+              const filledFaqs = allFaqs.filter(f => (f.question || '').trim() !== '');
+              const newFaqs = Array.isArray(parsed.newFaqs) ? parsed.newFaqs
+                : (Array.isArray(parsed.faqs) ? parsed.faqs : []);
+              const mergedFaqs = [...filledFaqs, ...newFaqs];
+              newContent = { ...newContent, faqs: mergedFaqs };
+              delete newContent.newFaqs;
+            }
+
+            return prev.map(s => s.id === id ? { ...s, content: { ...s.content, ...newContent } } : s);
+          });
+
+          refreshProfile();
+        }
+      }
+    } catch (err) {
+      console.error('AI section assist error:', err);
+      alert(`Gagal membuat konten AI: ${err.message}`);
+    } finally {
+      setIsGeneratingV2Section(null);
+    }
+  };
+
   // Jasa AI assist loading states
   const [isGeneratingJasaTagline, setIsGeneratingJasaTagline] = useState(false);
   const [isGeneratingJasaHero, setIsGeneratingJasaHero] = useState(false);
@@ -1018,6 +1288,35 @@ function GenerateContent() {
 
               setDesignKey(pageConfig.meta?.design_key || 'professional-navy');
               setDesignVersion(pageConfig.meta?.template_version || 1);
+            } else if (pageConfig && pageConfig.meta?.template_type === 'dynamic-builder') {
+              setTemplateType('dynamic-builder');
+              const content = pageConfig.content || {};
+              setV2BrandName(content.brand_name || '');
+              setV2BrandBrief(content.brief || '');
+              if (Array.isArray(content.sections) && content.sections.length > 0) {
+                // Strict deduplication: Keep at most ONE section per section type
+                const uniqueSections = [];
+                const seenTypes = new Set();
+                for (const sec of content.sections) {
+                  if (!seenTypes.has(sec.type)) {
+                    seenTypes.add(sec.type);
+                    uniqueSections.push(sec);
+                  } else {
+                    const existingIdx = uniqueSections.findIndex(s => s.type === sec.type);
+                    if (existingIdx !== -1) {
+                      const existing = uniqueSections[existingIdx];
+                      const existingHasContent = existing.content && (existing.content.title || existing.content.description || existing.content.headline);
+                      const currentHasContent = sec.content && (sec.content.title || sec.content.description || sec.content.headline);
+                      if (!existingHasContent && currentHasContent) {
+                        uniqueSections[existingIdx] = sec;
+                      }
+                    }
+                  }
+                }
+                setV2Sections(uniqueSections);
+              }
+              setDesignKey(pageConfig.meta?.design_key || 'modern-clean');
+              setDesignVersion(pageConfig.meta?.template_version || 1);
             } else {
               setTemplateType('store');
             }
@@ -1354,6 +1653,30 @@ function GenerateContent() {
           target_date: eCourseCountdownType === 'fixed' && eCourseCountdownTargetDate ? new Date(eCourseCountdownTargetDate).toISOString() : null
         }
       };
+    } else if (templateType === 'dynamic-builder') {
+      metaTitle = name || v2BrandName || 'Modular Landing Page (V2)';
+      const cleanSections = [];
+      const seenTypeSet = new Set();
+      const seenIdSet = new Set();
+      for (const s of (v2Sections || [])) {
+        if (!seenIdSet.has(s.id)) {
+          seenIdSet.add(s.id);
+          if (!seenTypeSet.has(s.type)) {
+            seenTypeSet.add(s.type);
+            cleanSections.push(s);
+          } else {
+            const hasRealContent = s.content && (s.content.title || s.content.description || s.content.headline);
+            if (hasRealContent) {
+              cleanSections.push(s);
+            }
+          }
+        }
+      }
+      assembledContent = {
+        brand_name: v2BrandName,
+        brief: v2BrandBrief,
+        sections: cleanSections
+      };
     } else {
       metaTitle = 'Draft Page';
       assembledContent = {};
@@ -1554,6 +1877,9 @@ function GenerateContent() {
     jasaAddress,
     jasaCtaUrl,
     jasaCopyright,
+    v2BrandName,
+    v2BrandBrief,
+    v2Sections,
   ]);
 
   // Synchronize state with live preview iframe
@@ -1662,6 +1988,7 @@ function GenerateContent() {
       return products;
     }
     const defaultProducts = [
+      { id: 'dynamic-builder', name: 'Modular Section Builder (V2)', is_active: true, cost: 100, description: 'Sistem pembuatan landing page modular fleksibel. Bebas menambah, menghapus, merestrukturisasi, dan mengedit section sesuai kebutuhan.', unit: 'Campaign', priority: 1, created_at: '2026-07-20T00:00:00Z' },
       { id: 'toko-online', name: 'Toko Online', is_active: true, cost: 100, description: 'Desain responsif komersial, katalog produk modern, dan CTA kontak WhatsApp.', unit: 'Toko', priority: null, created_at: '2026-06-20T00:00:00Z' },
       { id: 'campaign', name: 'Campaign Landing Page', is_active: true, cost: 150, description: 'Landing page satu halaman dengan struktur konversi tinggi untuk promosi produk atau penawaran digital.', unit: 'Campaign', priority: null, created_at: '2026-06-21T00:00:00Z' },
       { id: 'wedding', name: 'Undangan Pernikahan', is_active: true, cost: 100, description: 'Undangan digital premium dengan kelola RSVP, iringan musik, dan linimasa kisah kasih.', unit: 'Undangan', priority: null, created_at: '2026-06-22T00:00:00Z' },
@@ -1838,6 +2165,9 @@ function GenerateContent() {
       jasaServicesList.forEach((s, idx) => {
         if (!s.name || !s.desc) errors.push(`Layanan ke-${idx + 1} (Nama/Deskripsi)`);
       });
+    } else if (templateType === 'dynamic-builder') {
+      if (!v2BrandName) errors.push("Nama Brand / Bisnis");
+      if (v2Sections.length === 0) errors.push("Minimal harus ada 1 Section");
     } else if (templateType === 'store') {
       if (!prompt) errors.push("Prompt Ide Landing Page");
     }
@@ -2027,6 +2357,10 @@ function GenerateContent() {
       if (isJasaBrandLogo) {
         if (jasaBrandLogo) handleDeleteImage(jasaBrandLogo);
         setJasaBrandLogo(publicUrl);
+      }
+      if (target && target.startsWith('v2_sec_')) {
+        const secId = target.replace('v2_sec_', '');
+        handleUpdateSectionContent(secId, { image_url: publicUrl, image_source: 'upload' });
       }
       if (isProduct) {
         const oldProductImageUrl = tokoProducts[productIndex]?.image_url;
@@ -3010,6 +3344,26 @@ function GenerateContent() {
     );
   };
 
+  const renderAIV2Button = (sectionId, sectionType) => {
+    const remainingFree = profile?.remainingFree ?? 15;
+    const cost = profile?.ai_generate_cost ?? 1;
+    const isFree = remainingFree > 0;
+    const isLoading = isGeneratingV2Section === sectionId;
+    const hasBrief = !!v2BrandName.trim() || !!v2BrandBrief.trim();
+
+    return (
+      <button
+        type="button"
+        disabled={isLoading || !hasBrief}
+        onClick={() => handleAISectionAssist(sectionId, sectionType)}
+        className="text-[9px] font-bold text-theme-accent disabled:opacity-40 hover:underline flex items-center gap-0.5 active:scale-95 transition-transform cursor-pointer"
+        title={!hasBrief ? 'Isi Nama Brand atau Brief AI terlebih dahulu' : 'Generate konten otomatis dengan AI'}
+      >
+        {isLoading ? 'Generating...' : `✨ AI Generate (${isFree ? `Gratis: ${remainingFree}` : `${cost} Credit`})`}
+      </button>
+    );
+  };
+
   // Helper untuk memetakan technical_status ke teks bahasa Indonesia yang ramah
   const getFriendlyProgressMessage = (status, techStatus) => {
     if (status === 'queued') return 'Menunggu dalam antrean AI...';
@@ -3607,6 +3961,38 @@ function GenerateContent() {
               closing_message: pageData?.content?.closing_message || null,
             }
           };
+        } else if (templateType === 'dynamic-builder') {
+          const cleanSections = [];
+          const seenTypeSet = new Set();
+          const seenIdSet = new Set();
+          for (const s of (v2Sections || [])) {
+            if (!seenIdSet.has(s.id)) {
+              seenIdSet.add(s.id);
+              if (!seenTypeSet.has(s.type)) {
+                seenTypeSet.add(s.type);
+                cleanSections.push(s);
+              } else {
+                const hasRealContent = s.content && (s.content.title || s.content.description || s.content.headline);
+                if (hasRealContent) {
+                  cleanSections.push(s);
+                }
+              }
+            }
+          }
+          compiledPageData = {
+            meta: {
+              title: v2BrandName || name || 'Modular Landing Page',
+              theme: designKey || 'modern-clean',
+              template_type: 'dynamic-builder',
+              design_key: designKey || 'modern-clean',
+              template_version: designVersion,
+            },
+            content: {
+              brand_name: v2BrandName || name,
+              brief: v2BrandBrief,
+              sections: cleanSections
+            }
+          };
         }
 
         const saveEndpoint = projectId 
@@ -4102,7 +4488,7 @@ function GenerateContent() {
 
   // Handle publishing landing page (deducts dynamic cost based on coupon)
   const handlePublish = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!projectId || !slug) return;
 
     // Check balance first based on finalCost
@@ -4270,8 +4656,8 @@ function GenerateContent() {
     <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
       <Sidebar />
 
-      {/* Main Content Area - Mobile Centered Column */}
-      <main className="flex-grow p-4 flex flex-col min-h-screen pt-20 pb-48 md:pb-28 max-w-md mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
+      {/* Main Content Area - Responsive Desktop 12-Col / Mobile Stacked */}
+      <main className="flex-grow p-4 md:p-6 flex flex-col min-h-screen pt-24 lg:pt-28 pb-28 md:pb-16 max-w-md lg:max-w-[1550px] mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
           <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Siap Kerja Untukmu</h1>
@@ -4332,11 +4718,11 @@ function GenerateContent() {
           </div>
         )}
 
-        {/* Content Panels Mobile-First Layout */}
+        {/* Content Panels Responsive Layout (Mobile Stacked Tabs / Desktop Split 12-Cols) */}
         <div className="flex-grow flex flex-col min-h-0 w-full">
-          {/* Tab Switcher (Only shown if pageData exists) */}
+          {/* Mobile Tab Switcher (Only shown if pageData exists on mobile screens) */}
           {pageData && (
-            <div className="flex bg-theme-bg p-1 rounded-xl border border-theme-border mb-4 flex-shrink-0">
+            <div className="flex lg:hidden bg-theme-bg p-1 rounded-xl border border-theme-border mb-4 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveTab('edit')}
@@ -4360,14 +4746,17 @@ function GenerateContent() {
             </div>
           )}
 
-          {/* Tab 1: Edit Form */}
-          {(!pageData || activeTab === 'edit') && (
-            <div className="w-full flex-grow flex flex-col">
-              <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col md:overflow-y-auto shrink-0 mb-6 md:max-h-[62vh] scrollbar-thin">
+          {/* 12-Column Responsive Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-grow items-start">
+            {/* Column 1: Edit Form (Full width on mobile if activeTab === 'edit', 5-cols on lg desktop) */}
+            <div className={`col-span-1 lg:col-span-5 flex flex-col lg:max-h-[calc(100vh-170px)] ${pageData && activeTab !== 'edit' ? 'hidden lg:flex' : 'flex'}`}>
+              <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col flex-grow overflow-y-auto scrollbar-thin">
                 <div className="space-y-5">
-                  <div className="pb-2 border-b border-theme-border">
-                    <h3 className="text-sm font-bold text-theme-text tracking-wide" style={{ fontFamily: "'Sora', sans-serif" }}>Detail Landing Page</h3>
-                    <p className="text-[10px] text-theme-text-sec mt-0.5">Lengkapi formulir untuk membuat pratinjau halaman Anda</p>
+                  <div className="pb-2 border-b border-theme-border flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-theme-text tracking-wide" style={{ fontFamily: "'Sora', sans-serif" }}>Detail Landing Page</h3>
+                      <p className="text-[10px] text-theme-text-sec mt-0.5">Lengkapi formulir untuk membuat pratinjau halaman Anda</p>
+                    </div>
                   </div>
 
                   <form id="generate-form" onSubmit={editMode ? handleSaveDeployed : handleGenerate} className="space-y-4">
@@ -7785,7 +8174,6 @@ function GenerateContent() {
 
                         {/* === PENGATURAN HALAMAN === */}
                         <div className="space-y-3 bg-theme-bg/30 border border-theme-border rounded-xl p-3.5 mt-3">
-                          <div className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">7. Pengaturan Halaman</div>
                           <div className="flex items-center gap-2">
                             <input
                               type="checkbox"
@@ -7799,12 +8187,636 @@ function GenerateContent() {
                             </label>
                           </div>
                         </div>
+                      </div>
+                    )}
 
+                    {/* Dynamic Builder V2 Fields */}
+                    {templateType === 'dynamic-builder' && (
+                      <div className="space-y-4 border-t border-theme-border pt-4">
+                        {/* Brief AI & Brand Info */}
+                        <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
+                          <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
+                            <span>🤖</span> Identitas Brand & Brief AI
+                          </h3>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Nama Brand / Bisnis <span className="text-red-500 font-bold ml-0.5">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Contoh: Siluet Digital Agency"
+                              value={v2BrandName}
+                              onChange={(e) => setV2BrandName(e.target.value)}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1.5">
+                              Deskripsi Brief Bisnis (Konteks AI)
+                            </label>
+                            <textarea
+                              placeholder="Jelaskan bisnis Anda, produk/jasa utama, serta target pelanggan untuk membantu AI merancang kata-kata penawaran..."
+                              value={v2BrandBrief}
+                              onChange={(e) => setV2BrandBrief(e.target.value)}
+                              rows={3}
+                              className="block w-full px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors resize-y"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Section List Manager */}
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center bg-theme-bg/60 p-3 rounded-2xl border border-theme-border">
+                            <div>
+                              <h4 className="text-xs font-bold text-theme-text uppercase tracking-wider">
+                                Kelola Section ({v2Sections.length})
+                              </h4>
+                              <p className="text-[9px] text-theme-text-sec mt-0.5">Tambah, hapus, atau atur urutan tampilan section</p>
+                            </div>
+                            <select
+                              value=""
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  handleAddSection(e.target.value);
+                                }
+                              }}
+                              className="bg-theme-accent text-theme-accent-text text-xs font-bold px-3 py-2 rounded-xl cursor-pointer focus:outline-none shadow-sm"
+                            >
+                              <option value="">+ Tambah Section Baru</option>
+                              <option value="hero">Hero / Header Utama</option>
+                              <option value="about">About / Tentang Kami</option>
+                              <option value="services">Services / Layanan</option>
+                              <option value="pricing">Pricing / Paket Harga</option>
+                              <option value="faq">FAQ / Pertanyaan Umum</option>
+                              <option value="contact">Contact / WhatsApp CTA</option>
+                            </select>
+                          </div>
+
+                          {v2Sections.map((section, idx) => (
+                            <div key={section.id} className="bg-theme-bg border border-theme-border rounded-2xl p-4 space-y-3">
+                              <div className="flex justify-between items-center border-b border-theme-border/50 pb-2">
+                                <span className="text-xs font-bold text-theme-text uppercase tracking-wider flex items-center gap-1.5">
+                                  <span className="h-5 w-5 rounded-md bg-theme-accent/10 text-theme-accent flex items-center justify-center text-[10px]">
+                                    {idx + 1}
+                                  </span>
+                                  <span>{section.type} Section</span>
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveSection(section.id, 'up')}
+                                    disabled={idx === 0}
+                                    title="Geser Ke Atas"
+                                    className="p-1 px-2 text-xs font-bold text-theme-text-sec hover:text-theme-text hover:bg-theme-card rounded-lg disabled:opacity-20"
+                                  >
+                                    ▲
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveSection(section.id, 'down')}
+                                    disabled={idx === v2Sections.length - 1}
+                                    title="Geser Ke Bawah"
+                                    className="p-1 px-2 text-xs font-bold text-theme-text-sec hover:text-theme-text hover:bg-theme-card rounded-lg disabled:opacity-20"
+                                  >
+                                    ▼
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveSection(section.id)}
+                                    title="Hapus Section"
+                                    className="p-1 px-2 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg ml-1"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              </div>
+
+                              {section.type === 'hero' && (
+                                <div className="space-y-2.5">
+                                  <div className="flex justify-between items-center">
+                                    <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Headline Utama</label>
+                                    {renderAIV2Button(section.id, 'hero')}
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={section.content.headline || ''}
+                                    onChange={(e) => handleUpdateSectionContent(section.id, { headline: e.target.value })}
+                                    placeholder="Headline penawaran..."
+                                    className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                  />
+                                  <textarea
+                                    value={section.content.subheadline || ''}
+                                    onChange={(e) => handleUpdateSectionContent(section.id, { subheadline: e.target.value })}
+                                    placeholder="Subheadline penjelasan..."
+                                    rows={2}
+                                    className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                  />
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">Teks Tombol Utama</label>
+                                      <input
+                                        type="text"
+                                        value={section.content.cta_text || ''}
+                                        onChange={(e) => handleUpdateSectionContent(section.id, { cta_text: e.target.value })}
+                                        placeholder="Hubungi Kami..."
+                                        className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">Link Tombol Utama</label>
+                                      <input
+                                        type="text"
+                                        value={section.content.cta_url || ''}
+                                        onChange={(e) => handleUpdateSectionContent(section.id, { cta_url: e.target.value })}
+                                        placeholder="e.g. #contact atau link WA..."
+                                        className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2 pt-1">
+                                    <div>
+                                      <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">Teks Tombol Kedua (Opsional)</label>
+                                      <input
+                                        type="text"
+                                        value={section.content.cta_secondary_text || ''}
+                                        onChange={(e) => handleUpdateSectionContent(section.id, { cta_secondary_text: e.target.value })}
+                                        placeholder="Pelajari Lebih Lanjut..."
+                                        className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">Link Tombol Kedua</label>
+                                      <input
+                                        type="text"
+                                        value={section.content.cta_secondary_url || ''}
+                                        onChange={(e) => handleUpdateSectionContent(section.id, { cta_secondary_url: e.target.value })}
+                                        placeholder="e.g. #services..."
+                                        className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Hero Background / Illustration Image Control */}
+                                  <div className="pt-2 border-t border-theme-border/60">
+                                    <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider mb-1.5">🖼️ Gambar / Ilustrasi Hero</label>
+                                    <ImagePickerField
+                                      checkboxId={`v2_hero_img_${section.id}`}
+                                      checkboxLabel="Gunakan Gambar Custom / Unsplash untuk Hero"
+                                      unsplashQuery="business,technology,workspace,creative"
+                                      imageUrl={section.content.image_url || ''}
+                                      onImageChange={(val) => {
+                                        if (!val && section.content.image_url && section.content.image_source === 'upload') {
+                                          handleDeleteImage(section.content.image_url);
+                                        }
+                                        handleUpdateSectionContent(section.id, { image_url: val });
+                                      }}
+                                      apiToken={session?.access_token}
+                                      apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                                      isEnabled={section.content.image_enabled !== false}
+                                      onEnabledChange={(enabled) => handleUpdateSectionContent(section.id, { image_enabled: enabled })}
+                                      source={section.content.image_source || 'unsplash'}
+                                      onSourceChange={(src) => handleUpdateSectionContent(section.id, { image_source: src })}
+                                      onUpload={(file) => handleUploadImage(file, `v2_sec_${section.id}`)}
+                                      uploadType={`v2_sec_${section.id}`}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {section.type === 'about' && (
+                                <div className="space-y-2.5">
+                                  <div className="flex justify-between items-center">
+                                    <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul & Deskripsi Profil</label>
+                                    {renderAIV2Button(section.id, 'about')}
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={section.content.title || ''}
+                                    onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                    placeholder="Judul profil..."
+                                    className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                  />
+                                  <textarea
+                                    value={section.content.description || ''}
+                                    onChange={(e) => handleUpdateSectionContent(section.id, { description: e.target.value })}
+                                    placeholder="Penjelasan profil..."
+                                    rows={3}
+                                    className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                  />
+
+                                  {/* About Section Image Control */}
+                                  <div className="pt-2 border-t border-theme-border/60">
+                                    <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider mb-1.5">🖼️ Gambar / Foto Profil Tentang Kami</label>
+                                    <ImagePickerField
+                                      checkboxId={`v2_about_img_${section.id}`}
+                                      checkboxLabel="Gunakan Gambar Custom / Unsplash untuk About"
+                                      unsplashQuery="office,team,company,profile"
+                                      imageUrl={section.content.image_url || ''}
+                                      onImageChange={(val) => {
+                                        if (!val && section.content.image_url && section.content.image_source === 'upload') {
+                                          handleDeleteImage(section.content.image_url);
+                                        }
+                                        handleUpdateSectionContent(section.id, { image_url: val });
+                                      }}
+                                      apiToken={session?.access_token}
+                                      apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                                      isEnabled={section.content.image_enabled !== false}
+                                      onEnabledChange={(enabled) => handleUpdateSectionContent(section.id, { image_enabled: enabled })}
+                                      source={section.content.image_source || 'unsplash'}
+                                      onSourceChange={(src) => handleUpdateSectionContent(section.id, { image_source: src })}
+                                      onUpload={(file) => handleUploadImage(file, `v2_sec_${section.id}`)}
+                                      uploadType={`v2_sec_${section.id}`}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                               {section.type === 'services' && (
+                                 <div className="space-y-3">
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul Bagian Layanan</label>
+                                     {renderAIV2Button(section.id, 'services')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Judul layanan (e.g. Layanan Utama Kami)..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+
+                                   {/* Services Items List */}
+                                   <div className="space-y-2 pt-2 border-t border-theme-border/60">
+                                     <div className="flex justify-between items-center">
+                                       <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider">Daftar Layanan ({(section.content.items || section.content.list || []).length})</label>
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           const currentList = [...(section.content.items || section.content.list || [])];
+                                           currentList.push({ title: '', desc: '' });
+                                           handleUpdateSectionContent(section.id, { items: currentList });
+                                         }}
+                                         className="text-[9px] font-bold text-theme-accent hover:underline flex items-center gap-1"
+                                       >
+                                         + Tambah Layanan
+                                       </button>
+                                     </div>
+
+                                     {(section.content.items || section.content.list || []).map((item, itemIdx) => (
+                                       <div key={itemIdx} className="p-2.5 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2 relative group">
+                                         <div className="flex justify-between items-center">
+                                           <span className="text-[9px] font-bold text-theme-text-sec">Layanan #{itemIdx + 1}</span>
+                                           <button
+                                             type="button"
+                                             onClick={() => {
+                                               const currentList = [...(section.content.items || section.content.list || [])];
+                                               currentList.splice(itemIdx, 1);
+                                               handleUpdateSectionContent(section.id, { items: currentList });
+                                             }}
+                                             className="text-red-400 hover:text-red-300 text-xs font-bold px-1"
+                                             title="Hapus Layanan Ini"
+                                           >
+                                             ✕
+                                           </button>
+                                         </div>
+                                         <input
+                                           type="text"
+                                           value={item.title || item.name || ''}
+                                           onChange={(e) => {
+                                             const currentList = [...(section.content.items || section.content.list || [])];
+                                             currentList[itemIdx] = { ...currentList[itemIdx], title: e.target.value, name: e.target.value };
+                                             handleUpdateSectionContent(section.id, { items: currentList });
+                                           }}
+                                           placeholder="Nama Layanan (e.g. Web Development)..."
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                         <textarea
+                                           value={item.desc || item.description || ''}
+                                           onChange={(e) => {
+                                             const currentList = [...(section.content.items || section.content.list || [])];
+                                             currentList[itemIdx] = { ...currentList[itemIdx], desc: e.target.value, description: e.target.value };
+                                             handleUpdateSectionContent(section.id, { items: currentList });
+                                           }}
+                                           placeholder="Penjelasan singkat layanan..."
+                                           rows={2}
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                     ))}
+
+                                     {(section.content.items || section.content.list || []).length === 0 && (
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           handleUpdateSectionContent(section.id, { items: [{ title: '', desc: '' }] });
+                                         }}
+                                         className="w-full py-2 border border-dashed border-theme-border hover:border-theme-accent rounded-xl text-xs font-semibold text-theme-text-sec hover:text-theme-accent transition-all"
+                                       >
+                                         + Tambah Item Layanan Pertama
+                                       </button>
+                                     )}
+                                   </div>
+                                 </div>
+                               )}
+
+                               {section.type === 'pricing' && (
+                                 <div className="space-y-3">
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul Paket Harga</label>
+                                     {renderAIV2Button(section.id, 'pricing')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Judul paket harga (e.g. Paket Investasi Terjangkau)..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                   <input
+                                     type="text"
+                                     value={section.content.subtitle || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { subtitle: e.target.value })}
+                                     placeholder="Sub-judul (e.g. Pilih paket yang paling sesuai dengan kebutuhan Anda)..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+
+                                   {/* CTA-Only Mode Toggle */}
+                                   <div className="flex items-center justify-between p-2.5 bg-theme-bg/60 border border-theme-border/70 rounded-xl">
+                                     <div>
+                                       <p className="text-[9px] font-bold text-theme-text">Mode CTA Saja</p>
+                                       <p className="text-[8px] text-theme-text-muted">Tampilkan tombol konsultasi, bukan kartu harga</p>
+                                     </div>
+                                     <button
+                                       type="button"
+                                       onClick={() => handleUpdateSectionContent(section.id, { cta_only: !section.content.cta_only })}
+                                       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${section.content.cta_only ? 'bg-theme-accent' : 'bg-theme-border'}`}
+                                     >
+                                       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${section.content.cta_only ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                                     </button>
+                                   </div>
+
+                                   {section.content.cta_only ? (
+                                     /* CTA-Only Mode: show CTA text & URL fields */
+                                     <div className="space-y-2 pt-2 border-t border-theme-border/60">
+                                       <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider">Pengaturan Tombol CTA</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.cta_text || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { cta_text: e.target.value })}
+                                         placeholder="Teks tombol (e.g. Konsultasi Sekarang)..."
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                       <input
+                                         type="text"
+                                         value={section.content.cta_url || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { cta_url: e.target.value })}
+                                         placeholder="URL tujuan (e.g. https://wa.me/628xx atau link lain)..."
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                   ) : (
+                                     /* Normal Pricing Mode: show plans */
+                                     <div className="space-y-2 pt-2 border-t border-theme-border/60">
+                                       <div className="flex justify-between items-center">
+                                         <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider">Daftar Paket Harga ({(section.content.plans || []).length})</label>
+                                         <button
+                                           type="button"
+                                           onClick={() => {
+                                             const currentPlans = [...(section.content.plans || [])];
+                                             currentPlans.push({ name: '', price: '', sale_price: '', features: [] });
+                                             handleUpdateSectionContent(section.id, { plans: currentPlans });
+                                           }}
+                                           className="text-[9px] font-bold text-theme-accent hover:underline flex items-center gap-1"
+                                         >
+                                           + Tambah Paket
+                                         </button>
+                                       </div>
+
+                                       {(section.content.plans || []).map((plan, planIdx) => (
+                                         <div key={planIdx} className="p-2.5 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2 relative group">
+                                           <div className="flex justify-between items-center">
+                                             <span className="text-[9px] font-bold text-theme-text-sec">Paket #{planIdx + 1}</span>
+                                             <button
+                                               type="button"
+                                               onClick={() => {
+                                                 const currentPlans = [...(section.content.plans || [])];
+                                                 currentPlans.splice(planIdx, 1);
+                                                 handleUpdateSectionContent(section.id, { plans: currentPlans });
+                                               }}
+                                               className="text-red-400 hover:text-red-300 text-xs font-bold px-1"
+                                               title="Hapus Paket Ini"
+                                             >
+                                               ✕
+                                             </button>
+                                           </div>
+                                           <div className="grid grid-cols-2 gap-2">
+                                             <input
+                                               type="text"
+                                               value={plan.name || ''}
+                                               onChange={(e) => {
+                                                 const currentPlans = [...(section.content.plans || [])];
+                                                 currentPlans[planIdx] = { ...currentPlans[planIdx], name: e.target.value };
+                                                 handleUpdateSectionContent(section.id, { plans: currentPlans });
+                                               }}
+                                               placeholder="Nama Paket (e.g. Pro Plan)..."
+                                               className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                             />
+                                             <input
+                                               type="text"
+                                               value={plan.price || plan.sale_price || ''}
+                                               onChange={(e) => {
+                                                 const currentPlans = [...(section.content.plans || [])];
+                                                 currentPlans[planIdx] = { ...currentPlans[planIdx], price: e.target.value, sale_price: e.target.value };
+                                                 handleUpdateSectionContent(section.id, { plans: currentPlans });
+                                               }}
+                                               placeholder="Harga (e.g. Rp 499.000)..."
+                                               className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                             />
+                                           </div>
+                                           <textarea
+                                             value={Array.isArray(plan.features) ? plan.features.join('\n') : (plan.features || '')}
+                                             onChange={(e) => {
+                                               const currentPlans = [...(section.content.plans || [])];
+                                               const feats = e.target.value.split('\n');
+                                               currentPlans[planIdx] = { ...currentPlans[planIdx], features: feats };
+                                               handleUpdateSectionContent(section.id, { plans: currentPlans });
+                                             }}
+                                             placeholder="Daftar Fitur (1 fitur per baris)..."
+                                             rows={3}
+                                             className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                           />
+                                         </div>
+                                       ))}
+
+                                       {(section.content.plans || []).length === 0 && (
+                                         <button
+                                           type="button"
+                                           onClick={() => {
+                                             handleUpdateSectionContent(section.id, { plans: [{ name: '', price: '', features: [] }] });
+                                           }}
+                                           className="w-full py-2 border border-dashed border-theme-border hover:border-theme-accent rounded-xl text-xs font-semibold text-theme-text-sec hover:text-theme-accent transition-all"
+                                         >
+                                           + Tambah Paket Harga Pertama
+                                         </button>
+                                       )}
+                                     </div>
+                                   )}
+                                 </div>
+                               )}
+
+                               {section.type === 'faq' && (
+                                 <div className="space-y-3">
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul FAQ</label>
+                                     {renderAIV2Button(section.id, 'faq')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Judul FAQ (e.g. Pertanyaan Umum)..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+
+                                   {/* FAQ Items List */}
+                                   <div className="space-y-2 pt-2 border-t border-theme-border/60">
+                                     <div className="flex justify-between items-center">
+                                       <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider">Daftar FAQ ({(section.content.faqs || []).length})</label>
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           const currentFaqs = [...(section.content.faqs || [])];
+                                           currentFaqs.push({ question: '', answer: '' });
+                                           handleUpdateSectionContent(section.id, { faqs: currentFaqs });
+                                         }}
+                                         className="text-[9px] font-bold text-theme-accent hover:underline flex items-center gap-1"
+                                       >
+                                         + Tambah FAQ
+                                       </button>
+                                     </div>
+
+                                     {(section.content.faqs || []).map((faqItem, faqIdx) => (
+                                       <div key={faqIdx} className="p-2.5 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2 relative group">
+                                         <div className="flex justify-between items-center">
+                                           <span className="text-[9px] font-bold text-theme-text-sec">Pertanyaan #{faqIdx + 1}</span>
+                                           <button
+                                             type="button"
+                                             onClick={() => {
+                                               const currentFaqs = [...(section.content.faqs || [])];
+                                               currentFaqs.splice(faqIdx, 1);
+                                               handleUpdateSectionContent(section.id, { faqs: currentFaqs });
+                                             }}
+                                             className="text-red-400 hover:text-red-300 text-xs font-bold px-1"
+                                             title="Hapus Pertanyaan Ini"
+                                           >
+                                             ✕
+                                           </button>
+                                         </div>
+                                         <input
+                                           type="text"
+                                           value={faqItem.question || ''}
+                                           onChange={(e) => {
+                                             const currentFaqs = [...(section.content.faqs || [])];
+                                             currentFaqs[faqIdx] = { ...currentFaqs[faqIdx], question: e.target.value };
+                                             handleUpdateSectionContent(section.id, { faqs: currentFaqs });
+                                           }}
+                                           placeholder="Pertanyaan (e.g. Berapa lama prosesnya?)..."
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                         <textarea
+                                           value={faqItem.answer || ''}
+                                           onChange={(e) => {
+                                             const currentFaqs = [...(section.content.faqs || [])];
+                                             currentFaqs[faqIdx] = { ...currentFaqs[faqIdx], answer: e.target.value };
+                                             handleUpdateSectionContent(section.id, { faqs: currentFaqs });
+                                           }}
+                                           placeholder="Jawaban ringkas..."
+                                           rows={2}
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                     ))}
+
+                                     {(section.content.faqs || []).length === 0 && (
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           handleUpdateSectionContent(section.id, { faqs: [{ question: '', answer: '' }] });
+                                         }}
+                                         className="w-full py-2 border border-dashed border-theme-border hover:border-theme-accent rounded-xl text-xs font-semibold text-theme-text-sec hover:text-theme-accent transition-all"
+                                       >
+                                         + Tambah Pertanyaan FAQ Pertama
+                                       </button>
+                                     )}
+                                   </div>
+                                 </div>
+                               )}
+
+                              {section.type === 'contact' && (
+                                <div className="space-y-2.5">
+                                  <div className="flex justify-between items-center">
+                                    <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul & Detail Kontak</label>
+                                    {renderAIV2Button(section.id, 'contact')}
+                                  </div>
+                                  <input
+                                    type="text"
+                                    value={section.content.title || ''}
+                                    onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                    placeholder="Judul bagian kontak (e.g. Siap Mengembangkan Bisnis Anda?)..."
+                                    className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={section.content.subheadline || ''}
+                                    onChange={(e) => handleUpdateSectionContent(section.id, { subheadline: e.target.value })}
+                                    placeholder="Subheadline (e.g. Hubungi tim kami via WhatsApp)..."
+                                    className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={section.content.whatsapp || ''}
+                                    onChange={(e) => handleUpdateSectionContent(section.id, { whatsapp: e.target.value })}
+                                    placeholder="Nomor WhatsApp (e.g. 6281234567890)..."
+                                    className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                  />
+                                  {/* Optional contact info */}
+                                  <div className="pt-1.5 border-t border-theme-border/60 space-y-2">
+                                    <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Info Tambahan (Opsional)</label>
+                                    <input
+                                      type="email"
+                                      value={section.content.email || ''}
+                                      onChange={(e) => handleUpdateSectionContent(section.id, { email: e.target.value })}
+                                      placeholder="Email kontak (e.g. halo@bisnisku.com)..."
+                                      className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={section.content.address || ''}
+                                      onChange={(e) => handleUpdateSectionContent(section.id, { address: e.target.value })}
+                                      placeholder="Alamat / Kota (e.g. Jakarta, Indonesia)..."
+                                      className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={section.content.copyright || ''}
+                                      onChange={(e) => handleUpdateSectionContent(section.id, { copyright: e.target.value })}
+                                      placeholder={`© ${new Date().getFullYear()} Nama Bisnis Anda. All Rights Reserved.`}
+                                      className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                    />
+                                    <p className="text-[8px] text-theme-text-muted">Kosongkan untuk menggunakan teks default otomatis</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
 
                     {/* Prompt input */}
-                    {templateType !== 'toko-online' && templateType !== 'campaign' && templateType !== 'cv' && (
+                    {templateType !== 'toko-online' && templateType !== 'campaign' && templateType !== 'cv' && templateType !== 'dynamic-builder' && (
                       <div>
                         <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
                           {templateType === 'wedding' || templateType === 'birthday' ? 'Preferensi Kutipan / Doa (Optional)' : 'Prompt / Deskripsi Bisnis Anda'}
@@ -7828,212 +8840,205 @@ function GenerateContent() {
                   </form>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Tab 2: Preview & Publish */}
-          {pageData && activeTab === 'preview' && (
-            <div className="w-full flex-grow flex flex-col">
-              {/* Deployed Info or Draft Info */}
-              <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 mb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
-                      {editMode ? 'Undangan Aktif' : 'Proyek Terpilih'}
-                    </div>
-                    <div className="text-xs font-bold text-theme-text mt-0.5">{name}</div>
-                    {editMode && (
+              {/* Desktop Submit Action Button embedded in Form Column */}
+              <div className="hidden lg:flex flex-col gap-2 mt-auto pt-2">
+                {editMode ? (
+                  <button
+                    type="submit"
+                    form="generate-form"
+                    disabled={isPublishing || (editCount >= maxProjectEdits && (profile?.balance ?? 0) < projectEditCost)}
+                    title={editCount >= maxProjectEdits && (profile?.balance ?? 0) < projectEditCost ? 'Saldo credit tidak cukup untuk menyimpan edit berbayar' : ''}
+                    className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                  >
+                    {isPublishing ? (
                       <>
-                        <div className="text-[10px] text-emerald-400 font-semibold mt-2.5">
-                          Tautan: <a href={successUrl || `http://localhost:5000/?slug=${slug}`} target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-300 inline-flex items-center gap-0.5">{slug} <ExternalLink className="h-2.5 w-2.5 inline" /></a>
-                        </div>
-                        <div className="text-[9px] text-theme-text-muted mt-1.5">
-                          {editCount < maxProjectEdits 
-                            ? `Kuota edit gratis tersisa: ${maxProjectEdits - editCount} dari ${maxProjectEdits} kali` 
-                            : `Kuota edit gratis telah habis. Edit selanjutnya dikenakan biaya ${projectEditCost} credit per simpan.`}
-                        </div>
+                        <div className="h-4 w-4 rounded-full border-2 border-theme-accent-text/20 border-t-theme-accent-text animate-spin"></div>
+                        <span>Menyimpan Perubahan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        {editCount < maxProjectEdits ? (
+                          <span>Simpan Perubahan ({maxProjectEdits - editCount}/{maxProjectEdits})</span>
+                        ) : (
+                          <span>Simpan Perubahan ({projectEditCost} Credit)</span>
+                        )}
                       </>
                     )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!editMode) {
-                        setPageData(null);
-                      }
-                      setActiveTab('edit');
-                    }}
-                    className="text-[10px] text-theme-accent hover:text-theme-accent-hover font-bold transition-colors"
-                  >
-                    ← Edit Baru
                   </button>
-                </div>
-              </div>
-
-              {/* URL Customization - Only for draft publishing */}
-              {!editMode && (
-                <form id="publish-form" onSubmit={handlePublish} className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 mb-4 space-y-3.5">
-                  <div>
-                    <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
-                      Tentukan Custom Slug URL
-                    </label>
-                    <div className="relative flex items-center">
-                      <span className="absolute left-3 text-theme-text-muted text-xs select-none">/p/</span>
-                      <input
-                        type="text"
-                        required
-                        placeholder="nama-toko-anda"
-                        value={slug}
-                        onChange={(e) => setSlug(
-                          e.target.value
-                            .toLowerCase()
-                            .replace(/[^a-z0-9-]/g, '')
-                            .replace(/-+/g, '-')
-                        )}
-                        disabled={isPublishing}
-                        className="block w-full pl-8 pr-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-                      />
-                    </div>
-                    {slug && (
-                      <p className="text-[10px] text-theme-text-muted mt-1.5 pl-1">
-                        URL Anda:{' '}
-                        <span className="font-mono text-theme-text-sec">
-                          .../?slug={slug}-<span className="opacity-40">xxxxxx</span>
-                        </span>
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Coupon Code Section */}
-                  <div className="border-t border-theme-border/50 pt-3.5 space-y-2">
-                    <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
-                      Masukkan Kode Kupon (Opsional)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Contoh: DISKON100"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        disabled={isPublishing || appliedCoupon}
-                        className="block flex-grow px-3.5 py-2.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text placeholder-theme-text-muted focus:outline-none transition-colors"
-                      />
-                      {appliedCoupon ? (
-                        <button
-                          type="button"
-                          onClick={handleRemoveCoupon}
-                          disabled={isPublishing}
-                          className="bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-[10px] font-bold px-3 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
-                        >
-                          Hapus
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleValidateCoupon}
-                          disabled={isPublishing || !couponCode.trim() || isValidatingCoupon}
-                          className="bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text text-[10px] font-bold px-4 py-2.5 rounded-xl transition-colors active:scale-[0.98] cursor-pointer"
-                        >
-                          {isValidatingCoupon ? 'Memproses...' : 'Terapkan'}
-                        </button>
-                      )}
-                    </div>
-                    {couponError && (
-                      <p className="text-[10px] text-red-400 font-medium pl-1">{couponError}</p>
-                    )}
-                    {couponSuccess && (
-                      <p className="text-[10px] text-emerald-400 font-medium pl-1">{couponSuccess}</p>
-                    )}
-                  </div>
-
-                  <div className="bg-theme-bg border border-theme-border rounded-xl p-3 flex flex-col gap-1.5 text-[10px] font-bold text-theme-text-sec">
-                    <div className="flex justify-between items-center">
-                      <span>Biaya Publikasi:</span>
-                      <span>
-                        {appliedCoupon ? (
-                          <>
-                            <span className="line-through text-theme-text-muted mr-1.5">{currentCost} Credit</span>
-                            <span className="text-emerald-400">
-                              {finalCost === 0 ? 'Gratis' : `${finalCost} Credit`}
-                            </span>
-                          </>
-                        ) : (
-                          `${currentCost} Credit`
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center border-t border-theme-border/50 pt-1.5">
-                      <span>Saldo Anda:</span>
-                      <div className="flex items-center gap-2">
-                        <span className={(profile?.balance ?? 0) < finalCost ? 'text-red-400' : 'text-emerald-400'}>
-                          {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
-                        </span>
-                        {(profile?.balance ?? 0) < finalCost && (
-                          <Link
-                            href="/topup"
-                            className="bg-red-500 hover:bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded transition-colors uppercase tracking-wider"
-                          >
-                            Top Up
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              )}
-
-              {/* Viewport for preview */}
-              <div className="border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl h-[450px] relative flex-shrink-0 mb-4">
-                {isGenerating && templateType === 'wedding' && (
-                  <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
-                    <div className="relative mb-6">
-                      <div className="absolute -inset-2 rounded-full bg-theme-accent/20 animate-ping"></div>
-                      <div className="h-16 w-16 rounded-full border-4 border-theme-accent/10 border-t-theme-accent animate-spin relative flex items-center justify-center bg-slate-900 shadow-xl">
-                        <span className="text-xl">✨</span>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-base font-bold text-white mb-1.5">
-                      Merancang Undangan Premium Anda
-                    </h3>
-                    
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-accent/10 border border-theme-accent/20 text-[10px] text-theme-accent font-bold mb-4 uppercase tracking-wider">
-                      <span className="h-1.5 w-1.5 rounded-full bg-theme-accent animate-pulse"></span>
-                      {aiProgressStatus || 'queued'}
-                    </div>
-                    
-                    <p className="text-xs text-theme-text-muted max-w-[240px] leading-relaxed min-h-[36px] flex items-center justify-center">
-                      {aiProgressDetail || 'Menghubungkan ke server AI...'}
-                    </p>
-                    
-                    <div className="w-40 bg-white/5 border border-white/10 h-2 rounded-full mt-5 overflow-hidden p-0.5">
-                      <div className="bg-gradient-to-r from-theme-accent to-pink-500 h-full rounded-full animate-[loading_1.5s_infinite_ease-in-out]" style={{ width: '45%' }}></div>
-                    </div>
-                  </div>
-                )}
-
-                {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course' || templateType === 'jasa') ? (
-                  <iframe
-                    ref={iframeRef}
-                    src="/preview/index.html"
-                    className="w-full h-full border-0 bg-transparent"
-                    title="Live Preview"
-                    onLoad={() => {
-                      setIframeReady(true);
-                      if (iframeRef.current && pageData) {
-                        iframeRef.current.contentWindow.postMessage({
-                          type: 'UPDATE_PREVIEW',
-                          pageData: pageData
-                        }, '*');
-                      }
-                    }}
-                  />
                 ) : (
-                  renderPreview()
+                  <button
+                    type="submit"
+                    form="generate-form"
+                    disabled={isGenerating}
+                    className="w-full bg-theme-accent hover:bg-theme-accent-hover disabled:opacity-50 text-theme-accent-text font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="h-4 w-4 rounded-full border-2 border-theme-accent-text/20 border-t-theme-accent-text animate-spin"></div>
+                        <span>Sedang Merancang Halaman...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        <span>Generate Preview (Gratis)</span>
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
             </div>
-          )}
+
+            {/* Column 2: Live Sandbox Preview (Full width on mobile if activeTab === 'preview', 7-cols on lg desktop) */}
+            <div className={`col-span-1 lg:col-span-7 flex flex-col h-full lg:sticky lg:top-24 ${!pageData && 'hidden lg:flex'} ${pageData && activeTab !== 'preview' ? 'hidden lg:flex' : 'flex'}`}>
+              {!pageData ? (
+                /* Empty Sandbox State for Desktop */
+                <div className="flex flex-col items-center justify-center h-[580px] border-2 border-dashed border-theme-border rounded-3xl p-8 text-center bg-theme-card/10">
+                  <div className="h-16 w-16 rounded-2xl bg-theme-accent/10 border border-theme-accent/20 flex items-center justify-center mb-4 text-theme-accent">
+                    <Sparkles className="h-8 w-8 animate-pulse" />
+                  </div>
+                  <h4 className="text-base font-bold text-theme-text mb-1" style={{ fontFamily: "'Sora', sans-serif" }}>Pratinjau Live Sandbox</h4>
+                  <p className="text-xs text-theme-text-sec max-w-sm leading-relaxed mb-4">
+                    Isi detail formulir di sebelah kiri dan klik <span className="font-bold text-theme-text">Generate Preview</span> untuk melihat hasil tampilan landing page secara otomatis di sini.
+                  </p>
+                </div>
+              ) : (
+                /* Live Preview Sandbox Container */
+                <div className="flex flex-col space-y-4">
+                  {/* Viewport Control Bar */}
+                  <div className="bg-theme-card/60 border border-theme-border rounded-2xl p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="text-xs font-bold text-theme-text" style={{ fontFamily: "'Sora', sans-serif" }}>Live Sandbox Preview</span>
+                    </div>
+
+                    {/* Device Simulator Toggle */}
+                    <div className="flex items-center gap-1 bg-theme-bg p-1 rounded-xl border border-theme-border">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewDevice('mobile')}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                          previewDevice === 'mobile'
+                            ? 'bg-theme-accent text-theme-accent-text shadow'
+                            : 'text-theme-text-sec hover:text-theme-text'
+                        }`}
+                      >
+                        <Smartphone className="h-3.5 w-3.5" />
+                        <span>Mobile</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewDevice('laptop')}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                          previewDevice === 'laptop'
+                            ? 'bg-theme-accent text-theme-accent-text shadow'
+                            : 'text-theme-text-sec hover:text-theme-text'
+                        }`}
+                      >
+                        <Laptop className="h-3.5 w-3.5" />
+                        <span>Desktop</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Publish Coupon & Action Panel on Desktop */}
+                  {pageData && (
+                    <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-4 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-theme-border/50 pb-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-theme-text-sec uppercase tracking-wider">
+                            URL Slug Landing Page
+                          </label>
+                          {editMode ? (
+                            <span className="text-xs font-bold text-theme-text">{slug}</span>
+                          ) : (
+                            <input
+                              type="text"
+                              required
+                              placeholder="contoh-toko-saya"
+                              value={slug}
+                              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                              className="mt-1 px-3 py-1.5 bg-theme-bg border border-theme-border focus:border-theme-accent rounded-xl text-xs text-theme-text focus:outline-none"
+                            />
+                          )}
+                        </div>
+
+                        {!editMode && (
+                          <button
+                            type="button"
+                            onClick={handlePublish}
+                            disabled={isPublishing || !slug || (finalCost > 0 && (profile?.balance ?? 0) < finalCost)}
+                            className="bg-[#c0623a] hover:bg-[#a8502d] disabled:opacity-50 text-white font-black text-xs py-2.5 px-4 rounded-xl shadow transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                          >
+                            {isPublishing ? (
+                              <span>Sedang Memproses...</span>
+                            ) : (
+                              <>
+                                <Globe className="h-3.5 w-3.5" />
+                                <span>{finalCost === 0 ? 'Publikasikan Sekarang (Gratis)' : `Publikasikan (${finalCost} Credit)`}</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Viewport Box */}
+                  <div className={`border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl relative transition-all duration-300 ${
+                    previewDevice === 'mobile'
+                      ? 'w-[375px] h-[600px] mx-auto border-4 border-slate-800 shadow-2xl rounded-3xl'
+                      : 'w-full h-[600px]'
+                  }`}>
+                    {isGenerating && (
+                      <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+                        <div className="relative mb-6">
+                          <div className="absolute -inset-2 rounded-full bg-theme-accent/20 animate-ping"></div>
+                          <div className="h-16 w-16 rounded-full border-4 border-theme-accent/10 border-t-theme-accent animate-spin relative flex items-center justify-center bg-slate-900 shadow-xl">
+                            <span className="text-xl">✨</span>
+                          </div>
+                        </div>
+                        
+                        <h3 className="text-base font-bold text-white mb-1.5">
+                          Merancang Landing Page Anda
+                        </h3>
+                        
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-accent/10 border border-theme-accent/20 text-[10px] text-theme-accent font-bold mb-4 uppercase tracking-wider">
+                          <span className="h-1.5 w-1.5 rounded-full bg-theme-accent animate-pulse"></span>
+                          {aiProgressStatus || 'queued'}
+                        </div>
+                        
+                        <p className="text-xs text-theme-text-muted max-w-[240px] leading-relaxed min-h-[36px] flex items-center justify-center">
+                          {aiProgressDetail || 'Menghubungkan ke server AI...'}
+                        </p>
+                      </div>
+                    )}
+
+                    {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course' || templateType === 'jasa' || templateType === 'dynamic-builder') ? (
+                      <iframe
+                        ref={iframeRef}
+                        src="/preview/index.html"
+                        className="w-full h-full border-0 bg-transparent"
+                        title="Live Preview"
+                        onLoad={() => {
+                          setIframeReady(true);
+                          if (iframeRef.current && pageData) {
+                            iframeRef.current.contentWindow.postMessage({
+                              type: 'UPDATE_PREVIEW',
+                              pageData: pageData
+                            }, '*');
+                          }
+                        }}
+                      />
+                    ) : (
+                      renderPreview()
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Tracking Pixel Banner — read-only info, user edits in /profile */}
@@ -8044,7 +9049,7 @@ function GenerateContent() {
           const hasTt  = !!trackingConfig?.tiktok_pixel_id;
           const anyActive = hasFb || hasGa || hasAds || hasTt;
           return (
-            <div className="relative md:fixed md:bottom-[72px] left-0 right-0 max-w-md mx-auto px-4 z-10 mb-3">
+            <div className="relative md:fixed md:bottom-[72px] left-0 right-0 max-w-md mx-auto px-4 z-10 mb-3 lg:hidden">
               <div className="bg-theme-surface/90 backdrop-blur-sm border border-theme-border rounded-xl px-3 py-2 flex items-center justify-between text-xs shadow-lg">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-theme-text-muted font-medium mr-0.5">Pixel:</span>
@@ -8059,8 +9064,8 @@ function GenerateContent() {
           );
         })()}
  
-        {/* Action Bar at the Bottom */}
-        <div className="fixed bottom-[84px] md:fixed md:bottom-0 left-0 right-0 max-w-md mx-auto bg-theme-surface/95 border-t border-theme-border p-4 z-30 flex flex-col gap-2 shadow-lg md:shadow-2xl transition-theme mt-auto">
+        {/* Mobile-only Action Bar at the Bottom */}
+        <div className="fixed bottom-[84px] left-0 right-0 max-w-md mx-auto bg-theme-surface/95 border-t border-theme-border p-4 z-30 flex flex-col gap-2 shadow-lg transition-theme mt-auto lg:hidden">
           {editMode ? (
             <button
               type="submit"
@@ -8106,8 +9111,8 @@ function GenerateContent() {
             </button>
           ) : (
             <button
-              type="submit"
-              form="publish-form"
+              type="button"
+              onClick={handlePublish}
               disabled={isPublishing || !slug || (finalCost > 0 && (profile?.balance ?? 0) < finalCost)}
               className="w-full bg-[#c0623a] hover:bg-[#a8502d] disabled:opacity-50 text-white font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >

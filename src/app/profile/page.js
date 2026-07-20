@@ -215,7 +215,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-theme-bg transition-theme" style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
         <Sidebar />
-        <main className="max-w-md mx-auto px-4 pb-24 pt-6">
+        <main className="max-w-md lg:max-w-5xl mx-auto px-4 lg:px-8 pb-24 pt-6">
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-theme-text">Profil Saya</h1>
@@ -236,7 +236,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-theme-bg transition-theme" style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}>
       <Sidebar />
-      <main className="max-w-md mx-auto px-4 pb-24 pt-6">
+      <main className="max-w-md lg:max-w-5xl mx-auto px-4 lg:px-8 pb-24 pt-6">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="mb-6">

@@ -624,7 +624,7 @@ export default function DashboardPage() {
                               <span>Lihat</span>
                               <ExternalLink className="h-3.5 w-3.5" />
                             </a>
-                            {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course' || templateType === 'jasa') && (
+                            {(templateType === 'wedding' || templateType === 'birthday' || templateType === 'toko-online' || templateType === 'campaign' || templateType === 'cv' || templateType === 'e-course' || templateType === 'jasa' || templateType === 'dynamic-builder') && (
                               (project.edit_count || 0) >= maxProjectEdits ? (
                                 <Link
                                   href={`/generate?id=${project.id}&editMode=true`}

@@ -34,7 +34,7 @@
     <script type="module">
         // Version stamp — bump this (matching LP_VERSION in wuzzkang-lp/script.js) 
         // to invalidate cached template modules after a deployment to GitHub Pages.
-        const PREVIEW_VERSION = '1.2.6';
+        const PREVIEW_VERSION = '1.2.9';
         const cacheBust = `?v=${PREVIEW_VERSION}`;
 
         // Global Branding Config
@@ -42,6 +42,12 @@
             name: 'Siluet',
             domain: 'siluet.web.id'
         };
+
+        // ── Race Condition Guard ─────────────────────────────────────────────
+        // Incremented each time a new UPDATE_PREVIEW arrives.
+        // The async section-render loop checks this before appending each
+        // section so stale / in-flight renders are abandoned immediately.
+        let renderGeneration = 0;
 
         // Capture unhandled script errors
         window.addEventListener('error', (event) => {
@@ -76,29 +82,15 @@
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;
                         const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
-                        // Dynamically import the exact JS template module with cache-bust
                         const module = await import(`./templates/wedding/${resolvedFile}${cacheBust}`);
-                        
-                        // Execute the template renderer
                         await module.render(pageData, 'Nama Tamu Undangan');
-                        
-                        // Automatically bypass welcome cover overlay inside the editor preview 
-                        // so the user doesn't have to click "Open Invitation" every time they type
                         const coverEl = document.getElementById('invitation-cover');
-                        if (coverEl) {
-                            coverEl.style.display = 'none';
-                        }
-                        
-                        // CRITICAL FIX: The main-content starts as opacity-0 and only becomes visible
-                        // when the user clicks "Buka Undangan". Since we're bypassing that button,
-                        // we must manually remove opacity-0 so the page is actually visible.
+                        if (coverEl) coverEl.style.display = 'none';
                         const mainContentEl = document.getElementById('main-content');
                         if (mainContentEl) {
                             mainContentEl.classList.remove('opacity-0');
                             mainContentEl.style.opacity = '1';
                         }
-                        
-                        // Unlock body scrolling (normally locked until cover dismissed)
                         document.body.style.overflow = 'auto';
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
@@ -107,10 +99,7 @@
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;
                         const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
-                        // Dynamically import the exact JS toko-online template module with cache-bust
                         const module = await import(`./templates/toko-online/${resolvedFile}${cacheBust}`);
-                        
-                        // Execute the template renderer
                         await module.render(pageData, 'Tamu');
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
@@ -119,10 +108,7 @@
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;
                         const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
-                        // Dynamically import the exact JS campaign template module with cache-bust
                         const module = await import(`./templates/campaign/${resolvedFile}${cacheBust}`);
-                        
-                        // Execute the template renderer
                         await module.render(pageData, 'Tamu');
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
@@ -131,10 +117,7 @@
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;
                         const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
-                        // Dynamically import the exact JS birthday template module with cache-bust
                         const module = await import(`./templates/birthday/${resolvedFile}${cacheBust}`);
-                        
-                        // Execute the template renderer
                         await module.render(pageData, 'Nama Tamu Undangan');
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template: ${err.message}</div>`;
@@ -143,10 +126,7 @@
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;
                         const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
-                        // Dynamically import the CV template module with cache-bust
                         const module = await import(`./templates/cv/${resolvedFile}${cacheBust}`);
-                        
-                        // Execute the template renderer (CV does not use guestName)
                         await module.render(pageData, '', BRAND_CONFIG);
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template CV: ${err.message}</div>`;
@@ -155,10 +135,7 @@
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;
                         const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
-                        // Dynamically import the E-Course template module with cache-bust
                         const module = await import(`./templates/e-course/${resolvedFile}${cacheBust}`);
-                        
-                        // Execute the template renderer
                         await module.render(pageData, 'Tamu');
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template E-Course: ${err.message}</div>`;
@@ -167,13 +144,134 @@
                     try {
                         const templateVersion = pageData.meta?.template_version || 1;
                         const resolvedFile = templateVersion <= 1 ? `${designKey}.js` : `${designKey}-v${templateVersion}.js`;
-                        // Dynamically import the Jasa template module with cache-bust
                         const module = await import(`./templates/jasa/${resolvedFile}${cacheBust}`);
-                        
-                        // Execute the template renderer
                         await module.render(pageData, 'Tamu', BRAND_CONFIG);
                     } catch (err) {
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template Jasa: ${err.message}</div>`;
+                    }
+                } else if (templateType === 'dynamic-builder') {
+                    // ── Claim a new render generation slot ──────────────────
+                    // Any older in-flight render that checks this value will
+                    // detect it has been superseded and return early.
+                    const myGeneration = ++renderGeneration;
+
+                    try {
+                        if (!document.getElementById('dynamic-builder-styles')) {
+                             const style = document.createElement('style');
+                             style.id = 'dynamic-builder-styles';
+                             style.innerHTML = `
+                                 .jasa-navy       { background-color: #0f2e4c; }
+                                 .jasa-navy-dark  { background-color: #0a1f35; }
+                                 .jasa-navy-mid   { background-color: #163654; }
+                                 .jasa-orange     { background-color: #f97316; }
+                                 .jasa-orange-text{ color: #f97316; }
+                                 .jasa-white-text { color: #ffffff; }
+                                 .jasa-navy-text  { color: #0f2e4c; }
+
+                                 .btn-orange {
+                                     display: inline-block;
+                                     background-color: #f97316;
+                                     color: #ffffff;
+                                     font-weight: 700;
+                                     padding: 0.85rem 2rem;
+                                     border-radius: 0.5rem;
+                                     text-decoration: none;
+                                     transition: all 0.25s ease;
+                                     border: 2px solid #f97316;
+                                     cursor: pointer;
+                                     font-size: 0.9rem;
+                                     letter-spacing: 0.02em;
+                                 }
+                                 .btn-orange:hover {
+                                     background-color: #ea6c0a;
+                                     border-color: #ea6c0a;
+                                     transform: translateY(-2px);
+                                     box-shadow: 0 8px 24px rgba(249,115,22,0.35);
+                                 }
+
+                                 .btn-outline-white {
+                                     display: inline-block;
+                                     background-color: transparent;
+                                     color: #ffffff;
+                                     font-weight: 700;
+                                     padding: 0.85rem 2rem;
+                                     border-radius: 0.5rem;
+                                     text-decoration: none;
+                                     transition: all 0.25s ease;
+                                     border: 2px solid rgba(255,255,255,0.6);
+                                     cursor: pointer;
+                                     font-size: 0.9rem;
+                                     letter-spacing: 0.02em;
+                                 }
+                                 .btn-outline-white:hover {
+                                     background-color: rgba(255,255,255,0.1);
+                                     border-color: #ffffff;
+                                     transform: translateY(-2px);
+                                 }
+
+                                 .btn-outline-navy {
+                                     display: inline-block;
+                                     background-color: transparent;
+                                     color: #0f2e4c;
+                                     font-weight: 700;
+                                     padding: 0.85rem 2rem;
+                                     border-radius: 0.5rem;
+                                     text-decoration: none;
+                                     transition: all 0.25s ease;
+                                     border: 2px solid #0f2e4c;
+                                     cursor: pointer;
+                                     font-size: 0.9rem;
+                                     letter-spacing: 0.02em;
+                                 }
+                                 .btn-outline-navy:hover {
+                                     background-color: #0f2e4c;
+                                     color: #ffffff;
+                                     transform: translateY(-2px);
+                                 }
+                             `;
+                             document.head.appendChild(style);
+                         }
+
+                        appEl.innerHTML = '';
+
+                        const rawSections = pageData.content?.sections || [];
+
+                        // ── Deduplicate by type (final safety net in the renderer) ──
+                        const seenTypes = new Set();
+                        const sections = [];
+                        for (const sec of rawSections) {
+                            if (!seenTypes.has(sec.type)) {
+                                seenTypes.add(sec.type);
+                                sections.push(sec);
+                            }
+                        }
+
+                        for (const section of sections) {
+                            // ── Abandon if a newer render has taken over ────
+                            if (renderGeneration !== myGeneration) return;
+
+                            const sectionType = section.type;
+                            const sectionVariant = section.variant || (
+                                sectionType === 'hero'     ? 'split-navy'     :
+                                sectionType === 'about'    ? 'simple-navy'    :
+                                sectionType === 'services' ? 'grid-navy'      :
+                                sectionType === 'pricing'  ? 'grid-navy'      :
+                                sectionType === 'faq'      ? 'accordion-navy' :
+                                'footer-navy'
+                            );
+                            const moduleName = `${sectionType}-${sectionVariant}.js`;
+                            const module = await import(`./templates/components/sections/${sectionType}/${moduleName}${cacheBust}`);
+
+                            // ── Check again after async import ──────────────
+                            if (renderGeneration !== myGeneration) return;
+
+                            const sectionHtml = module.render(section.content || {}, BRAND_CONFIG);
+                            appEl.insertAdjacentHTML('beforeend', sectionHtml);
+                        }
+                    } catch (err) {
+                        if (renderGeneration === myGeneration) {
+                            appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat dynamic builder: ${err.message}</div>`;
+                        }
                     }
                 } else {
                     // Default mockup preview for Store template

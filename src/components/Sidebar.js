@@ -14,11 +14,8 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { profile, refreshProfile } = useAuth();
+  const { activeTheme, handleThemeChange } = useTheme();
 
-  // Tab navigation helper:
-  // - Going to Home        → replace (Home tidak perlu numpuk di history)
-  // - From Home to others  → push   (agar Home tersimpan, back bisa kembali ke Home)
-  // - Between non-Home     → replace (tidak numpuk sesama tab)
   const navigateTab = (href) => {
     if (href === '/') {
       router.replace('/');
@@ -28,7 +25,6 @@ export default function Sidebar() {
       router.replace(href);
     }
   };
-  const { activeTheme, handleThemeChange } = useTheme();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -43,7 +39,6 @@ export default function Sidebar() {
     { name: 'Riwayat Transaksi', href: '/payments/history', icon: History },
   ];
 
-  // Conditionally add admin panel link for admin/super_admin users
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
   if (isAdmin) {
     navItems.push({ name: 'Admin Panel', href: '/admin', icon: Shield });
@@ -51,51 +46,106 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Top Bar — always visible */}
-      <div className="fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 border-b transition-theme"
+      {/* Top Header Bar — Responsive for Mobile & Desktop */}
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 flex items-center justify-between px-4 lg:px-8 border-b transition-theme backdrop-blur-md"
         style={{ backgroundColor: 'var(--theme-surface)', borderColor: 'var(--theme-border)' }}>
         
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg flex items-center justify-center shadow"
+        {/* Left: Brand Logo */}
+        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="h-9 w-9 rounded-xl flex items-center justify-center shadow-md"
             style={{ background: 'linear-gradient(135deg, var(--theme-accent), var(--theme-accent-hover))' }}>
-            <Sparkles className="h-4 w-4 text-white" />
+            <Sparkles className="h-5 w-5 text-white" />
           </div>
-          <span className="text-base font-black tracking-tight transition-theme" style={{ color: 'var(--theme-text)', fontFamily: "'Sora', sans-serif" }}>
+          <span className="text-lg font-black tracking-tight transition-theme" style={{ color: 'var(--theme-text)', fontFamily: "'Sora', sans-serif" }}>
             {BRAND_NAME}
           </span>
         </Link>
 
-        {/* Right side: Balance pill + menu */}
-        <div className="flex items-center gap-2">
+        {/* Center: Desktop Navigation Links (visible on md/lg screens) */}
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  isActive
+                    ? 'bg-theme-accent text-theme-accent-text shadow-sm'
+                    : 'text-theme-text-sec hover:text-theme-text hover:bg-theme-card'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right side: Balance pill + Theme selector + Profile / Hamburger */}
+        <div className="flex items-center gap-3">
           {/* Balance Pill */}
-          <Link href="/topup" className="px-3 py-1.5 rounded-lg text-xs font-bold border transition-theme hover:scale-105 active:scale-95 cursor-pointer block"
+          <Link href="/topup" className="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all hover:scale-105 active:scale-95 cursor-pointer block shadow-sm"
             style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)', color: 'var(--theme-accent)' }}>
             {(profile?.balance ?? 0).toLocaleString('id-ID')} Credit
           </Link>
-          {/* Hamburger */}
+
+          {/* Desktop Theme Switcher */}
+          <div className="hidden lg:flex items-center gap-1 p-1 rounded-xl border" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border)' }}>
+            {[
+              { id: 'clean', label: 'Clean' },
+              { id: 'retro', label: 'Retro' },
+              { id: 'classic-dark', label: 'Dark' }
+            ].map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => handleThemeChange(t.id)}
+                className={`py-1 px-2 rounded-lg text-[10px] font-bold transition-all border ${
+                  activeTheme === t.id
+                    ? 'bg-theme-accent border-theme-accent text-theme-accent-text'
+                    : 'bg-transparent border-transparent text-theme-text-sec hover:text-theme-text'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="hidden md:flex items-center gap-1.5 p-2 rounded-xl text-xs font-bold transition-all border text-theme-text-sec hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20"
+            style={{ borderColor: 'var(--theme-border)' }}
+            title="Keluar"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+
+          {/* Mobile Hamburger */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-lg transition-theme md:block hidden"
+            className="p-2 rounded-xl transition-theme md:hidden block hover:bg-theme-card"
             style={{ color: 'var(--theme-text-sec)' }}
           >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-45 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-45 backdrop-blur-sm transition-opacity md:hidden"
           style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Slide-in Drawer */}
+      {/* Mobile Slide-in Drawer */}
       <aside
-        className={`fixed inset-y-0 right-0 z-50 w-72 flex flex-col h-screen transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed inset-y-0 right-0 z-50 w-72 flex flex-col h-screen transition-transform duration-300 md:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ backgroundColor: 'var(--theme-surface)', borderLeft: '1px solid var(--theme-border)' }}
       >
         {/* Drawer Header */}
@@ -113,7 +163,7 @@ export default function Sidebar() {
         </div>
 
         {/* Balance Card */}
-        <div className="m-4 p-4 rounded-xl border transition-theme md:block hidden" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
+        <div className="m-4 p-4 rounded-xl border transition-theme" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--theme-text-muted)' }}>
             <Wallet className="h-3.5 w-3.5" style={{ color: 'var(--theme-accent)' }} />
             <span>Saldo Anda</span>
@@ -131,7 +181,7 @@ export default function Sidebar() {
         </div>
 
         {/* Theme Selector */}
-        <div className="mx-4 mb-4 p-3 rounded-xl border transition-theme md:block hidden" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
+        <div className="mx-4 mb-4 p-3 rounded-xl border transition-theme" style={{ backgroundColor: 'var(--theme-card)', borderColor: 'var(--theme-border-alt)' }}>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--theme-text-muted)' }}>
             <Palette className="h-3.5 w-3.5" style={{ color: 'var(--theme-accent)' }} />
             <span>Pilih Tema</span>
@@ -159,7 +209,7 @@ export default function Sidebar() {
         </div>
 
         {/* Nav Links */}
-        <nav className="flex-grow px-4 space-y-1 md:block hidden">
+        <nav className="flex-grow px-4 space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -183,7 +233,7 @@ export default function Sidebar() {
         </nav>
 
         {/* User + Logout */}
-        <div className="p-4 border-t md:block hidden" style={{ borderColor: 'var(--theme-border)' }}>
+        <div className="p-4 border-t" style={{ borderColor: 'var(--theme-border)' }}>
           <div className="flex items-center gap-3 px-2 py-2 mb-3">
             <div className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold transition-theme"
               style={{ backgroundColor: 'var(--theme-card)', border: '1px solid var(--theme-border-alt)', color: 'var(--theme-text-sec)' }}>
@@ -209,6 +259,7 @@ export default function Sidebar() {
           </button>
         </div>
       </aside>
+
       {/* Bottom Navigation for Mobile */}
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t transition-theme"
         style={{ 
