@@ -697,6 +697,9 @@ function GenerateContent() {
         } else {
           context.itemCount = allFaqs.length || 3;
         }
+      } else if (sectionType === 'custom') {
+        const allCards = latestSec.content?.cards || [];
+        context.itemCount = allCards.length || 3;
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate/field`, {
@@ -786,6 +789,10 @@ function GenerateContent() {
               const mergedFaqs = [...filledFaqs, ...newFaqs];
               newContent = { ...newContent, faqs: mergedFaqs };
               delete newContent.newFaqs;
+            } else if (sectionType === 'custom') {
+              if (Array.isArray(parsed.cards)) {
+                newContent.cards = parsed.cards;
+              }
             }
 
             return prev.map(s => s.id === id ? { ...s, content: { ...s.content, ...newContent } } : s);
@@ -8530,6 +8537,13 @@ function GenerateContent() {
 
                               {section.type === 'custom' && (
                                 <div className="space-y-3">
+                                  <div className="flex justify-between items-center bg-theme-surface/70 p-2.5 rounded-xl border border-theme-border/60">
+                                    <span className="text-[10px] font-bold text-theme-text uppercase tracking-wider flex items-center gap-1">
+                                      ✦ Custom Section AI Generator
+                                    </span>
+                                    {renderAIV2Button(section.id, 'custom')}
+                                  </div>
+
                                   <div>
                                     <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
                                       Badge / Label Accent Top Header (Opsional)
