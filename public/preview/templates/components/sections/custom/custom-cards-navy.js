@@ -6,6 +6,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const title = data.title || '3 Langkah Mudah Membuat Landing Page Impian Anda';
     const subtitle = data.subtitle || 'Proses yang simple dan transparan dari awal hingga selesai';
     const bgStyle = data.bg_style || 'navy';
+    const bgShade = data.bg_shade || 'solid';
     const cards = Array.isArray(data.cards) ? data.cards : [
         { badge: '1', title: 'Langkah 1: Mulai dengan Ide Anda', description: 'Cukup tentukan tujuan landing page Anda. Tidak perlu skill coding atau desain, kami akan memandu Anda.' },
         { badge: '2', title: 'Langkah 2: AI Berkreasi untuk Anda', description: 'Saksikan AI cerdas kami secara otomatis menciptakan desain menawan dan mengisi konten persuasif.' },
@@ -14,7 +15,10 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
 
     const themes = {
         navy: {
-            section: 'bg-slate-950 text-white border-b border-slate-900',
+            solid: 'bg-slate-950 text-white border-b border-slate-900',
+            soft: 'bg-slate-900/80 text-white border-b border-slate-800',
+            gradient: 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white border-b border-slate-800',
+            pattern: 'bg-slate-950 text-white border-b border-slate-900',
             topLine: 'bg-orange-500',
             badge: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
             heading: 'text-white',
@@ -25,7 +29,10 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
             cardDesc: 'text-slate-400'
         },
         obsidian: {
-            section: 'bg-black text-white border-b border-zinc-900',
+            solid: 'bg-black text-white border-b border-zinc-900',
+            soft: 'bg-zinc-900/80 text-white border-b border-zinc-800',
+            gradient: 'bg-gradient-to-b from-black via-zinc-950 to-black text-white border-b border-zinc-900',
+            pattern: 'bg-black text-white border-b border-zinc-900',
             topLine: 'bg-orange-500',
             badge: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
             heading: 'text-white',
@@ -36,7 +43,10 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
             cardDesc: 'text-zinc-400'
         },
         indigo: {
-            section: 'bg-slate-950 text-white border-b border-indigo-950/60',
+            solid: 'bg-slate-950 text-white border-b border-indigo-950/60',
+            soft: 'bg-indigo-950/60 text-white border-b border-indigo-900/60',
+            gradient: 'bg-gradient-to-b from-slate-950 via-indigo-950/50 to-slate-950 text-white border-b border-indigo-900/50',
+            pattern: 'bg-slate-950 text-white border-b border-indigo-950/60',
             topLine: 'bg-indigo-500',
             badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
             heading: 'text-white',
@@ -47,7 +57,10 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
             cardDesc: 'text-slate-300'
         },
         emerald: {
-            section: 'bg-slate-950 text-white border-b border-emerald-950/60',
+            solid: 'bg-slate-950 text-white border-b border-emerald-950/60',
+            soft: 'bg-emerald-950/60 text-white border-b border-emerald-900/60',
+            gradient: 'bg-gradient-to-b from-slate-950 via-emerald-950/50 to-slate-950 text-white border-b border-emerald-900/50',
+            pattern: 'bg-slate-950 text-white border-b border-emerald-950/60',
             topLine: 'bg-emerald-500',
             badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
             heading: 'text-white',
@@ -58,7 +71,10 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
             cardDesc: 'text-emerald-200/70'
         },
         light: {
-            section: 'bg-slate-50 text-slate-900 border-b border-slate-200',
+            solid: 'bg-slate-50 text-slate-900 border-b border-slate-200',
+            soft: 'bg-white text-slate-900 border-b border-slate-200',
+            gradient: 'bg-gradient-to-b from-slate-100 via-white to-slate-100 text-slate-900 border-b border-slate-200',
+            pattern: 'bg-slate-50 text-slate-900 border-b border-slate-200',
             topLine: 'bg-orange-500',
             badge: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
             heading: 'text-slate-900',
@@ -71,9 +87,16 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     };
 
     const theme = themes[bgStyle] || themes.navy;
+    const sectionBgClass = theme[bgShade] || theme.solid;
+
+    const patternHtml = bgShade === 'pattern' ? `
+        <div class="absolute inset-0 bg-[radial-gradient(#ffffff0f_1px,transparent_1px)] [background-size:18px_18px] pointer-events-none opacity-70"></div>
+    ` : bgShade === 'gradient' ? `
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent pointer-events-none"></div>
+    ` : '';
 
     const cardsHtml = cards.map((card, idx) => `
-        <div class="${theme.cardBg} border rounded-3xl p-6 md:p-8 text-center flex flex-col items-center transition-all shadow-xl hover:-translate-y-1">
+        <div class="${theme.cardBg} border rounded-3xl p-6 md:p-8 text-center flex flex-col items-center transition-all shadow-xl hover:-translate-y-1 relative z-10">
             <div class="w-12 h-12 rounded-full ${theme.cardNum} font-extrabold text-lg flex items-center justify-center mb-6 shadow-lg">
                 ${card.badge || (idx + 1)}
             </div>
@@ -88,8 +111,9 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
                           'max-w-6xl grid-cols-1 md:grid-cols-3';
 
     return `
-        <section id="custom" class="py-20 md:py-28 px-6 ${theme.section} relative overflow-hidden">
-            <div class="max-w-6xl mx-auto text-center">
+        <section id="custom" class="py-20 md:py-28 px-6 ${sectionBgClass} relative overflow-hidden">
+            ${patternHtml}
+            <div class="max-w-6xl mx-auto text-center relative z-10">
                 <!-- Top Accent Line or Badge -->
                 <div class="w-12 h-1 ${theme.topLine} rounded-full mx-auto mb-4"></div>
                 ${badgeText ? `

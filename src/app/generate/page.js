@@ -8583,6 +8583,33 @@ function GenerateContent() {
                                         );
                                       })}
                                     </div>
+
+                                    {/* Background Shading / Texture Variant */}
+                                    <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-theme-border/40">
+                                      <span className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Variasi Shading:</span>
+                                      {[
+                                        { key: 'solid', label: '⬛ Pekat Solid' },
+                                        { key: 'soft', label: '🌗 Surface Soft' },
+                                        { key: 'gradient', label: '🌌 Degradasi' },
+                                        { key: 'pattern', label: '🏁 Grid Texture' }
+                                      ].map((shade) => {
+                                        const isSelected = (section.content.bg_shade || 'solid') === shade.key;
+                                        return (
+                                          <button
+                                            key={shade.key}
+                                            type="button"
+                                            onClick={() => handleUpdateSectionContent(section.id, { bg_shade: shade.key })}
+                                            className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer ${
+                                              isSelected
+                                                ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-xs'
+                                                : 'bg-theme-surface/60 text-theme-text-sec border-theme-border/60 hover:text-theme-text'
+                                            }`}
+                                          >
+                                            {isSelected ? '✓ ' : ''}{shade.label}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
 
                                   <div>
