@@ -570,6 +570,15 @@ function GenerateContent() {
       logo_url: '',
       logo_enabled: true,
       logo_source: 'upload'
+    } : type === 'custom' ? {
+      badge_text: 'PROSES MUDAH',
+      title: '3 Langkah Mudah Membuat Landing Page Impian Anda dengan Siluet',
+      subtitle: 'Proses yang simple dan transparan dari awal hingga selesai',
+      cards: [
+        { badge: '1', title: 'Langkah 1: Mulai dengan Ide Anda', description: 'Cukup tentukan tujuan landing page Anda (undangan, campaign, toko online, e-course, atau bahkan CV). Tidak perlu skill coding atau desain, kami akan memandu Anda.' },
+        { badge: '2', title: 'Langkah 2: AI Siluet Berkreasi untuk Anda', description: 'Saksikan AI cerdas kami secara otomatis menciptakan desain menawan dan mengisi konten persuasif yang relevan, khusus untuk tujuan Anda. Tanpa coding, tanpa pusing!' },
+        { badge: '3', title: 'Langkah 3: Publikasikan & Raih Konversi', description: 'Landing page profesional Anda siap dalam hitungan menit! Publikasikan dengan mudah, sebarkan ke audiens Anda, dan mulai konversi ide menjadi aksi nyata.' }
+      ]
     } : type === 'social_proof' ? {
       client_count: '100+',
       label_clients: 'Klien Puas',
@@ -588,7 +597,7 @@ function GenerateContent() {
     const newSec = {
       id: `sec-${type}-${Date.now()}`,
       type: type,
-      variant: type === 'header' ? 'navbar-navy' : type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : type === 'social_proof' ? 'navy' : 'footer-navy',
+      variant: type === 'header' ? 'navbar-navy' : type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : type === 'social_proof' ? 'navy' : type === 'custom' ? 'cards-navy' : 'footer-navy',
       content: defaultContent
     };
     setV2Sections(prev => {
@@ -8309,6 +8318,7 @@ function GenerateContent() {
                               <option value="social_proof">Social Proof / Statistik</option>
                               <option value="services">Services / Layanan</option>
                               <option value="pricing">Pricing / Paket Harga</option>
+                              <option value="custom">✦ Custom / Feature Cards (Bebas Isi)</option>
                               <option value="faq">FAQ / Pertanyaan Umum</option>
                               <option value="contact">Contact / WhatsApp CTA</option>
                             </select>

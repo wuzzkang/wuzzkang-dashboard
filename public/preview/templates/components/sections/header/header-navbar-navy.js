@@ -19,7 +19,8 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         pricing: customNavLabels.pricing !== undefined ? customNavLabels.pricing : 'Harga',
         faq: customNavLabels.faq !== undefined ? customNavLabels.faq : 'FAQ',
         social_proof: customNavLabels.social_proof !== undefined ? customNavLabels.social_proof : 'Statistik',
-        contact: customNavLabels.contact !== undefined ? customNavLabels.contact : 'Kontak'
+        contact: customNavLabels.contact !== undefined ? customNavLabels.contact : 'Kontak',
+        custom: customNavLabels.custom !== undefined ? customNavLabels.custom : 'Fitur Utama'
     };
 
     const selectedNavKeys = Array.isArray(data.selected_nav_items) ? data.selected_nav_items : null;
