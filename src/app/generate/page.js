@@ -8823,6 +8823,36 @@ function GenerateContent() {
 
                               {section.type === 'about' && (
                                 <div className="space-y-2.5">
+                                  {/* Background Palette Selector */}
+                                  <div className="p-2.5 bg-theme-surface/40 border border-theme-border/50 rounded-xl space-y-1.5 mb-1.5">
+                                    <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
+                                      🎨 Tema Warna Background Section:
+                                    </label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {[
+                                        { key: 'navy', label: '🌙 Midnight Slate', bg: 'bg-slate-950 text-white border-slate-700' },
+                                        { key: 'obsidian', label: '⬛ Obsidian Black', bg: 'bg-black text-white border-zinc-800' },
+                                        { key: 'indigo', label: '🌌 Deep Indigo', bg: 'bg-indigo-950 text-white border-indigo-800' },
+                                        { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' },
+                                        { key: 'light', label: '☀️ Clean Light', bg: 'bg-slate-100 text-slate-900 border-slate-300' }
+                                      ].map((palette) => {
+                                        const isSelected = (section.content.bg_style || 'navy') === palette.key;
+                                        return (
+                                          <button
+                                            key={palette.key}
+                                            type="button"
+                                            onClick={() => handleUpdateSectionContent(section.id, { bg_style: palette.key })}
+                                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center gap-1 ${palette.bg} ${
+                                              isSelected ? 'ring-2 ring-theme-accent scale-105 shadow-md' : 'opacity-70 hover:opacity-100'
+                                            }`}
+                                          >
+                                            {isSelected ? '✓ ' : ''}{palette.label}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
                                   <div className="flex justify-between items-center">
                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul & Deskripsi Profil</label>
                                     {renderAIV2Button(section.id, 'about')}
