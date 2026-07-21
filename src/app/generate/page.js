@@ -563,7 +563,12 @@ function GenerateContent() {
   ]);
 
   const handleAddSection = (type) => {
-    const defaultContent = type === 'social_proof' ? {
+    const defaultContent = type === 'header' ? {
+      show_nav: true,
+      cta_text: 'Hubungi Kami',
+      cta_url: '#contact',
+      logo_url: ''
+    } : type === 'social_proof' ? {
       client_count: '100+',
       label_clients: 'Klien Puas',
       project_count: '250+',
@@ -581,10 +586,13 @@ function GenerateContent() {
     const newSec = {
       id: `sec-${type}-${Date.now()}`,
       type: type,
-      variant: type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : type === 'social_proof' ? 'navy' : 'footer-navy',
+      variant: type === 'header' ? 'navbar-navy' : type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : type === 'social_proof' ? 'navy' : 'footer-navy',
       content: defaultContent
     };
     setV2Sections(prev => {
+      if (type === 'header') {
+        return [newSec, ...prev];
+      }
       const heroIdx = prev.findIndex(s => s.type === 'hero');
       if (heroIdx >= 0) {
         const next = [...prev];
@@ -8293,7 +8301,8 @@ function GenerateContent() {
                               className="bg-theme-accent text-theme-accent-text text-xs font-bold px-3 py-2 rounded-xl cursor-pointer focus:outline-none shadow-sm"
                             >
                               <option value="">+ Tambah Section Baru</option>
-                              <option value="hero">Hero / Header Utama</option>
+                              <option value="header">Header / Menu Navigasi Top Bar</option>
+                              <option value="hero">Hero / Banner Utama</option>
                               <option value="about">About / Tentang Kami</option>
                               <option value="social_proof">Social Proof / Statistik</option>
                               <option value="services">Services / Layanan</option>

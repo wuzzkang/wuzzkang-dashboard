@@ -252,6 +252,7 @@
 
                             const sectionType = section.type;
                             const sectionVariant = section.variant || (
+                                sectionType === 'header'       ? 'navbar-navy'    :
                                 sectionType === 'hero'         ? 'split-navy'     :
                                 sectionType === 'about'        ? 'simple-navy'    :
                                 sectionType === 'services'     ? 'grid-navy'      :
