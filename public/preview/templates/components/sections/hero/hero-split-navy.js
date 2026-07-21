@@ -9,6 +9,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const ctaSecondaryText = data.cta_secondary_text !== undefined ? data.cta_secondary_text : 'Pelajari Lebih Lanjut';
     const ctaSecondaryUrl = data.cta_secondary_url || '#services';
     const imageUrl = data.image_url || '';
+    const badgeText = data.badge_text !== undefined ? data.badge_text : '✨ Layanan Unggulan';
 
     const defaultHeroSvg = `
         <svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:460px;border-radius:1.2rem;border:3px solid rgba(249,115,22,0.3);box-shadow:0 32px 80px rgba(0,0,0,0.45);">
@@ -38,9 +39,11 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         <section class="relative jasa-navy-dark min-h-screen flex items-center py-16 md:py-24 px-6 overflow-hidden text-white">
             <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
-                    <div class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
-                        ✨ Layanan Unggulan
-                    </div>
+                    ${badgeText ? `
+                        <div class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
+                            ${badgeText}
+                        </div>
+                    ` : ''}
                     <h1 class="text-3xl md:text-5xl font-extrabold leading-tight text-white mb-4">
                         ${headline}
                     </h1>
