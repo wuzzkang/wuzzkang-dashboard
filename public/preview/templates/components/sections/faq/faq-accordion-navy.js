@@ -15,7 +15,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         { q: 'Apakah harga sudah termasuk domain dan hosting?', a: 'Benar, semua paket kami sudah include domain pilihan Anda (.com / .id) serta cloud hosting super cepat selama 1 tahun.' }
     ];
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     const faqsHtml = faqs.map((faq, idx) => `
         <details className="group ${theme.faqBg} border rounded-2xl p-5 md:p-6 transition-all duration-300 relative z-10 cursor-pointer">

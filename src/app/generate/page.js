@@ -3430,10 +3430,7 @@ function GenerateContent() {
               { key: 'navy', label: '🌙 Midnight Slate', bg: 'bg-slate-950 text-white border-slate-700' },
               { key: 'obsidian', label: '⬛ Obsidian Black', bg: 'bg-black text-white border-zinc-800' },
               { key: 'indigo', label: '🌌 Deep Indigo', bg: 'bg-indigo-950 text-white border-indigo-800' },
-              { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' },
-              { key: 'light', label: '☀️ Clean Light', bg: 'bg-slate-100 text-slate-900 border-slate-300' },
-              { key: 'white', label: '⚪ Pure White', bg: 'bg-white text-slate-900 border-slate-200' },
-              { key: 'cream', label: '🍦 Warm Cream', bg: 'bg-amber-50 text-stone-900 border-amber-200' }
+              { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' }
             ].map((palette) => {
               const isSelected = (section.content.bg_style || 'navy') === palette.key;
               return (
@@ -3473,6 +3470,31 @@ function GenerateContent() {
                 }`}
               >
                 {isSelected ? '✓ ' : ''}{shade.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-theme-border/40">
+          <span className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Varian Background:</span>
+          {[
+            { key: 'default', label: '⚙️ Bawaan Tema' },
+            { key: 'light', label: '☀️ Terang (Putih)' },
+            { key: 'dark', label: '🌙 Gelap (Hitam)' }
+          ].map((brightness) => {
+            const isSelected = (section.content.bg_brightness || 'default') === brightness.key;
+            return (
+              <button
+                key={brightness.key}
+                type="button"
+                onClick={() => handleUpdateSectionContent(section.id, { bg_brightness: brightness.key })}
+                className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-xs'
+                    : 'bg-theme-surface/60 text-theme-text-sec border-theme-border/60 hover:text-theme-text'
+                }`}
+              >
+                {isSelected ? '✓ ' : ''}{brightness.label}
               </button>
             );
           })}

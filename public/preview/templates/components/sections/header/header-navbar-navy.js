@@ -13,7 +13,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const bgStyle = data.bg_style || 'navy';
     const bgShade = data.bg_shade || 'solid';
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     const defaultNavLabels = {
         hero: 'Beranda',

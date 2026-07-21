@@ -15,7 +15,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         { name: 'Enterprise', price: 'Rp 1.999.000', period: '/sekali bayar', popular: false, features: ['Multi-Page / Funnel System', 'Integrasi Payment Gateway', 'Kustom Desain Lanjutan', 'Support Prioritas 24/7'], ctaText: 'Hubungi Kami', ctaUrl: '#contact' }
     ];
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     const packagesHtml = packages.map((pkg) => {
         const isPopular = pkg.popular === true || pkg.popular === 'true';

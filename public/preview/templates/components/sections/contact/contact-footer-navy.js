@@ -16,7 +16,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const cleanWa = whatsapp.replace(/\D/g, '');
     const waUrl = cleanWa ? `https://wa.me/${cleanWa}?text=${encodeURIComponent('Halo, saya berminat dengan layanan Anda.')}` : '#';
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     return `
         <section id="contact" class="py-16 px-6 ${sectionBgClass} relative overflow-hidden">

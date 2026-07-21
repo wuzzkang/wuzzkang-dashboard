@@ -15,7 +15,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         { badge: '3', title: 'Langkah 3: Publikasikan & Raih Konversi', description: 'Landing page profesional Anda siap dalam hitungan menit! Publikasikan dengan mudah.' }
     ];
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     const cardsHtml = cards.map((card, idx) => `
         <div class="${theme.cardBg} border rounded-3xl p-6 md:p-8 text-center flex flex-col items-center transition-all shadow-xl hover:-translate-y-1 relative z-10">

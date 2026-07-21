@@ -10,7 +10,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const bgStyle = data.bg_style || 'navy';
     const bgShade = data.bg_shade || 'solid';
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     const defaultAboutSvg = `
         <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:1.2rem;border:3px solid rgba(249,115,22,0.2);box-shadow:0 24px 60px rgba(15,46,76,0.14);">

@@ -14,7 +14,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         { value: '3.5x', label: 'Rata-rata Kenaikan Omset' }
     ];
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     const statsHtml = stats.map((stat) => `
         <div class="${theme.cardBg} border rounded-3xl p-6 md:p-8 text-center transition-all shadow-xl hover:-translate-y-1 relative z-10">

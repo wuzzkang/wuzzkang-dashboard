@@ -15,7 +15,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         { title: 'Integrasi WhatsApp & Form', description: 'Calon pembeli langsung terhubung ke WhatsApp bisnis Anda.' }
     ];
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     const itemsHtml = items.map((item, idx) => `
         <div class="${theme.cardBg} border rounded-3xl p-6 md:p-8 flex flex-col transition-all shadow-xl hover:-translate-y-1 relative z-10">

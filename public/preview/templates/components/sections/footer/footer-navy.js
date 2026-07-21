@@ -10,7 +10,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const bgStyle = data.bg_style || 'navy';
     const bgShade = data.bg_shade || 'solid';
 
-    const { theme, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     return `
         <footer id="footer" class="py-12 px-6 ${theme.footerBg} text-center relative overflow-hidden">

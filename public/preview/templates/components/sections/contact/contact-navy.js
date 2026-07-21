@@ -15,7 +15,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const cleanWaNumber = waNumber.replace(/[^0-9]/g, '');
     const waUrl = `https://wa.me/${cleanWaNumber}?text=${encodeURIComponent(waText)}`;
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
 
     return `
         <section id="contact" class="py-20 md:py-28 px-6 ${sectionBgClass} relative overflow-hidden">
