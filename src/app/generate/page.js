@@ -8617,7 +8617,6 @@ function GenerateContent() {
                                     </span>
                                     {renderAIV2Button(section.id, 'custom')}
                                   </div>
-                                  </div>
 
                                   <div>
                                     <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
