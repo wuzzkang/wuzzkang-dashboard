@@ -97,6 +97,44 @@ export function getSectionStyle(bgStyle = 'navy', bgShade = 'solid') {
             btnSecondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300',
             faqBg: 'bg-white border-slate-200 shadow-xs',
             footerBg: 'bg-slate-100 text-slate-600 border-t border-slate-200'
+        },
+        white: {
+            solid: 'bg-white text-slate-900 border-b border-slate-100',
+            soft: 'bg-slate-50 text-slate-900 border-b border-slate-100',
+            gradient: 'bg-gradient-to-b from-white via-slate-50 to-white text-slate-900 border-b border-slate-100',
+            pattern: 'bg-white text-slate-900 border-b border-slate-100',
+            topLine: 'bg-blue-600',
+            badge: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+            heading: 'text-slate-900',
+            subtitle: 'text-slate-500',
+            cardBg: 'bg-slate-50 border-slate-200 hover:border-blue-400/50 shadow-sm hover:shadow-md',
+            cardNum: 'bg-blue-600 text-white shadow-blue-500/20',
+            cardTitle: 'text-slate-900',
+            cardDesc: 'text-slate-500',
+            imgBorder: 'border-slate-200 shadow-lg',
+            btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25',
+            btnSecondary: 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-300',
+            faqBg: 'bg-slate-50 border-slate-200 shadow-xs',
+            footerBg: 'bg-slate-50 text-slate-500 border-t border-slate-200'
+        },
+        cream: {
+            solid: 'bg-amber-50 text-stone-900 border-b border-amber-100',
+            soft: 'bg-orange-50 text-stone-900 border-b border-orange-100',
+            gradient: 'bg-gradient-to-b from-amber-50 via-orange-50 to-amber-50 text-stone-900 border-b border-amber-100',
+            pattern: 'bg-amber-50 text-stone-900 border-b border-amber-100',
+            topLine: 'bg-orange-500',
+            badge: 'bg-orange-500/15 text-orange-700 border-orange-400/30',
+            heading: 'text-stone-900',
+            subtitle: 'text-stone-600',
+            cardBg: 'bg-white border-amber-200 hover:border-orange-400/50 shadow-sm hover:shadow-md',
+            cardNum: 'bg-orange-500 text-white shadow-orange-500/20',
+            cardTitle: 'text-stone-900',
+            cardDesc: 'text-stone-600',
+            imgBorder: 'border-amber-200 shadow-lg',
+            btnPrimary: 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/25',
+            btnSecondary: 'bg-amber-50 hover:bg-amber-100 text-stone-800 border border-amber-300',
+            faqBg: 'bg-white border-amber-200 shadow-xs',
+            footerBg: 'bg-amber-100 text-stone-600 border-t border-amber-200'
         }
     };
 

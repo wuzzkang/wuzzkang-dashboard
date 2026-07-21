@@ -3431,7 +3431,9 @@ function GenerateContent() {
               { key: 'obsidian', label: '⬛ Obsidian Black', bg: 'bg-black text-white border-zinc-800' },
               { key: 'indigo', label: '🌌 Deep Indigo', bg: 'bg-indigo-950 text-white border-indigo-800' },
               { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' },
-              { key: 'light', label: '☀️ Clean Light', bg: 'bg-slate-100 text-slate-900 border-slate-300' }
+              { key: 'light', label: '☀️ Clean Light', bg: 'bg-slate-100 text-slate-900 border-slate-300' },
+              { key: 'white', label: '⚪ Pure White', bg: 'bg-white text-slate-900 border-slate-200' },
+              { key: 'cream', label: '🍦 Warm Cream', bg: 'bg-amber-50 text-stone-900 border-amber-200' }
             ].map((palette) => {
               const isSelected = (section.content.bg_style || 'navy') === palette.key;
               return (
