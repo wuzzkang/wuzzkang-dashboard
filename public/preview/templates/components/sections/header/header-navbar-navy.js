@@ -20,11 +20,19 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         contact: 'Kontak'
     };
 
+    const selectedNavKeys = Array.isArray(data.selected_nav_items) ? data.selected_nav_items : null;
+
     const navItems = [];
     if (showNav) {
         for (const sec of activeSections) {
             if (sec.type && sec.type !== 'header' && sec.type !== 'footer' && sectionLabelMap[sec.type]) {
                 const targetId = sec.type === 'social_proof' ? 'social-proof' : sec.type;
+                
+                // If custom selected nav items are specified by user, filter by selectedNavKeys
+                if (selectedNavKeys !== null && !selectedNavKeys.includes(sec.type) && !selectedNavKeys.includes(targetId)) {
+                    continue;
+                }
+
                 navItems.push({
                     id: targetId,
                     label: sectionLabelMap[sec.type]

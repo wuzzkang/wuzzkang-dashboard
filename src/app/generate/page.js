@@ -8363,6 +8363,59 @@ function GenerateContent() {
                                     <span>Tampilkan Menu Navigasi Otomatis (Link Section)</span>
                                   </label>
 
+                                  {section.content.show_nav !== false && (
+                                    <div className="space-y-1.5 p-2.5 bg-theme-surface/50 border border-theme-border/60 rounded-xl">
+                                      <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
+                                        Pilih Link Menu yang Ingin Ditampilkan:
+                                      </label>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {v2Sections
+                                          .filter(s => s.type !== 'header' && s.type !== 'footer')
+                                          .map(s => {
+                                            const typeLabelMap = {
+                                              hero: 'Beranda',
+                                              about: 'Tentang',
+                                              services: 'Layanan',
+                                              pricing: 'Harga',
+                                              faq: 'FAQ',
+                                              social_proof: 'Statistik',
+                                              contact: 'Kontak'
+                                            };
+                                            const label = typeLabelMap[s.type] || s.type;
+                                            const allNavTypes = v2Sections.filter(x => x.type !== 'header' && x.type !== 'footer').map(x => x.type);
+                                            const currentSelected = Array.isArray(section.content.selected_nav_items) 
+                                              ? section.content.selected_nav_items 
+                                              : allNavTypes;
+                                            
+                                            const isChecked = currentSelected.includes(s.type);
+
+                                            return (
+                                              <button
+                                                key={s.id}
+                                                type="button"
+                                                onClick={() => {
+                                                  let updated;
+                                                  if (isChecked) {
+                                                    updated = currentSelected.filter(t => t !== s.type);
+                                                  } else {
+                                                    updated = [...currentSelected, s.type];
+                                                  }
+                                                  handleUpdateSectionContent(section.id, { selected_nav_items: updated });
+                                                }}
+                                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                                                  isChecked
+                                                    ? 'bg-theme-accent/15 border-theme-accent text-theme-accent'
+                                                    : 'bg-theme-surface border-theme-border text-theme-text-muted hover:text-theme-text'
+                                                }`}
+                                              >
+                                                {isChecked ? '✓ ' : '+ '}{label}
+                                              </button>
+                                            );
+                                          })}
+                                      </div>
+                                    </div>
+                                  )}
+
                                   <div className="grid grid-cols-2 gap-2">
                                     <div>
                                       <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">Teks Tombol CTA Header</label>
