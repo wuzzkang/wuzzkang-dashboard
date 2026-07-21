@@ -2,14 +2,14 @@
  * Modular Section: Header Navbar Navy (V2)
  */
 export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
-    const brandName = data.brand_name || brandConfig.name || 'Siluet';
+    const brandName = data.brand_name || pageConfig?.content?.brand_name || brandConfig?.name || 'Siluet';
     const logoUrl = data.logo_url || '';
     const showNav = data.show_nav !== false;
     const ctaText = data.cta_text || '';
     const ctaUrl = data.cta_url || '#contact';
 
     // Build dynamic navigation items based on active page sections
-    const activeSections = pageConfig.content?.sections || [];
+    const activeSections = pageConfig?.content?.sections || pageConfig?.sections || data?.sections || [];
     const sectionLabelMap = {
         hero: 'Beranda',
         about: 'Tentang',

@@ -267,7 +267,7 @@
                             // ── Check again after async import ──────────────
                             if (renderGeneration !== myGeneration) return;
 
-                            const sectionHtml = module.render(section.content || {}, BRAND_CONFIG);
+                            const sectionHtml = module.render(section.content || {}, pageData, BRAND_CONFIG);
                             appEl.insertAdjacentHTML('beforeend', sectionHtml);
                         }
                     } catch (err) {
