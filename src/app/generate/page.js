@@ -3418,6 +3418,67 @@ function GenerateContent() {
     );
   };
 
+  const renderSectionStylePicker = (section) => {
+    return (
+      <div className="p-2.5 bg-theme-surface/40 border border-theme-border/50 rounded-xl space-y-2 mb-3">
+        <div className="space-y-1">
+          <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
+            🎨 Tema Warna Background Section:
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { key: 'navy', label: '🌙 Midnight Slate', bg: 'bg-slate-950 text-white border-slate-700' },
+              { key: 'obsidian', label: '⬛ Obsidian Black', bg: 'bg-black text-white border-zinc-800' },
+              { key: 'indigo', label: '🌌 Deep Indigo', bg: 'bg-indigo-950 text-white border-indigo-800' },
+              { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' },
+              { key: 'light', label: '☀️ Clean Light', bg: 'bg-slate-100 text-slate-900 border-slate-300' }
+            ].map((palette) => {
+              const isSelected = (section.content.bg_style || 'navy') === palette.key;
+              return (
+                <button
+                  key={palette.key}
+                  type="button"
+                  onClick={() => handleUpdateSectionContent(section.id, { bg_style: palette.key })}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center gap-1 ${palette.bg} ${
+                    isSelected ? 'ring-2 ring-theme-accent scale-105 shadow-md' : 'opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  {isSelected ? '✓ ' : ''}{palette.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-theme-border/40">
+          <span className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Variasi Shading:</span>
+          {[
+            { key: 'solid', label: '⬛ Pekat Solid' },
+            { key: 'soft', label: '🌗 Surface Soft' },
+            { key: 'gradient', label: '🌌 Degradasi' },
+            { key: 'pattern', label: '🏁 Grid Texture' }
+          ].map((shade) => {
+            const isSelected = (section.content.bg_shade || 'solid') === shade.key;
+            return (
+              <button
+                key={shade.key}
+                type="button"
+                onClick={() => handleUpdateSectionContent(section.id, { bg_shade: shade.key })}
+                className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-xs'
+                    : 'bg-theme-surface/60 text-theme-text-sec border-theme-border/60 hover:text-theme-text'
+                }`}
+              >
+                {isSelected ? '✓ ' : ''}{shade.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   // Helper untuk memetakan technical_status ke teks bahasa Indonesia yang ramah
   const getFriendlyProgressMessage = (status, techStatus) => {
     if (status === 'queued') return 'Menunggu dalam antrean AI...';
@@ -8383,6 +8444,7 @@ function GenerateContent() {
 
                               {section.type === 'header' && (
                                  <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
                                    <label className="flex items-center gap-2 text-xs font-semibold text-theme-text cursor-pointer bg-theme-surface p-2.5 rounded-xl border border-theme-border">
                                      <input
                                        type="checkbox"
@@ -8548,68 +8610,13 @@ function GenerateContent() {
 
                               {section.type === 'custom' && (
                                 <div className="space-y-3">
+                                  {renderSectionStylePicker(section)}
                                   <div className="flex justify-between items-center bg-theme-surface/70 p-2.5 rounded-xl border border-theme-border/60">
                                     <span className="text-[10px] font-bold text-theme-text uppercase tracking-wider flex items-center gap-1">
                                       ✦ Custom Section AI Generator
                                     </span>
                                     {renderAIV2Button(section.id, 'custom')}
                                   </div>
-
-                                  {/* Background Palette Selector */}
-                                  <div className="p-2.5 bg-theme-surface/40 border border-theme-border/50 rounded-xl space-y-1.5">
-                                    <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
-                                      🎨 Tema Warna Background Section:
-                                    </label>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {[
-                                        { key: 'navy', label: '🌙 Midnight Slate', bg: 'bg-slate-950 text-white border-slate-700' },
-                                        { key: 'obsidian', label: '⬛ Obsidian Black', bg: 'bg-black text-white border-zinc-800' },
-                                        { key: 'indigo', label: '🌌 Deep Indigo', bg: 'bg-indigo-950 text-white border-indigo-800' },
-                                        { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' },
-                                        { key: 'light', label: '☀️ Clean Light', bg: 'bg-slate-100 text-slate-900 border-slate-300' }
-                                      ].map((palette) => {
-                                        const isSelected = (section.content.bg_style || 'navy') === palette.key;
-                                        return (
-                                          <button
-                                            key={palette.key}
-                                            type="button"
-                                            onClick={() => handleUpdateSectionContent(section.id, { bg_style: palette.key })}
-                                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center gap-1 ${palette.bg} ${
-                                              isSelected ? 'ring-2 ring-theme-accent scale-105 shadow-md' : 'opacity-70 hover:opacity-100'
-                                            }`}
-                                          >
-                                            {isSelected ? '✓ ' : ''}{palette.label}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-
-                                    {/* Background Shading / Texture Variant */}
-                                    <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-theme-border/40">
-                                      <span className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Variasi Shading:</span>
-                                      {[
-                                        { key: 'solid', label: '⬛ Pekat Solid' },
-                                        { key: 'soft', label: '🌗 Surface Soft' },
-                                        { key: 'gradient', label: '🌌 Degradasi' },
-                                        { key: 'pattern', label: '🏁 Grid Texture' }
-                                      ].map((shade) => {
-                                        const isSelected = (section.content.bg_shade || 'solid') === shade.key;
-                                        return (
-                                          <button
-                                            key={shade.key}
-                                            type="button"
-                                            onClick={() => handleUpdateSectionContent(section.id, { bg_shade: shade.key })}
-                                            className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer ${
-                                              isSelected
-                                                ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-xs'
-                                                : 'bg-theme-surface/60 text-theme-text-sec border-theme-border/60 hover:text-theme-text'
-                                            }`}
-                                          >
-                                            {isSelected ? '✓ ' : ''}{shade.label}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
                                   </div>
 
                                   <div>
@@ -8757,6 +8764,7 @@ function GenerateContent() {
 
                               {section.type === 'hero' && (
                                 <div className="space-y-2.5">
+                                  {renderSectionStylePicker(section)}
                                   <div className="flex justify-between items-center">
                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Headline Utama</label>
                                     {renderAIV2Button(section.id, 'hero')}
@@ -8850,35 +8858,7 @@ function GenerateContent() {
 
                               {section.type === 'about' && (
                                 <div className="space-y-2.5">
-                                  {/* Background Palette Selector */}
-                                  <div className="p-2.5 bg-theme-surface/40 border border-theme-border/50 rounded-xl space-y-1.5 mb-1.5">
-                                    <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
-                                      🎨 Tema Warna Background Section:
-                                    </label>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {[
-                                        { key: 'navy', label: '🌙 Midnight Slate', bg: 'bg-slate-950 text-white border-slate-700' },
-                                        { key: 'obsidian', label: '⬛ Obsidian Black', bg: 'bg-black text-white border-zinc-800' },
-                                        { key: 'indigo', label: '🌌 Deep Indigo', bg: 'bg-indigo-950 text-white border-indigo-800' },
-                                        { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' },
-                                        { key: 'light', label: '☀️ Clean Light', bg: 'bg-slate-100 text-slate-900 border-slate-300' }
-                                      ].map((palette) => {
-                                        const isSelected = (section.content.bg_style || 'navy') === palette.key;
-                                        return (
-                                          <button
-                                            key={palette.key}
-                                            type="button"
-                                            onClick={() => handleUpdateSectionContent(section.id, { bg_style: palette.key })}
-                                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center gap-1 ${palette.bg} ${
-                                              isSelected ? 'ring-2 ring-theme-accent scale-105 shadow-md' : 'opacity-70 hover:opacity-100'
-                                            }`}
-                                          >
-                                            {isSelected ? '✓ ' : ''}{palette.label}
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
+                                  {renderSectionStylePicker(section)}
 
                                   <div className="flex justify-between items-center">
                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul & Deskripsi Profil</label>
@@ -8928,6 +8908,7 @@ function GenerateContent() {
 
                                {section.type === 'services' && (
                                  <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
                                    <div className="flex justify-between items-center">
                                      <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul Bagian Layanan</label>
                                      {renderAIV2Button(section.id, 'services')}
@@ -9016,6 +8997,7 @@ function GenerateContent() {
 
                                {section.type === 'social_proof' && (
                                  <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
                                    <div className="flex justify-between items-center">
                                      <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Statistik & Bukti Sosial</label>
                                      {renderAIV2Button(section.id, 'social_proof')}
@@ -9091,6 +9073,7 @@ function GenerateContent() {
 
                                {section.type === 'pricing' && (
                                  <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
                                    <div className="flex justify-between items-center">
                                      <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul Paket Harga</label>
                                      {renderAIV2Button(section.id, 'pricing')}
@@ -9236,6 +9219,7 @@ function GenerateContent() {
 
                                {section.type === 'faq' && (
                                  <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
                                    <div className="flex justify-between items-center">
                                      <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul FAQ</label>
                                      {renderAIV2Button(section.id, 'faq')}

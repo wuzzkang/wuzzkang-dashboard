@@ -1,119 +1,80 @@
+import { getSectionStyle } from '../../../utils/sectionStyle.js';
+
 /**
- * Modular Section: Header Navbar Navy (V2)
+ * Modular Section: Header Navbar Navy (V2 Preview)
  */
 export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
-    const brandName = data.brand_name || pageConfig?.content?.brand_name || brandConfig?.name || 'Siluet';
-    const logoUrl = (data.logo_enabled !== false) ? (data.logo_url || data.image_url || '') : '';
-    const showNav = data.show_nav !== false;
-    const ctaText = data.cta_text || '';
+    const brandName = data.brand_name || brandConfig.name || 'Siluet';
+    const logoUrl = data.logo_url || '';
+    const logoEnabled = data.logo_enabled !== false;
+    const ctaText = data.cta_text || 'Mulai Sekarang';
     const ctaUrl = data.cta_url || '#contact';
+    const showNav = data.show_nav !== false;
+    const bgStyle = data.bg_style || 'navy';
+    const bgShade = data.bg_shade || 'solid';
 
-    // Build dynamic navigation items based on active page sections
-    const activeSections = pageConfig?.content?.sections || pageConfig?.sections || data?.sections || [];
-    const customNavLabels = (typeof data.custom_nav_labels === 'object' && data.custom_nav_labels) ? data.custom_nav_labels : {};
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
 
-    const sectionLabelMap = {
-        hero: customNavLabels.hero !== undefined ? customNavLabels.hero : 'Beranda',
-        about: customNavLabels.about !== undefined ? customNavLabels.about : 'Tentang',
-        services: customNavLabels.services !== undefined ? customNavLabels.services : 'Layanan',
-        pricing: customNavLabels.pricing !== undefined ? customNavLabels.pricing : 'Harga',
-        faq: customNavLabels.faq !== undefined ? customNavLabels.faq : 'FAQ',
-        social_proof: customNavLabels.social_proof !== undefined ? customNavLabels.social_proof : 'Statistik',
-        contact: customNavLabels.contact !== undefined ? customNavLabels.contact : 'Kontak',
-        custom: customNavLabels.custom !== undefined ? customNavLabels.custom : 'Fitur Utama'
+    const defaultNavLabels = {
+        hero: 'Beranda',
+        about: 'Tentang',
+        services: 'Layanan',
+        pricing: 'Harga',
+        faq: 'FAQ',
+        social_proof: 'Statistik',
+        contact: 'Kontak'
     };
 
-    const selectedNavKeys = Array.isArray(data.selected_nav_items) ? data.selected_nav_items : null;
+    const selectedNavTypes = Array.isArray(data.selected_nav_items) && data.selected_nav_items.length > 0 
+        ? data.selected_nav_items 
+        : ['hero', 'about', 'services', 'pricing', 'faq', 'contact'];
 
-    const navItems = [];
-    if (showNav) {
-        for (const sec of activeSections) {
-            if (sec.type && sec.type !== 'header' && sec.type !== 'footer' && sectionLabelMap[sec.type]) {
-                const targetId = sec.type === 'social_proof' ? 'social-proof' : sec.type;
-                
-                // If custom selected nav items are specified by user, filter by selectedNavKeys
-                if (selectedNavKeys !== null && !selectedNavKeys.includes(sec.type) && !selectedNavKeys.includes(targetId)) {
-                    continue;
-                }
+    const customNavLabels = data.custom_nav_labels || {};
 
-                navItems.push({
-                    id: targetId,
-                    label: sectionLabelMap[sec.type]
-                });
-            }
-        }
-    }
+    const navItems = selectedNavTypes.map(type => ({
+        label: customNavLabels[type] || defaultNavLabels[type] || type,
+        url: `#${type}`
+    }));
 
-    const desktopLinksHtml = navItems.map(item => `
-        <a href="#${item.id}" class="text-sm font-medium text-slate-300 hover:text-orange-400 transition-colors">
+    const navLinksHtml = showNav ? navItems.map(item => `
+        <a href="${item.url}" class="text-xs font-semibold ${theme.subtitle} hover:${theme.heading} transition-colors">
             ${item.label}
         </a>
-    `).join('');
-
-    const mobileLinksHtml = navItems.map(item => `
-        <a href="#${item.id}" onclick="const el = document.getElementById('v2-mobile-menu'); if(el) el.classList.add('hidden');" class="text-base font-semibold text-slate-200 hover:text-orange-400 transition-colors py-2 border-b border-slate-800/60">
-            ${item.label}
-        </a>
-    `).join('');
-
-    const ctaHtml = ctaText ? `
-        <a href="${ctaUrl}" target="${ctaUrl.startsWith('http') ? '_blank' : '_self'}" class="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-lg shadow-md shadow-orange-500/20 transition-all">
-            ${ctaText}
-        </a>
-    ` : '';
-
-    const mobileCtaHtml = ctaText ? `
-        <a href="${ctaUrl}" target="${ctaUrl.startsWith('http') ? '_blank' : '_self'}" onclick="const el = document.getElementById('v2-mobile-menu'); if(el) el.classList.add('hidden');" class="mt-2 w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm py-3 rounded-lg shadow-md shadow-orange-500/20 transition-all">
-            ${ctaText}
-        </a>
-    ` : '';
-
-    const logoHtml = logoUrl ? `
-        <img src="${logoUrl}" alt="${brandName}" class="h-8 md:h-10 w-auto object-contain" />
-    ` : `
-        <span class="text-xl md:text-2xl font-black text-white tracking-tight">
-            ${brandName}<span class="text-orange-500">.</span>
-        </span>
-    `;
+    `).join('') : '';
 
     return `
-        <header class="sticky top-0 z-50 w-full bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 text-white">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between">
-                <!-- Brand / Logo -->
-                <a href="#" class="flex items-center gap-3">
-                    ${logoHtml}
+        <header class="py-4 px-6 ${sectionBgClass} sticky top-0 z-50 backdrop-blur-md bg-opacity-90 transition-colors duration-300">
+            ${patternHtml}
+            <div class="max-w-6xl mx-auto flex items-center justify-between relative z-10">
+                <!-- Brand Logo / Name -->
+                <a href="#" class="flex items-center gap-2.5 group">
+                    ${logoEnabled && logoUrl ? `
+                        <img src="${logoUrl}" alt="${brandName}" class="h-8 w-auto object-contain transition-transform group-hover:scale-105" />
+                    ` : `
+                        <div class="w-8 h-8 rounded-lg ${theme.cardNum} font-black text-sm flex items-center justify-center">
+                            ${brandName.charAt(0).toUpperCase()}
+                        </div>
+                    `}
+                    <span class="font-extrabold text-base tracking-tight ${theme.heading}">
+                        ${brandName}
+                    </span>
                 </a>
 
-                <!-- Desktop Navigation Menu -->
-                ${showNav && navItems.length > 0 ? `
-                    <nav class="hidden sm:flex items-center gap-4 md:gap-8">
-                        ${desktopLinksHtml}
+                <!-- Desktop Navigation Links -->
+                ${showNav ? `
+                    <nav class="hidden md:flex items-center gap-6">
+                        ${navLinksHtml}
                     </nav>
                 ` : ''}
 
-                <!-- Action Button & Hamburger Toggle -->
-                <div class="flex items-center gap-3 md:gap-4">
-                    ${ctaHtml ? `<div class="hidden sm:block">${ctaHtml}</div>` : ''}
-
-                    ${(showNav && navItems.length > 0) || ctaText ? `
-                        <button 
-                            type="button" 
-                            onclick="const el = document.getElementById('v2-mobile-menu'); if(el) el.classList.toggle('hidden');" 
-                            class="sm:hidden p-2 text-slate-300 hover:text-white focus:outline-none"
-                            aria-label="Toggle Navigation Menu"
-                        >
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                            </svg>
-                        </button>
+                <!-- Header CTA Button -->
+                <div class="flex items-center gap-3">
+                    ${ctaText ? `
+                        <a href="${ctaUrl}" class="px-4 py-2 text-xs font-bold rounded-xl ${theme.btnPrimary} transition-all active:scale-95">
+                            ${ctaText}
+                        </a>
                     ` : ''}
                 </div>
-            </div>
-
-            <!-- Mobile Hamburger Dropdown Menu -->
-            <div id="v2-mobile-menu" class="hidden sm:hidden bg-slate-950/95 border-b border-slate-800 px-6 py-4 flex flex-col gap-3">
-                ${mobileLinksHtml}
-                ${mobileCtaHtml}
             </div>
         </header>
     `;

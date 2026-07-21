@@ -1,37 +1,44 @@
+import { getSectionStyle } from '../../../utils/sectionStyle.js';
+
 /**
- * Modular Section: Social Proof / Stats Navy (V2)
+ * Modular Section: Social Proof Navy (V2 Preview)
  */
 export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
-    const clientCount = data.client_count || '';
-    const projectCount = data.project_count || '';
-    const productCount = data.product_count || '';
-    const labelClients = data.label_clients || 'Klien Puas';
-    const labelProjects = data.label_projects || 'Proyek Selesai';
-    const labelProducts = data.label_products || 'Produk Aktif';
+    const title = data.title || 'Dipercaya Oleh Ratusan Pebisnis Digital';
+    const bgStyle = data.bg_style || 'navy';
+    const bgShade = data.bg_shade || 'solid';
 
-    // If no count data provided, return empty string (hide section)
-    if (!clientCount && !projectCount && !productCount) {
-        return '';
-    }
+    const stats = Array.isArray(data.stats) ? data.stats : [
+        { value: '500+', label: 'Landing Page Terpublikasi' },
+        { value: '98%', label: 'Klien Puas & Repeat Order' },
+        { value: '3.5x', label: 'Rata-rata Kenaikan Omset' }
+    ];
 
-    const items = [];
-    if (clientCount) items.push({ number: clientCount, label: labelClients });
-    if (projectCount) items.push({ number: projectCount, label: labelProjects });
-    if (productCount) items.push({ number: productCount, label: labelProducts });
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
 
-    const gridCols = items.length === 1 ? 'grid-cols-1 max-w-sm' : (items.length === 2 ? 'grid-cols-2 max-w-2xl' : 'grid-cols-3 max-w-4xl');
-
-    const itemsHtml = items.map(item => `
-        <div class="p-6 bg-slate-900/90 text-white rounded-2xl border border-slate-800 text-center shadow-lg hover:border-orange-500/50 transition-all">
-            <div class="text-3xl md:text-4xl font-extrabold text-orange-500 mb-1">${item.number}</div>
-            <div class="text-xs md:text-sm text-slate-400 font-medium uppercase tracking-wider">${item.label}</div>
+    const statsHtml = stats.map((stat) => `
+        <div class="${theme.cardBg} border rounded-3xl p-6 md:p-8 text-center transition-all shadow-xl hover:-translate-y-1 relative z-10">
+            <div class="text-3xl md:text-5xl font-black ${theme.heading} mb-2 tracking-tight">
+                ${stat.value || '0'}
+            </div>
+            <div class="${theme.subtitle} text-xs md:text-sm font-semibold uppercase tracking-wider">
+                ${stat.label || 'Keterangan Statistik'}
+            </div>
         </div>
     `).join('');
 
     return `
-        <section id="social-proof" class="py-12 px-6 bg-slate-950">
-            <div class="mx-auto grid ${gridCols} gap-6">
-                ${itemsHtml}
+        <section id="social_proof" class="py-16 md:py-24 px-6 ${sectionBgClass} relative overflow-hidden">
+            ${patternHtml}
+            <div class="max-w-6xl mx-auto text-center relative z-10">
+                <div class="w-12 h-1 ${theme.topLine} rounded-full mx-auto mb-4"></div>
+                <h2 class="text-xl md:text-3xl font-extrabold ${theme.heading} tracking-tight mb-12 max-w-2xl mx-auto leading-snug">
+                    ${title}
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    ${statsHtml}
+                </div>
             </div>
         </section>
     `;

@@ -1,36 +1,49 @@
+import { getSectionStyle } from '../../../utils/sectionStyle.js';
+
 /**
- * Modular Section: FAQ Accordion Navy (V2)
+ * Modular Section: FAQ Accordion Navy (V2 Preview)
  */
 export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
-    const title = data.title !== undefined ? data.title : 'Pertanyaan Sering Diajukan (FAQ)';
-    const subtitle = data.subtitle !== undefined ? data.subtitle : 'Temukan jawaban atas pertanyaan yang sering diajukan calon klien kami.';
-    const list = Array.isArray(data) ? data : (Array.isArray(data.faqs) && data.faqs.length > 0 ? data.faqs : [
-        { question: 'Berapa lama proses pengerjaan?', answer: 'Proses pengerjaan berkisar antara 1-3 hari kerja tergantung paket yang dipilih.' },
-        { question: 'Apakah tersedia garansi revisi?', answer: 'Ya, kami menyediakan garansi revisi gratis sesuai dengan batas ketentuan tiap paket.' },
-        { question: 'Bagaimana metode pembayarannya?', answer: 'Pembayaran dapat dilakukan melalui transfer bank lokal, Virtual Account, maupun QRIS secara aman.' },
-    ]);
+    const title = data.title || 'Pertanyaan yang Sering Diajukan (FAQ)';
+    const subtitle = data.subtitle || 'Temukan jawaban cepat untuk hal-hal yang sering ditanyakan seputar layanan kami.';
+    const bgStyle = data.bg_style || 'navy';
+    const bgShade = data.bg_shade || 'solid';
 
-    const itemsHtml = list.map((item, idx) => `
-        <div class="border border-slate-200 rounded-xl overflow-hidden mb-3 bg-white">
-            <button onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.faq-icon').classList.toggle('rotate-45');" class="w-full px-5 py-4 flex justify-between items-center text-left text-slate-900 font-bold text-sm md:text-base hover:bg-slate-50 transition-colors">
-                <span>${item.question || ''}</span>
-                <span class="faq-icon text-orange-500 font-bold text-lg transition-transform duration-200 ml-4">+</span>
-            </button>
-            <div class="hidden px-5 py-4 bg-slate-50 text-slate-600 text-xs md:text-sm leading-relaxed border-t border-slate-100">
-                ${item.answer || ''}
-            </div>
-        </div>
+    const faqs = Array.isArray(data.faqs) ? data.faqs : [
+        { q: 'Berapa lama proses pengerjaan landing page?', a: 'Proses pengerjaan cepat hanya membutuhkan waktu 1-3 hari kerja setelah materi dan brief lengkap kami terima.' },
+        { q: 'Apakah saya bisa mengubah konten di kemudian hari?', a: 'Ya tentu! Kami memberikan akses penuh dan panduan mudah agar Anda dapat mengedit teks & gambar kapan saja.' },
+        { q: 'Apakah harga sudah termasuk domain dan hosting?', a: 'Benar, semua paket kami sudah include domain pilihan Anda (.com / .id) serta cloud hosting super cepat selama 1 tahun.' }
+    ];
+
+    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade);
+
+    const faqsHtml = faqs.map((faq, idx) => `
+        <details className="group ${theme.faqBg} border rounded-2xl p-5 md:p-6 transition-all duration-300 relative z-10 cursor-pointer">
+            <summary className="flex justify-between items-center font-bold text-sm md:text-base ${theme.heading} list-none">
+                <span>${faq.q || faq.question || 'Pertanyaan FAQ'}</span>
+                <span className="text-orange-500 font-extrabold text-lg transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p className="${theme.subtitle} text-xs md:text-sm leading-relaxed mt-4 pt-4 border-t border-white/10">
+                ${faq.a || faq.answer || 'Jawaban FAQ'}
+            </p>
+        </details>
     `).join('');
 
     return `
-        <section id="faq" class="py-16 px-6 bg-white text-slate-800">
-            <div class="max-w-4xl mx-auto text-center mb-12">
-                <div class="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-4"></div>
-                <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 mb-3">${title}</h2>
-                <p class="text-slate-500 text-sm md:text-base max-w-xl mx-auto">${subtitle}</p>
-            </div>
-            <div class="max-w-3xl mx-auto">
-                ${itemsHtml}
+        <section id="faq" class="py-20 md:py-28 px-6 ${sectionBgClass} relative overflow-hidden">
+            ${patternHtml}
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <div class="w-12 h-1 ${theme.topLine} rounded-full mx-auto mb-4"></div>
+                <h2 class="text-2xl md:text-4xl font-extrabold ${theme.heading} tracking-tight mb-4 max-w-2xl mx-auto leading-snug">
+                    ${title}
+                </h2>
+                <p class="${theme.subtitle} text-sm md:text-base max-w-xl mx-auto mb-14 leading-relaxed">
+                    ${subtitle}
+                </p>
+
+                <div class="space-y-4 text-left">
+                    ${faqsHtml}
+                </div>
             </div>
         </section>
     `;
