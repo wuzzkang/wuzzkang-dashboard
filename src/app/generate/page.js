@@ -8469,6 +8469,23 @@ function GenerateContent() {
                               {section.type === 'header' && (
                                  <div className="space-y-3">
                                    {renderSectionStylePicker(section)}
+
+                                   <div>
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-1">
+                                       Nama Brand / Teks Logo Header (Opsional)
+                                     </label>
+                                     <input
+                                       type="text"
+                                       value={section.content.brand_name || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { brand_name: e.target.value })}
+                                       placeholder={v2BrandName ? `e.g. ${v2BrandName}` : "Nama Brand / Bisnis"}
+                                       className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                     />
+                                     <p className="text-[8px] text-theme-text-muted mt-1">
+                                       Kosongkan jika ingin otomatis mengikuti Identitas Brand di atas ({v2BrandName || 'Default'}).
+                                     </p>
+                                   </div>
+
                                    <label className="flex items-center gap-2 text-xs font-semibold text-theme-text cursor-pointer bg-theme-surface p-2.5 rounded-xl border border-theme-border">
                                      <input
                                        type="checkbox"

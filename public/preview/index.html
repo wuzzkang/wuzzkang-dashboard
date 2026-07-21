@@ -276,7 +276,12 @@
                             // ── Check again after async import ──────────────
                             if (renderGeneration !== myGeneration) return;
 
-                            const sectionHtml = module.render(section.content || {}, pageData, BRAND_CONFIG);
+                            const activeBrandConfig = {
+                                name: pageData.meta?.brand_name || pageData.meta?.title || BRAND_CONFIG.name || 'Siluet',
+                                domain: BRAND_CONFIG.domain || 'siluet.web.id'
+                            };
+
+                            const sectionHtml = module.render(section.content || {}, pageData, activeBrandConfig);
                             appEl.insertAdjacentHTML('beforeend', sectionHtml);
                         }
                     } catch (err) {

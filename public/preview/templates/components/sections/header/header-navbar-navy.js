@@ -4,7 +4,7 @@ import { getSectionStyle } from '../../../utils/sectionStyle.js';
  * Modular Section: Header Navbar Navy (V2 Preview)
  */
 export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
-    const brandName = data.brand_name || brandConfig.name || 'Siluet';
+    const brandName = data.brand_name || pageConfig.meta?.brand_name || pageConfig.meta?.title || brandConfig?.name || 'Siluet';
     const logoUrl = data.logo_url || '';
     const logoEnabled = data.logo_enabled !== false;
     const ctaText = data.cta_text || 'Mulai Sekarang';
