@@ -77,6 +77,9 @@
 
                 // Clear previous body style overrides from templates
                 document.body.style.overflow = 'auto';
+                document.body.style.backgroundColor = '';
+                document.body.classList.remove('text-slate-100', 'bg-slate-950');
+                document.body.classList.add('text-slate-800');
 
                 if (templateType === 'wedding') {
                     try {
@@ -150,6 +153,11 @@
                         appEl.innerHTML = `<div class="p-6 text-red-500 font-bold text-center">Gagal memuat template Jasa: ${err.message}</div>`;
                     }
                 } else if (templateType === 'dynamic-builder') {
+                    // Ensure consistent dark body background (matching the editor preview sandbox)
+                    document.body.style.backgroundColor = '#020617'; // bg-slate-950
+                    document.body.classList.remove('text-slate-800', 'bg-slate-50');
+                    document.body.classList.add('text-slate-100', 'bg-slate-950');
+
                     // ── Claim a new render generation slot ──────────────────
                     // Any older in-flight render that checks this value will
                     // detect it has been superseded and return early.
