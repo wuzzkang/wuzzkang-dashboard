@@ -8354,102 +8354,119 @@ function GenerateContent() {
                               </div>
 
                               {section.type === 'header' && (
-                                <div className="space-y-3">
-                              {section.content.show_nav !== false && (
-                                <div className="space-y-2 p-2.5 bg-theme-surface/50 border border-theme-border/60 rounded-xl">
-                                  <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
-                                    Pilih Link Menu yang Ingin Ditampilkan:
-                                  </label>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {v2Sections
-                                      .filter(s => s.type !== 'header' && s.type !== 'footer')
-                                      .map(s => {
-                                        const typeLabelMap = {
-                                          hero: 'Beranda',
-                                          about: 'Tentang',
-                                          services: 'Layanan',
-                                          pricing: 'Harga',
-                                          faq: 'FAQ',
-                                          social_proof: 'Statistik',
-                                          contact: 'Kontak'
-                                        };
-                                        const label = typeLabelMap[s.type] || s.type;
-                                        const allNavTypes = v2Sections.filter(x => x.type !== 'header' && x.type !== 'footer').map(x => x.type);
-                                        const currentSelected = Array.isArray(section.content.selected_nav_items) 
-                                          ? section.content.selected_nav_items 
-                                          : allNavTypes;
-                                        
-                                        const isChecked = currentSelected.includes(s.type);
+                                 <div className="space-y-3">
+                                   <label className="flex items-center gap-2 text-xs font-semibold text-theme-text cursor-pointer bg-theme-surface p-2.5 rounded-xl border border-theme-border">
+                                     <input
+                                       type="checkbox"
+                                       checked={section.content.show_nav !== false}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { show_nav: e.target.checked })}
+                                       className="rounded border-theme-border text-theme-accent focus:ring-theme-accent"
+                                     />
+                                     <span>Tampilkan Menu Navigasi Otomatis (Link Section)</span>
+                                   </label>
 
-                                        return (
-                                          <button
-                                            key={s.id}
-                                            type="button"
-                                            onClick={() => {
-                                              let updated;
-                                              if (isChecked) {
-                                                updated = currentSelected.filter(t => t !== s.type);
-                                              } else {
-                                                updated = [...currentSelected, s.type];
-                                              }
-                                              handleUpdateSectionContent(section.id, { selected_nav_items: updated });
-                                            }}
-                                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
-                                              isChecked
-                                                ? 'bg-theme-accent/15 border-theme-accent text-theme-accent'
-                                                : 'bg-theme-surface border-theme-border text-theme-text-muted hover:text-theme-text'
-                                            }`}
-                                          >
-                                            {isChecked ? '✓ ' : '+ '}{label}
-                                          </button>
-                                        );
-                                      })}
-                                  </div>
+                                   {section.content.show_nav !== false && (
+                                     <div className="space-y-2 p-2.5 bg-theme-surface/50 border border-theme-border/60 rounded-xl">
+                                       <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
+                                         Pilih Link Menu yang Ingin Ditampilkan:
+                                       </label>
+                                       <div className="flex flex-wrap gap-1.5">
+                                         {v2Sections
+                                           .filter(s => s.type !== 'header' && s.type !== 'footer')
+                                           .map(s => {
+                                             const typeLabelMap = {
+                                               hero: 'Beranda',
+                                               about: 'Tentang',
+                                               services: 'Layanan',
+                                               pricing: 'Harga',
+                                               faq: 'FAQ',
+                                               social_proof: 'Statistik',
+                                               contact: 'Kontak'
+                                             };
+                                             const label = typeLabelMap[s.type] || s.type;
+                                             const allNavTypes = v2Sections.filter(x => x.type !== 'header' && x.type !== 'footer').map(x => x.type);
+                                             const currentSelected = Array.isArray(section.content.selected_nav_items) 
+                                               ? section.content.selected_nav_items 
+                                               : allNavTypes;
+                                             
+                                             const isChecked = currentSelected.includes(s.type);
 
-                                  {/* Custom Labels Section Inputs */}
-                                  <div className="pt-2 border-t border-theme-border/50 space-y-1.5">
-                                    <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
-                                      Ubah Teks Label Menu (Opsional):
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {v2Sections
-                                        .filter(s => s.type !== 'header' && s.type !== 'footer')
-                                        .filter(s => {
-                                          const allNavTypes = v2Sections.filter(x => x.type !== 'header' && x.type !== 'footer').map(x => x.type);
-                                          const currentSelected = Array.isArray(section.content.selected_nav_items)
-                                            ? section.content.selected_nav_items
-                                            : allNavTypes;
-                                          return currentSelected.includes(s.type);
-                                        })
-                                        .map(s => {
-                                          const typeDefaultMap = {
-                                            hero: 'Beranda',
-                                            about: 'Tentang',
-                                            services: 'Layanan',
-                                            pricing: 'Harga',
-                                            faq: 'FAQ',
-                                            social_proof: 'Statistik',
-                                            contact: 'Kontak'
-                                          };
-                                          const defaultLabel = typeDefaultMap[s.type] || s.type;
-                                          const customLabels = section.content.custom_nav_labels || {};
-                                          const val = customLabels[s.type] !== undefined ? customLabels[s.type] : defaultLabel;
+                                             return (
+                                               <button
+                                                 key={s.id}
+                                                 type="button"
+                                                 onClick={() => {
+                                                   let updated;
+                                                   if (isChecked) {
+                                                     updated = currentSelected.filter(t => t !== s.type);
+                                                   } else {
+                                                     updated = [...currentSelected, s.type];
+                                                   }
+                                                   handleUpdateSectionContent(section.id, { selected_nav_items: updated });
+                                                 }}
+                                                 className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                                                   isChecked
+                                                     ? 'bg-theme-accent/15 border-theme-accent text-theme-accent'
+                                                     : 'bg-theme-surface border-theme-border text-theme-text-muted hover:text-theme-text'
+                                                 }`}
+                                               >
+                                                 {isChecked ? '✓ ' : '+ '}{label}
+                                               </button>
+                                             );
+                                           })}
+                                       </div>
 
-                                          return (
-                                            <div key={s.id}>
-                                              <label className="block text-[8px] font-semibold text-theme-text-muted mb-0.5 truncate">
-                                                Link #{s.type === 'social_proof' ? 'social-proof' : s.type}
-                                              </label>
-                                              <input
-                                                type="text"
-                                                value={val}
-                                                onChange={(e) => {
-                                                  const updated = { ...(section.content.custom_nav_labels || {}), [s.type]: e.target.value };
-                                                  handleUpdateSectionContent(section.id, { custom_nav_labels: updated });
-                                                }}
-                                      </div>
-                                    </div>
-                                  )}
+                                       {/* Custom Labels Section Inputs */}
+                                       <div className="pt-2 border-t border-theme-border/50 space-y-1.5">
+                                         <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
+                                           Ubah Teks Label Menu (Opsional):
+                                         </label>
+                                         <div className="grid grid-cols-2 gap-2">
+                                           {v2Sections
+                                             .filter(s => s.type !== 'header' && s.type !== 'footer')
+                                             .filter(s => {
+                                               const allNavTypes = v2Sections.filter(x => x.type !== 'header' && x.type !== 'footer').map(x => x.type);
+                                               const currentSelected = Array.isArray(section.content.selected_nav_items)
+                                                 ? section.content.selected_nav_items
+                                                 : allNavTypes;
+                                               return currentSelected.includes(s.type);
+                                             })
+                                             .map(s => {
+                                               const typeDefaultMap = {
+                                                 hero: 'Beranda',
+                                                 about: 'Tentang',
+                                                 services: 'Layanan',
+                                                 pricing: 'Harga',
+                                                 faq: 'FAQ',
+                                                 social_proof: 'Statistik',
+                                                 contact: 'Kontak'
+                                               };
+                                               const defaultLabel = typeDefaultMap[s.type] || s.type;
+                                               const customLabels = section.content.custom_nav_labels || {};
+                                               const val = customLabels[s.type] !== undefined ? customLabels[s.type] : defaultLabel;
+
+                                               return (
+                                                 <div key={s.id}>
+                                                   <label className="block text-[8px] font-semibold text-theme-text-muted mb-0.5 truncate">
+                                                     Link #{s.type === 'social_proof' ? 'social-proof' : s.type}
+                                                   </label>
+                                                   <input
+                                                     type="text"
+                                                     value={val}
+                                                     onChange={(e) => {
+                                                       const updated = { ...(section.content.custom_nav_labels || {}), [s.type]: e.target.value };
+                                                       handleUpdateSectionContent(section.id, { custom_nav_labels: updated });
+                                                     }}
+                                                     placeholder={defaultLabel}
+                                                     className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                                   />
+                                                 </div>
+                                               );
+                                             })}
+                                         </div>
+                                       </div>
+                                     </div>
+                                   )}
 
                                   <div className="grid grid-cols-2 gap-2">
                                     <div>
