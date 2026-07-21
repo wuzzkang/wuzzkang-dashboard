@@ -563,6 +563,17 @@ function GenerateContent() {
   ]);
 
   const handleAddSection = (type) => {
+    if (!type) return;
+
+    // Standard sections can only exist ONCE to prevent duplicate navigation & structure bugs
+    if (type !== 'custom') {
+      const alreadyExists = v2Sections.some(s => s.type === type);
+      if (alreadyExists) {
+        alert(`Section '${type.toUpperCase()}' sudah ada di landing page Anda. Section standar hanya boleh dibuat 1 kali.\n\nJika ingin menambah bagian baru, gunakan '✦ Custom / Feature Cards' yang bisa ditambahkan tanpa batas.`);
+        return;
+      }
+    }
+
     const defaultContent = type === 'header' ? {
       show_nav: true,
       cta_text: 'Hubungi Kami',
@@ -8319,15 +8330,15 @@ function GenerateContent() {
                               className="bg-theme-accent text-theme-accent-text text-xs font-bold px-3 py-2 rounded-xl cursor-pointer focus:outline-none shadow-sm"
                             >
                               <option value="">+ Tambah Section Baru</option>
-                              <option value="header">Header / Menu Navigasi Top Bar</option>
-                              <option value="hero">Hero / Banner Utama</option>
-                              <option value="about">About / Tentang Kami</option>
-                              <option value="social_proof">Social Proof / Statistik</option>
-                              <option value="services">Services / Layanan</option>
-                              <option value="pricing">Pricing / Paket Harga</option>
-                              <option value="custom">✦ Custom / Feature Cards (Bebas Isi)</option>
-                              <option value="faq">FAQ / Pertanyaan Umum</option>
-                              <option value="contact">Contact / WhatsApp CTA</option>
+                              <option value="header" disabled={v2Sections.some(s => s.type === 'header')}>Header / Menu Navigasi Top Bar {v2Sections.some(s => s.type === 'header') ? '✓ (Sudah Ada)' : ''}</option>
+                              <option value="hero" disabled={v2Sections.some(s => s.type === 'hero')}>Hero / Banner Utama {v2Sections.some(s => s.type === 'hero') ? '✓ (Sudah Ada)' : ''}</option>
+                              <option value="about" disabled={v2Sections.some(s => s.type === 'about')}>About / Tentang Kami {v2Sections.some(s => s.type === 'about') ? '✓ (Sudah Ada)' : ''}</option>
+                              <option value="social_proof" disabled={v2Sections.some(s => s.type === 'social_proof')}>Social Proof / Statistik {v2Sections.some(s => s.type === 'social_proof') ? '✓ (Sudah Ada)' : ''}</option>
+                              <option value="services" disabled={v2Sections.some(s => s.type === 'services')}>Services / Layanan {v2Sections.some(s => s.type === 'services') ? '✓ (Sudah Ada)' : ''}</option>
+                              <option value="pricing" disabled={v2Sections.some(s => s.type === 'pricing')}>Pricing / Paket Harga {v2Sections.some(s => s.type === 'pricing') ? '✓ (Sudah Ada)' : ''}</option>
+                              <option value="custom">✦ Custom / Feature Cards (Bebas Isi & Bisa Banyak)</option>
+                              <option value="faq" disabled={v2Sections.some(s => s.type === 'faq')}>FAQ / Pertanyaan Umum {v2Sections.some(s => s.type === 'faq') ? '✓ (Sudah Ada)' : ''}</option>
+                              <option value="contact" disabled={v2Sections.some(s => s.type === 'contact')}>Contact / WhatsApp CTA {v2Sections.some(s => s.type === 'contact') ? '✓ (Sudah Ada)' : ''}</option>
                             </select>
                           </div>
 
