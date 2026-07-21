@@ -584,7 +584,15 @@ function GenerateContent() {
       variant: type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : type === 'social_proof' ? 'navy' : 'footer-navy',
       content: defaultContent
     };
-    setV2Sections(prev => [...prev, newSec]);
+    setV2Sections(prev => {
+      const heroIdx = prev.findIndex(s => s.type === 'hero');
+      if (heroIdx >= 0) {
+        const next = [...prev];
+        next.splice(heroIdx + 1, 0, newSec);
+        return next;
+      }
+      return [newSec, ...prev];
+    });
   };
 
   const handleRemoveSection = (id) => {
