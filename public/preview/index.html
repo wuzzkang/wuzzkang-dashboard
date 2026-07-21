@@ -252,11 +252,12 @@
 
                             const sectionType = section.type;
                             const sectionVariant = section.variant || (
-                                sectionType === 'hero'     ? 'split-navy'     :
-                                sectionType === 'about'    ? 'simple-navy'    :
-                                sectionType === 'services' ? 'grid-navy'      :
-                                sectionType === 'pricing'  ? 'grid-navy'      :
-                                sectionType === 'faq'      ? 'accordion-navy' :
+                                sectionType === 'hero'         ? 'split-navy'     :
+                                sectionType === 'about'        ? 'simple-navy'    :
+                                sectionType === 'services'     ? 'grid-navy'      :
+                                sectionType === 'pricing'      ? 'grid-navy'      :
+                                sectionType === 'faq'          ? 'accordion-navy' :
+                                sectionType === 'social_proof' ? 'navy'           :
                                 'footer-navy'
                             );
                             const moduleName = `${sectionType}-${sectionVariant}.js`;

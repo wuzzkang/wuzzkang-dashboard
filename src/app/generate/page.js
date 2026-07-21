@@ -563,17 +563,26 @@ function GenerateContent() {
   ]);
 
   const handleAddSection = (type) => {
+    const defaultContent = type === 'social_proof' ? {
+      client_count: '100+',
+      label_clients: 'Klien Puas',
+      project_count: '250+',
+      label_projects: 'Proyek Selesai',
+      product_count: '50+',
+      label_products: 'Produk Aktif'
+    } : {
+      title: '',
+      headline: '',
+      subheadline: '',
+      description: '',
+      whatsapp: ''
+    };
+
     const newSec = {
       id: `sec-${type}-${Date.now()}`,
       type: type,
-      variant: type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : 'footer-navy',
-      content: {
-        title: '',
-        headline: '',
-        subheadline: '',
-        description: '',
-        whatsapp: ''
-      }
+      variant: type === 'hero' ? 'split-navy' : type === 'about' ? 'simple-navy' : type === 'services' ? 'grid-navy' : type === 'pricing' ? 'grid-navy' : type === 'faq' ? 'accordion-navy' : type === 'social_proof' ? 'navy' : 'footer-navy',
+      content: defaultContent
     };
     setV2Sections(prev => [...prev, newSec]);
   };
@@ -8246,6 +8255,7 @@ function GenerateContent() {
                               <option value="">+ Tambah Section Baru</option>
                               <option value="hero">Hero / Header Utama</option>
                               <option value="about">About / Tentang Kami</option>
+                              <option value="social_proof">Social Proof / Statistik</option>
                               <option value="services">Services / Layanan</option>
                               <option value="pricing">Pricing / Paket Harga</option>
                               <option value="faq">FAQ / Pertanyaan Umum</option>
@@ -8517,6 +8527,81 @@ function GenerateContent() {
                                          + Tambah Item Layanan Pertama
                                        </button>
                                      )}
+                                   </div>
+                                 </div>
+                               )}
+
+                               {section.type === 'social_proof' && (
+                                 <div className="space-y-3">
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Statistik & Bukti Sosial</label>
+                                     {renderAIV2Button(section.id, 'social_proof')}
+                                   </div>
+                                   <div className="grid grid-cols-2 gap-2">
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Angka Klien</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.client_count || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { client_count: e.target.value })}
+                                         placeholder="e.g. 100+"
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Label Klien</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.label_clients || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { label_clients: e.target.value })}
+                                         placeholder="e.g. Klien Puas"
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                   </div>
+                                   <div className="grid grid-cols-2 gap-2">
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Angka Proyek</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.project_count || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { project_count: e.target.value })}
+                                         placeholder="e.g. 250+"
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Label Proyek</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.label_projects || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { label_projects: e.target.value })}
+                                         placeholder="e.g. Proyek Selesai"
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                   </div>
+                                   <div className="grid grid-cols-2 gap-2">
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Angka Produk / Layanan</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.product_count || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { product_count: e.target.value })}
+                                         placeholder="e.g. 50+"
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Label Produk</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.label_products || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { label_products: e.target.value })}
+                                         placeholder="e.g. Layanan Aktif"
+                                         className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
                                    </div>
                                  </div>
                                )}
