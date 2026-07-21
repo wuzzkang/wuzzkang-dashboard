@@ -8528,6 +8528,151 @@ function GenerateContent() {
                                 </div>
                               )}
 
+                              {section.type === 'custom' && (
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
+                                      Badge / Label Accent Top Header (Opsional)
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={section.content.badge_text || ''}
+                                      onChange={(e) => handleUpdateSectionContent(section.id, { badge_text: e.target.value })}
+                                      placeholder="e.g. PROSES MUDAH / LAYANAN UNGGULAN"
+                                      className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
+                                      Judul Utama (Heading)
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={section.content.title || ''}
+                                      onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                      placeholder="Judul utama section..."
+                                      className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none font-bold"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">
+                                      Sub Judul (Subheading)
+                                    </label>
+                                    <textarea
+                                      rows={2}
+                                      value={section.content.subtitle || ''}
+                                      onChange={(e) => handleUpdateSectionContent(section.id, { subtitle: e.target.value })}
+                                      placeholder="Penjelasan singkat..."
+                                      className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none resize-y"
+                                    />
+                                  </div>
+
+                                  {/* Cards List Manager */}
+                                  <div className="pt-2 border-t border-theme-border/60 space-y-3">
+                                    <div className="flex justify-between items-center">
+                                      <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider">
+                                        🎴 Daftar Kartu ({ (section.content.cards || []).length } Kartu)
+                                      </label>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const currentCards = Array.isArray(section.content.cards) ? section.content.cards : [];
+                                          const nextNum = currentCards.length + 1;
+                                          const newCard = {
+                                            badge: `${nextNum}`,
+                                            title: `Langkah ${nextNum}: Judul Baru`,
+                                            description: `Deskripsi penjelasan untuk langkah ${nextNum}...`
+                                          };
+                                          handleUpdateSectionContent(section.id, { cards: [...currentCards, newCard] });
+                                        }}
+                                        className="px-2.5 py-1 text-[10px] font-bold bg-theme-accent/15 hover:bg-theme-accent/25 border border-theme-accent text-theme-accent rounded-lg transition-all cursor-pointer"
+                                      >
+                                        + Tambah Kartu
+                                      </button>
+                                    </div>
+
+                                    <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                                      {(section.content.cards || []).map((card, cardIdx) => (
+                                        <div key={cardIdx} className="bg-theme-surface border border-theme-border/70 rounded-xl p-3 space-y-2 relative">
+                                          <div className="flex justify-between items-center pb-1.5 border-b border-theme-border/40">
+                                            <span className="text-[9px] font-bold text-theme-accent uppercase tracking-wider">
+                                              Kartu #{cardIdx + 1}
+                                            </span>
+                                            {(section.content.cards || []).length > 1 && (
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const currentCards = Array.isArray(section.content.cards) ? section.content.cards : [];
+                                                  const updatedCards = currentCards.filter((_, i) => i !== cardIdx);
+                                                  handleUpdateSectionContent(section.id, { cards: updatedCards });
+                                                }}
+                                                className="text-[9px] font-bold text-red-400 hover:text-red-300 p-0.5 px-1.5 rounded bg-red-500/10 hover:bg-red-500/20 cursor-pointer"
+                                              >
+                                                ✕ Hapus
+                                              </button>
+                                            )}
+                                          </div>
+
+                                          <div className="grid grid-cols-3 gap-2">
+                                            <div className="col-span-1">
+                                              <label className="block text-[8px] font-semibold text-theme-text-muted mb-0.5">
+                                                Angka / Badge
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={card.badge || ''}
+                                                onChange={(e) => {
+                                                  const currentCards = [...(section.content.cards || [])];
+                                                  currentCards[cardIdx] = { ...currentCards[cardIdx], badge: e.target.value };
+                                                  handleUpdateSectionContent(section.id, { cards: currentCards });
+                                                }}
+                                                placeholder="e.g. 1 / 🚀"
+                                                className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border rounded-lg text-xs text-theme-text text-center font-bold focus:outline-none"
+                                              />
+                                            </div>
+                                            <div className="col-span-2">
+                                              <label className="block text-[8px] font-semibold text-theme-text-muted mb-0.5">
+                                                Judul Kartu
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={card.title || ''}
+                                                onChange={(e) => {
+                                                  const currentCards = [...(section.content.cards || [])];
+                                                  currentCards[cardIdx] = { ...currentCards[cardIdx], title: e.target.value };
+                                                  handleUpdateSectionContent(section.id, { cards: currentCards });
+                                                }}
+                                                placeholder="Judul kartu..."
+                                                className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border rounded-lg text-xs text-theme-text font-bold focus:outline-none"
+                                              />
+                                            </div>
+                                          </div>
+
+                                          <div>
+                                            <label className="block text-[8px] font-semibold text-theme-text-muted mb-0.5">
+                                              Deskripsi Kartu
+                                            </label>
+                                            <textarea
+                                              rows={2}
+                                              value={card.description || ''}
+                                              onChange={(e) => {
+                                                const currentCards = [...(section.content.cards || [])];
+                                                currentCards[cardIdx] = { ...currentCards[cardIdx], description: e.target.value };
+                                                handleUpdateSectionContent(section.id, { cards: currentCards });
+                                              }}
+                                              placeholder="Penjelasan isi kartu..."
+                                              className="block w-full px-2.5 py-1.5 bg-theme-bg border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none resize-y"
+                                            />
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
                               {section.type === 'hero' && (
                                 <div className="space-y-2.5">
                                   <div className="flex justify-between items-center">
