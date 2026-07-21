@@ -9307,6 +9307,7 @@ function GenerateContent() {
 
                               {section.type === 'contact' && (
                                 <div className="space-y-2.5">
+                                  {renderSectionStylePicker(section)}
                                   <div className="flex justify-between items-center">
                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Judul & Detail Kontak</label>
                                     {renderAIV2Button(section.id, 'contact')}
