@@ -35,8 +35,8 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     `;
 
     return `
-        <section class="relative jasa-navy-dark py-20 px-6 overflow-hidden text-white">
-            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <section class="relative jasa-navy-dark min-h-screen flex items-center py-16 md:py-24 px-6 overflow-hidden text-white">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
                     <div class="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4">
                         ✨ Layanan Unggulan
