@@ -33,19 +33,9 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
                     <h2 class="text-2xl md:text-4xl font-extrabold text-slate-900 mb-4">
                         ${title}
                     </h2>
-                    <p class="text-slate-600 text-base leading-relaxed mb-6">
+                    <p class="text-slate-600 text-base leading-relaxed">
                         ${desc}
                     </p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                            <div class="text-2xl font-extrabold text-orange-500">100+</div>
-                            <div class="text-xs text-slate-500 uppercase tracking-wider mt-1">Proyek Selesai</div>
-                        </div>
-                        <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                            <div class="text-2xl font-extrabold text-orange-500">99%</div>
-                            <div class="text-xs text-slate-500 uppercase tracking-wider mt-1">Kepuasan Klien</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
