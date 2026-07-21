@@ -138,12 +138,87 @@ export function getSectionStyle(bgStyle = 'navy', bgShade = 'solid') {
         }
     };
 
-    const theme = themes[bgStyle] || themes.navy;
-    const sectionBgClass = theme[bgShade] || theme.solid;
+    const theme = { ...(themes[bgStyle] || themes.navy) };
+    const isLightShade = bgShade === 'light' || bgShade === 'white';
 
-    const patternHtml = bgShade === 'pattern' ? `
+    if (isLightShade) {
+        // 1. Determine background color class
+        let bgClass = 'bg-slate-50 text-slate-800 border-b border-slate-200';
+        if (bgShade === 'white') {
+            bgClass = 'bg-white text-slate-800 border-b border-slate-100';
+        } else {
+            // Tinted light backgrounds for specific themes
+            if (bgStyle === 'indigo') {
+                bgClass = 'bg-indigo-50/40 text-slate-800 border-b border-indigo-100';
+            } else if (bgStyle === 'emerald') {
+                bgClass = 'bg-emerald-50/40 text-slate-800 border-b border-emerald-100';
+            } else if (bgStyle === 'obsidian') {
+                bgClass = 'bg-zinc-50 text-zinc-800 border-b border-zinc-200';
+            } else if (bgStyle === 'cream') {
+                bgClass = 'bg-amber-50/60 text-stone-800 border-b border-amber-100';
+            }
+        }
+
+        // Apply overrides to theme background classes
+        theme.solid = bgClass;
+        theme.soft = bgClass;
+        theme.gradient = bgClass;
+        theme.pattern = bgClass;
+
+        // Text color adjustments for light backgrounds
+        const textDark = (bgStyle === 'cream') ? 'text-stone-900' : (bgStyle === 'obsidian' ? 'text-zinc-900' : 'text-slate-900');
+        const textMuted = (bgStyle === 'cream') ? 'text-stone-600' : (bgStyle === 'obsidian' ? 'text-zinc-600' : 'text-slate-600');
+
+        theme.heading = textDark;
+        theme.subtitle = textMuted;
+
+        // Card elements adjustments
+        let cardBgColor = 'bg-slate-50/80 border-slate-200/80';
+        if (bgStyle === 'indigo') {
+            cardBgColor = 'bg-indigo-50/30 border-indigo-100';
+        } else if (bgStyle === 'emerald') {
+            cardBgColor = 'bg-emerald-50/30 border-emerald-100';
+        } else if (bgStyle === 'cream') {
+            cardBgColor = 'bg-white border-amber-200/80';
+        } else if (bgStyle === 'obsidian') {
+            cardBgColor = 'bg-zinc-50/80 border-zinc-200/80';
+        }
+
+        const accentName = theme.topLine.replace('bg-', '');
+        theme.cardBg = `${cardBgColor} hover:border-${accentName}/30 shadow-xs`;
+        theme.cardTitle = textDark;
+        theme.cardDesc = textMuted;
+
+        // Badge adjustment (make text darker for readability on light BG)
+        if (bgStyle === 'navy' || bgStyle === 'obsidian') {
+            theme.badge = 'bg-orange-500/10 text-orange-600 border-orange-500/20';
+        } else if (bgStyle === 'indigo') {
+            theme.badge = 'bg-indigo-500/10 text-indigo-700 border-indigo-500/20';
+        } else if (bgStyle === 'emerald') {
+            theme.badge = 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20';
+        } else if (bgStyle === 'cream') {
+            theme.badge = 'bg-orange-500/15 text-orange-700 border-orange-400/30';
+        }
+
+        // Secondary button
+        theme.btnSecondary = (bgStyle === 'cream') 
+            ? 'bg-amber-50 hover:bg-amber-100 text-stone-800 border border-amber-300'
+            : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300';
+
+        // FAQ element
+        theme.faqBg = cardBgColor;
+
+        // Footer element
+        theme.footerBg = (bgStyle === 'cream')
+            ? 'bg-amber-100 text-stone-600 border-t border-amber-200'
+            : 'bg-slate-100 text-slate-600 border-t border-slate-200';
+    }
+
+    const sectionBgClass = isLightShade ? theme.solid : (theme[bgShade] || theme.solid);
+
+    const patternHtml = (!isLightShade && bgShade === 'pattern') ? `
         <div class="absolute inset-0 bg-[radial-gradient(#ffffff0f_1px,transparent_1px)] [background-size:18px_18px] pointer-events-none opacity-70"></div>
-    ` : bgShade === 'gradient' ? `
+    ` : (!isLightShade && bgShade === 'gradient') ? `
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent pointer-events-none"></div>
     ` : '';
 
