@@ -4460,6 +4460,38 @@ function GenerateContent() {
           closing_message: pageData?.content?.closing_message || null,
         }
       };
+    } else if (templateType === 'dynamic-builder') {
+      const cleanSections = [];
+      const seenTypeSet = new Set();
+      const seenIdSet = new Set();
+      for (const s of (v2Sections || [])) {
+        if (!seenIdSet.has(s.id)) {
+          seenIdSet.add(s.id);
+          if (!seenTypeSet.has(s.type)) {
+            seenTypeSet.add(s.type);
+            cleanSections.push(s);
+          } else {
+            const hasRealContent = s.content && (s.content.title || s.content.description || s.content.headline || s.content.client_count || s.content.project_count);
+            if (hasRealContent) {
+              cleanSections.push(s);
+            }
+          }
+        }
+      }
+      compiledPageData = {
+        meta: {
+          title: v2BrandName || name || 'Modular Landing Page',
+          theme: designKey || 'modern-clean',
+          template_type: 'dynamic-builder',
+          design_key: designKey || 'modern-clean',
+          template_version: designVersion,
+        },
+        content: {
+          brand_name: v2BrandName || name,
+          brief: v2BrandBrief,
+          sections: cleanSections
+        }
+      };
     }
 
     try {
