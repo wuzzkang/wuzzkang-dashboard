@@ -4713,8 +4713,8 @@ function GenerateContent() {
     <div className="min-h-screen bg-theme-bg flex flex-col transition-theme">
       <Sidebar />
 
-      {/* Main Content Area - Responsive Desktop 12-Col / Mobile Stacked */}
-      <main className="flex-grow p-4 md:p-6 flex flex-col min-h-screen pt-24 lg:pt-28 pb-28 md:pb-16 max-w-md lg:max-w-[1550px] mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme">
+      {/* Main Content Area - Full Screen Responsive Desktop 12-Col / Mobile Stacked */}
+      <main className="flex-grow p-3 md:p-6 flex flex-col min-h-screen pt-20 lg:pt-24 pb-28 md:pb-12 w-full max-w-full mx-auto bg-theme-surface border-x border-theme-border relative transition-theme">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
           <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Siap Kerja Untukmu</h1>
@@ -4805,8 +4805,8 @@ function GenerateContent() {
 
           {/* 12-Column Responsive Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-grow items-start">
-            {/* Column 1: Edit Form (Full width on mobile if activeTab === 'edit', 5-cols on lg desktop) */}
-            <div className={`col-span-1 lg:col-span-5 flex flex-col lg:max-h-[calc(100vh-170px)] ${pageData && activeTab !== 'edit' ? 'hidden lg:flex' : 'flex'}`}>
+            {/* Column 1: Edit Form (Full width on mobile if activeTab === 'edit', 4-cols on lg desktop) */}
+            <div className={`col-span-1 lg:col-span-4 flex flex-col lg:max-h-[calc(100vh-140px)] ${pageData && activeTab !== 'edit' ? 'hidden lg:flex' : 'flex'}`}>
               <div className="bg-theme-card/40 border border-theme-border rounded-2xl p-5 flex flex-col flex-grow overflow-y-auto scrollbar-thin">
                 <div className="space-y-5">
                   <div className="pb-2 border-b border-theme-border flex items-center justify-between">
@@ -8351,6 +8351,68 @@ function GenerateContent() {
                                 </div>
                               </div>
 
+                              {section.type === 'header' && (
+                                <div className="space-y-3">
+                                  <label className="flex items-center gap-2 text-xs font-semibold text-theme-text cursor-pointer bg-theme-surface p-2.5 rounded-xl border border-theme-border">
+                                    <input
+                                      type="checkbox"
+                                      checked={section.content.show_nav !== false}
+                                      onChange={(e) => handleUpdateSectionContent(section.id, { show_nav: e.target.checked })}
+                                      className="rounded border-theme-border text-theme-accent focus:ring-theme-accent"
+                                    />
+                                    <span>Tampilkan Menu Navigasi Otomatis (Link Section)</span>
+                                  </label>
+
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">Teks Tombol CTA Header</label>
+                                      <input
+                                        type="text"
+                                        value={section.content.cta_text || ''}
+                                        onChange={(e) => handleUpdateSectionContent(section.id, { cta_text: e.target.value })}
+                                        placeholder="e.g. Hubungi Kami / Login..."
+                                        className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider mb-1">Link Tombol CTA Header</label>
+                                      <input
+                                        type="text"
+                                        value={section.content.cta_url || ''}
+                                        onChange={(e) => handleUpdateSectionContent(section.id, { cta_url: e.target.value })}
+                                        placeholder="e.g. #contact atau https://..."
+                                        className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Header Logo Upload */}
+                                  <div className="pt-1 border-t border-theme-border/60">
+                                    <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider mb-1.5">🖼️ Gambar Logo Brand Header (Opsional)</label>
+                                    <ImagePickerField
+                                      checkboxId={`v2_header_logo_${section.id}`}
+                                      checkboxLabel="Gunakan Logo kustom untuk Header Navbar"
+                                      unsplashQuery="logo,brand,minimal"
+                                      imageUrl={section.content.logo_url || ''}
+                                      onImageChange={(val) => {
+                                        if (!val && section.content.logo_url && section.content.logo_source === 'upload') {
+                                          handleDeleteImage(section.content.logo_url);
+                                        }
+                                        handleUpdateSectionContent(section.id, { logo_url: val });
+                                      }}
+                                      apiToken={session?.access_token}
+                                      apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+                                      isEnabled={section.content.logo_enabled !== false}
+                                      onEnabledChange={(enabled) => handleUpdateSectionContent(section.id, { logo_enabled: enabled })}
+                                      source={section.content.logo_source || 'unsplash'}
+                                      onSourceChange={(src) => handleUpdateSectionContent(section.id, { logo_source: src })}
+                                      onUpload={(file) => handleUploadImage(file, `v2_sec_${section.id}`)}
+                                      uploadType={`v2_sec_${section.id}`}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
                               {section.type === 'hero' && (
                                 <div className="space-y-2.5">
                                   <div className="flex justify-between items-center">
@@ -9024,8 +9086,8 @@ function GenerateContent() {
               </div>
             </div>
 
-            {/* Column 2: Live Sandbox Preview (Full width on mobile if activeTab === 'preview', 7-cols on lg desktop) */}
-            <div className={`col-span-1 lg:col-span-7 flex flex-col h-full lg:sticky lg:top-24 ${!pageData && 'hidden lg:flex'} ${pageData && activeTab !== 'preview' ? 'hidden lg:flex' : 'flex'}`}>
+            {/* Column 2: Live Sandbox Preview (Full width on mobile if activeTab === 'preview', 8-cols on lg desktop) */}
+            <div className={`col-span-1 lg:col-span-8 flex flex-col h-full lg:sticky lg:top-24 ${!pageData && 'hidden lg:flex'} ${pageData && activeTab !== 'preview' ? 'hidden lg:flex' : 'flex'}`}>
               {!pageData ? (
                 /* Empty Sandbox State for Desktop */
                 <div className="flex flex-col items-center justify-center h-[580px] border-2 border-dashed border-theme-border rounded-3xl p-8 text-center bg-theme-card/10">
@@ -9122,8 +9184,8 @@ function GenerateContent() {
                   {/* Viewport Box */}
                   <div className={`border border-theme-border bg-slate-950 rounded-2xl overflow-hidden shadow-2xl relative transition-all duration-300 ${
                     previewDevice === 'mobile'
-                      ? 'w-[375px] h-[600px] mx-auto border-4 border-slate-800 shadow-2xl rounded-3xl'
-                      : 'w-full h-[600px]'
+                      ? 'w-[375px] h-[640px] mx-auto border-4 border-slate-800 shadow-2xl rounded-3xl'
+                      : 'w-full h-[calc(100vh-220px)] min-h-[660px]'
                   }`}>
                     {isGenerating && (
                       <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
