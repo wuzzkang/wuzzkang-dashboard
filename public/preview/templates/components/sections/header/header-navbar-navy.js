@@ -67,7 +67,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
 
     return `
         <header class="sticky top-0 z-50 w-full bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 text-white">
-            <div class="max-w-6xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 md:h-20 flex items-center justify-between">
                 <!-- Brand / Logo -->
                 <a href="#" class="flex items-center gap-3">
                     ${logoHtml}
@@ -75,20 +75,20 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
 
                 <!-- Desktop Navigation Menu -->
                 ${showNav && navItems.length > 0 ? `
-                    <nav class="hidden md:flex items-center gap-8">
+                    <nav class="hidden sm:flex items-center gap-4 md:gap-8">
                         ${desktopLinksHtml}
                     </nav>
                 ` : ''}
 
                 <!-- Action Button & Hamburger Toggle -->
-                <div class="flex items-center gap-4">
-                    ${ctaHtml ? `<div class="hidden md:block">${ctaHtml}</div>` : ''}
+                <div class="flex items-center gap-3 md:gap-4">
+                    ${ctaHtml ? `<div class="hidden sm:block">${ctaHtml}</div>` : ''}
 
                     ${(showNav && navItems.length > 0) || ctaText ? `
                         <button 
                             type="button" 
                             onclick="const el = document.getElementById('v2-mobile-menu'); if(el) el.classList.toggle('hidden');" 
-                            class="md:hidden p-2 text-slate-300 hover:text-white focus:outline-none"
+                            class="sm:hidden p-2 text-slate-300 hover:text-white focus:outline-none"
                             aria-label="Toggle Navigation Menu"
                         >
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
             </div>
 
             <!-- Mobile Hamburger Dropdown Menu -->
-            <div id="v2-mobile-menu" class="hidden md:hidden bg-slate-950/95 border-b border-slate-800 px-6 py-4 flex flex-col gap-3">
+            <div id="v2-mobile-menu" class="hidden sm:hidden bg-slate-950/95 border-b border-slate-800 px-6 py-4 flex flex-col gap-3">
                 ${mobileLinksHtml}
                 ${mobileCtaHtml}
             </div>
