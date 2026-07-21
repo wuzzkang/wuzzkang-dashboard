@@ -10,14 +10,16 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
 
     // Build dynamic navigation items based on active page sections
     const activeSections = pageConfig?.content?.sections || pageConfig?.sections || data?.sections || [];
+    const customNavLabels = (typeof data.custom_nav_labels === 'object' && data.custom_nav_labels) ? data.custom_nav_labels : {};
+
     const sectionLabelMap = {
-        hero: 'Beranda',
-        about: 'Tentang',
-        services: 'Layanan',
-        pricing: 'Harga',
-        faq: 'FAQ',
-        social_proof: 'Statistik',
-        contact: 'Kontak'
+        hero: customNavLabels.hero !== undefined ? customNavLabels.hero : 'Beranda',
+        about: customNavLabels.about !== undefined ? customNavLabels.about : 'Tentang',
+        services: customNavLabels.services !== undefined ? customNavLabels.services : 'Layanan',
+        pricing: customNavLabels.pricing !== undefined ? customNavLabels.pricing : 'Harga',
+        faq: customNavLabels.faq !== undefined ? customNavLabels.faq : 'FAQ',
+        social_proof: customNavLabels.social_proof !== undefined ? customNavLabels.social_proof : 'Statistik',
+        contact: customNavLabels.contact !== undefined ? customNavLabels.contact : 'Kontak'
     };
 
     const selectedNavKeys = Array.isArray(data.selected_nav_items) ? data.selected_nav_items : null;
