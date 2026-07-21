@@ -3,7 +3,7 @@
  */
 export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
     const brandName = data.brand_name || pageConfig?.content?.brand_name || brandConfig?.name || 'Siluet';
-    const logoUrl = data.logo_url || '';
+    const logoUrl = (data.logo_enabled !== false) ? (data.logo_url || data.image_url || '') : '';
     const showNav = data.show_nav !== false;
     const ctaText = data.cta_text || '';
     const ctaUrl = data.cta_url || '#contact';

@@ -567,7 +567,9 @@ function GenerateContent() {
       show_nav: true,
       cta_text: 'Hubungi Kami',
       cta_url: '#contact',
-      logo_url: ''
+      logo_url: '',
+      logo_enabled: true,
+      logo_source: 'upload'
     } : type === 'social_proof' ? {
       client_count: '100+',
       label_clients: 'Klien Puas',
@@ -2385,7 +2387,7 @@ function GenerateContent() {
       }
       if (target && target.startsWith('v2_sec_')) {
         const secId = target.replace('v2_sec_', '');
-        handleUpdateSectionContent(secId, { image_url: publicUrl, image_source: 'upload' });
+        handleUpdateSectionContent(secId, { logo_url: publicUrl, image_url: publicUrl, image_source: 'upload', logo_source: 'upload' });
       }
       if (isProduct) {
         const oldProductImageUrl = tokoProducts[productIndex]?.image_url;
@@ -8446,19 +8448,19 @@ function GenerateContent() {
                                       checkboxId={`v2_header_logo_${section.id}`}
                                       checkboxLabel="Gunakan Logo kustom untuk Header Navbar"
                                       unsplashQuery="logo,brand,minimal"
-                                      imageUrl={section.content.logo_url || ''}
+                                      imageUrl={section.content.logo_url || section.content.image_url || ''}
                                       onImageChange={(val) => {
-                                        if (!val && section.content.logo_url && section.content.logo_source === 'upload') {
-                                          handleDeleteImage(section.content.logo_url);
+                                        if (!val && (section.content.logo_url || section.content.image_url) && (section.content.logo_source === 'upload' || section.content.image_source === 'upload')) {
+                                          handleDeleteImage(section.content.logo_url || section.content.image_url);
                                         }
-                                        handleUpdateSectionContent(section.id, { logo_url: val });
+                                        handleUpdateSectionContent(section.id, { logo_url: val, image_url: val });
                                       }}
                                       apiToken={session?.access_token}
                                       apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
                                       isEnabled={section.content.logo_enabled !== false}
                                       onEnabledChange={(enabled) => handleUpdateSectionContent(section.id, { logo_enabled: enabled })}
-                                      source={section.content.logo_source || 'unsplash'}
-                                      onSourceChange={(src) => handleUpdateSectionContent(section.id, { logo_source: src })}
+                                      source={section.content.logo_source || 'upload'}
+                                      onSourceChange={(src) => handleUpdateSectionContent(section.id, { logo_source: src, image_source: src })}
                                       onUpload={(file) => handleUploadImage(file, `v2_sec_${section.id}`)}
                                       uploadType={`v2_sec_${section.id}`}
                                     />
