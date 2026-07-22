@@ -15,7 +15,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
         { badge: '3', title: 'Langkah 3: Publikasikan & Raih Konversi', description: 'Landing page profesional Anda siap dalam hitungan menit! Publikasikan dengan mudah.' }
     ];
 
-    const { theme, sectionBgClass, patternHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default');
+    const { theme, sectionBgClass, patternHtml, dividerHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default', data.transition || 'none');
 
     const cardsHtml = cards.map((card, idx) => `
         <div class="${theme.cardBg} border rounded-3xl p-6 md:p-8 text-center flex flex-col items-center transition-all shadow-xl hover:-translate-y-1 relative z-10">
@@ -35,6 +35,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     return `
         <section id="custom" class="py-20 md:py-28 px-6 ${sectionBgClass} relative overflow-hidden">
             ${patternHtml}
+            ${dividerHtml || ''}
             <div class="max-w-6xl mx-auto text-center relative z-10">
                 <!-- Top Accent Line or Badge -->
                 <div class="w-12 h-1 ${theme.topLine} rounded-full mx-auto mb-4"></div>

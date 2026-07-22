@@ -12,6 +12,8 @@ const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v
 const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
 const DEFAULT_CAMPAIGN_HERO_IMAGE = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80';
 import { supabase } from '@/lib/supabase';
+import { V2_STARTER_PRESETS } from './v2Presets';
+import V2VisualSectionPickerModal from '@/components/V2VisualSectionPickerModal';
 
 // Helper dinamis untuk ikon template
 const getProductIcon = (id) => {
@@ -501,66 +503,92 @@ function GenerateContent() {
   // Ref that always holds the latest v2Sections value.
   // Used inside async handlers to avoid stale-closure bugs.
   const v2SectionsRef = useRef([]);
+  const [isV2OnboardingOpen, setIsV2OnboardingOpen] = useState(false);
+  const [isV2VisualPickerOpen, setIsV2VisualPickerOpen] = useState(false);
+  const [v2GlobalTheme, setV2GlobalTheme] = useState('navy');
+
+  const getSectionTypeIcon = (type) => {
+    switch (type) {
+      case 'header': return '📌';
+      case 'hero': return '🖼️';
+      case 'about': return '📖';
+      case 'social_proof': return '⭐';
+      case 'services': return '🛠️';
+      case 'pricing': return '🏷️';
+      case 'faq': return '❓';
+      case 'contact': return '💬';
+      case 'custom': return '✦';
+      default: return '🧩';
+    }
+  };
+
+  const getSectionDisplayTitle = (section) => {
+    const rawTitle = section.content?.title || section.content?.headline || section.content?.badge_text || section.content?.brand_name || '';
+    if (rawTitle) {
+      return rawTitle.length > 30 ? `${rawTitle.substring(0, 30)}...` : rawTitle;
+    }
+    switch (section.type) {
+      case 'header': return 'Header / Navigasi Top Bar';
+      case 'hero': return 'Hero / Banner Utama';
+      case 'about': return 'About / Tentang Kami';
+      case 'social_proof': return 'Social Proof & Statistik';
+      case 'services': return 'Services / Layanan Grid';
+      case 'pricing': return 'Pricing / Paket Harga';
+      case 'faq': return 'FAQ / Pertanyaan Umum';
+      case 'contact': return 'Contact / WhatsApp CTA';
+      case 'custom': return 'Custom / Feature Cards';
+      default: return `${section.type.toUpperCase()} Section`;
+    }
+  };
+
+  const handleSelectV2Preset = (presetId) => {
+    const found = V2_STARTER_PRESETS.find(p => p.id === presetId);
+    if (found) {
+      const clonedSections = JSON.parse(JSON.stringify(found.sections)).map((sec, idx) => ({
+        ...sec,
+        id: `sec-${sec.type}-${Date.now()}-${idx}`
+      }));
+      setV2BrandName(found.defaultBrandName || '');
+      setV2BrandBrief(found.defaultBrief || '');
+      setV2Sections(clonedSections);
+      setIsV2OnboardingOpen(false);
+    }
+  };
+
+  const handleApplyGlobalTheme = (themeKey) => {
+    setV2GlobalTheme(themeKey);
+    setV2Sections(prev => prev.map(sec => ({
+      ...sec,
+      bg_style: themeKey,
+      content: {
+        ...sec.content,
+        bg_style: themeKey
+      }
+    })));
+  };
+
+
+  const handleFocusSectionInPreview = (sectionId, sectionType) => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'SCROLL_TO_SECTION',
+        sectionId: sectionId,
+        sectionType: sectionType
+      }, '*');
+    }
+  };
+
   const [v2BrandName, setV2BrandName] = useState('');
   const [v2BrandBrief, setV2BrandBrief] = useState('');
-  const [v2Sections, setV2Sections] = useState([
-    {
-      id: 'sec-hero-1',
-      type: 'hero',
-      variant: 'split-navy',
-      content: {
-        headline: '',
-        subheadline: '',
-        cta_text: ''
-      }
-    },
-    {
-      id: 'sec-about-1',
-      type: 'about',
-      variant: 'simple-navy',
-      content: {
-        title: '',
-        description: ''
-      }
-    },
-    {
-      id: 'sec-services-1',
-      type: 'services',
-      variant: 'grid-navy',
-      content: {
-        title: '',
-        items: []
-      }
-    },
-    {
-      id: 'sec-pricing-1',
-      type: 'pricing',
-      variant: 'grid-navy',
-      content: {
-        title: '',
-        plans: []
-      }
-    },
-    {
-      id: 'sec-faq-1',
-      type: 'faq',
-      variant: 'accordion-navy',
-      content: {
-        title: '',
-        faqs: []
-      }
-    },
-    {
-      id: 'sec-contact-1',
-      type: 'contact',
-      variant: 'footer-navy',
-      content: {
-        title: '',
-        subheadline: '',
-        whatsapp: ''
-      }
+  const [v2Sections, setV2Sections] = useState([]);
+
+  // Auto-open V2 Starter Kit Onboarding Modal when creating a new V2 project
+  useEffect(() => {
+    if (templateType === 'dynamic-builder' && !draftId && v2Sections.length === 0) {
+      setIsV2OnboardingOpen(true);
     }
-  ]);
+  }, [templateType, draftId]);
+
 
   const handleAddSection = (type) => {
     if (!type) return;
@@ -1411,9 +1439,11 @@ function GenerateContent() {
     };
   }, []);
 
-  // Auto-update pageData in editMode to refresh the iframe live preview in real-time
+  // Auto-update pageData in editMode or V2 modular builder to refresh the iframe live preview in real-time
   useEffect(() => {
-    if (!editMode || !projectId) return;
+    const isV2Mode = templateType === 'dynamic-builder';
+    if (!isV2Mode && (!editMode || !projectId)) return;
+
 
     let assembledContent;
     let metaTitle;
@@ -1931,6 +1961,7 @@ function GenerateContent() {
     jasaAddress,
     jasaCtaUrl,
     jasaCopyright,
+    v2GlobalTheme,
     v2BrandName,
     v2BrandBrief,
     v2Sections,
@@ -3419,16 +3450,9 @@ function GenerateContent() {
   };
 
   const renderSectionStylePicker = (section) => {
-    const currentStyle = section.content.bg_style || 'navy';
     const currentShade = section.content.bg_shade || 'solid';
     const currentBrightness = section.content.bg_brightness || 'default';
-
-    const palettes = [
-      { key: 'navy', label: 'Midnight Slate', previewGradient: 'from-slate-950 via-slate-900 to-slate-950', dotColor: '#0f172a', border: 'border-slate-800' },
-      { key: 'obsidian', label: 'Obsidian Black', previewGradient: 'from-black via-zinc-950 to-black', dotColor: '#000000', border: 'border-zinc-800' },
-      { key: 'indigo', label: 'Deep Indigo', previewGradient: 'from-indigo-950 via-indigo-900 to-slate-950', dotColor: '#1e1b4b', border: 'border-indigo-900' },
-      { key: 'emerald', label: 'Deep Emerald', previewGradient: 'from-emerald-950 via-emerald-900 to-slate-950', dotColor: '#064e3b', border: 'border-emerald-900' }
-    ];
+    const currentTransition = section.content.transition || 'none';
 
     const shades = [
       { key: 'solid', label: 'Pekat Solid', icon: '⬛' },
@@ -3438,66 +3462,40 @@ function GenerateContent() {
     ];
 
     const brightnesses = [
-      { key: 'default', label: 'Bawaan Tema', icon: '⚙️' },
+      { key: 'default', label: 'Ikuti Tema Global', icon: '⚙️' },
       { key: 'light', label: 'Terang (Putih)', icon: '☀️' },
       { key: 'dark', label: 'Gelap (Hitam)', icon: '🌙' }
     ];
 
-    const selectedPaletteLabel = palettes.find(p => p.key === currentStyle)?.label || 'Midnight Slate';
+    const transitions = [
+      { key: 'none', label: 'Datar Lurus', icon: '➖' },
+      { key: 'gradient', label: 'Gradasi Soft', icon: '🌌' },
+      { key: 'wave', label: 'Gelombang Wave', icon: '🌊' },
+      { key: 'curve', label: 'Lengkung Soft', icon: '🌙' },
+      { key: 'slant', label: 'Potongan Miring', icon: '📐' },
+      { key: 'glow', label: 'Glow Ambient', icon: '✨' }
+    ];
+
     const selectedShadeLabel = shades.find(s => s.key === currentShade)?.label || 'Pekat Solid';
 
     return (
-      <div className="p-3.5 bg-theme-surface/60 backdrop-blur-md border border-theme-border/80 rounded-2xl space-y-3.5 mb-4 shadow-sm">
+      <div className="p-3.5 bg-theme-surface/60 backdrop-blur-md border border-theme-border/80 rounded-2xl space-y-3 mb-4 shadow-sm">
         {/* Header Badge & Live Indicator */}
         <div className="flex items-center justify-between pb-2 border-b border-theme-border/50">
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-black uppercase tracking-wider text-theme-accent bg-theme-accent/10 px-2 py-0.5 rounded-md border border-theme-accent/20">
-              🎨 Style Picker
+              🎨 Tampilan Section
             </span>
           </div>
           <span className="text-[9px] font-semibold text-theme-text-muted truncate max-w-[170px]">
-            {selectedPaletteLabel} • {selectedShadeLabel}
+            {selectedShadeLabel}
           </span>
         </div>
 
-        {/* 1. Tema Warna Background Section (Visual Color Swatch Cards) */}
+        {/* 1. Variasi Shading (Segmented Control Bar) */}
         <div className="space-y-1.5">
-          <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
-            Tema Warna Background:
-          </label>
-          <div className="grid grid-cols-2 gap-1.5">
-            {palettes.map((palette) => {
-              const isSelected = currentStyle === palette.key;
-              return (
-                <button
-                  key={palette.key}
-                  type="button"
-                  onClick={() => handleUpdateSectionContent(section.id, { bg_style: palette.key })}
-                  className={`p-2 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-2 border text-left ${
-                    isSelected
-                      ? 'bg-theme-bg border-theme-accent ring-2 ring-theme-accent/50 shadow-sm scale-[1.02]'
-                      : 'bg-theme-surface/70 border-theme-border/70 hover:border-theme-accent/40 text-theme-text-sec hover:text-theme-text'
-                  }`}
-                >
-                  {/* Swatch Circle Preview */}
-                  <span
-                    className={`h-4 w-4 rounded-full flex-shrink-0 bg-gradient-to-br ${palette.previewGradient} border ${palette.border} shadow-inner relative flex items-center justify-center`}
-                  >
-                    {isSelected && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-theme-accent animate-pulse" />
-                    )}
-                  </span>
-                  <span className="truncate flex-1">{palette.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 2. Variasi Shading (Segmented Control Bar) */}
-        <div className="space-y-1.5 pt-2 border-t border-theme-border/40">
           <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">
-            Variasi Shading:
+            Variasi Shading Background:
           </label>
           <div className="flex bg-theme-bg/80 p-1 rounded-xl border border-theme-border/60 gap-1">
             {shades.map((shade) => {
@@ -3522,10 +3520,10 @@ function GenerateContent() {
           </div>
         </div>
 
-        {/* 3. Varian Background Brightness (Segmented Control Bar) */}
+        {/* 2. Varian Background Brightness / Mode Kontras */}
         <div className="space-y-1.5 pt-2 border-t border-theme-border/40">
           <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">
-            Varian Background:
+            Mode Kontras Warna:
           </label>
           <div className="flex bg-theme-bg/80 p-1 rounded-xl border border-theme-border/60 gap-1">
             {brightnesses.map((brightness) => {
@@ -3548,9 +3546,38 @@ function GenerateContent() {
             })}
           </div>
         </div>
+
+        {/* 3. Transisi Batas Section (Soft Divider) */}
+        <div className="space-y-1.5 pt-2 border-t border-theme-border/40">
+          <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">
+            Transisi Batas Section (Soft Divider):
+          </label>
+          <div className="grid grid-cols-3 gap-1">
+            {transitions.map((trans) => {
+              const isSelected = currentTransition === trans.key;
+              return (
+                <button
+                  key={trans.key}
+                  type="button"
+                  onClick={() => handleUpdateSectionContent(section.id, { transition: trans.key })}
+                  className={`py-1.5 px-1.5 rounded-xl text-[9px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 border ${
+                    isSelected
+                      ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-xs'
+                      : 'bg-theme-bg/60 border-theme-border/60 text-theme-text-muted hover:text-theme-text hover:bg-theme-bg'
+                  }`}
+                >
+                  <span className="text-[10px] leading-none">{trans.icon}</span>
+                  <span className="text-[8px] truncate">{trans.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   };
+
+
 
   // Helper untuk memetakan technical_status ke teks bahasa Indonesia yang ramah
   const getFriendlyProgressMessage = (status, techStatus) => {
@@ -8413,6 +8440,55 @@ function GenerateContent() {
                     {/* Dynamic Builder V2 Fields */}
                     {templateType === 'dynamic-builder' && (
                       <div className="space-y-4 border-t border-theme-border pt-4">
+                        {/* Starter Kit & Global Theme Switcher Bar */}
+                        <div className="bg-theme-bg border border-theme-border rounded-2xl p-4 space-y-3.5 shadow-sm">
+                          <div className="flex flex-col sm:flex-row gap-2 justify-between sm:items-center border-b border-theme-border/60 pb-3">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="w-4 h-4 text-theme-accent" />
+                              <div>
+                                <h3 className="text-xs font-extrabold text-theme-text uppercase tracking-wide">
+                                  Starter Kit & Tema Warna V2
+                                </h3>
+                                <p className="text-[9px] text-theme-text-sec">Pilih racikan preset tujuan atau ganti warna halaman</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setIsV2OnboardingOpen(true)}
+                              className="text-xs font-bold px-3 py-1.5 bg-theme-accent/10 hover:bg-theme-accent/20 text-theme-accent rounded-xl border border-theme-accent/30 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <span>✨ Pilih Preset Starter Kit</span>
+                            </button>
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider mb-2">
+                              Ubah Tema Warna Halaman (Global)
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {[
+                                { key: 'navy', label: '⚓ Navy Blue', bg: 'bg-slate-900 text-white' },
+                                { key: 'emerald', label: '🌿 Emerald', bg: 'bg-emerald-950 text-emerald-300' },
+                                { key: 'amber', label: '🌅 Amber', bg: 'bg-amber-950 text-amber-300' },
+                                { key: 'purple', label: '🔮 Royal Purple', bg: 'bg-purple-950 text-purple-300' },
+                                { key: 'rose', label: '🌹 Sunset Rose', bg: 'bg-rose-950 text-rose-300' },
+                                { key: 'slate', label: '🌑 Clean Slate', bg: 'bg-slate-800 text-slate-200' }
+                              ].map((themeItem) => (
+                                <button
+                                  key={themeItem.key}
+                                  type="button"
+                                  onClick={() => handleApplyGlobalTheme(themeItem.key)}
+                                  className={`text-[10px] font-bold px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${themeItem.bg} ${
+                                    v2GlobalTheme === themeItem.key ? 'ring-2 ring-theme-accent border-theme-accent scale-105 shadow-md' : 'border-theme-border opacity-70 hover:opacity-100'
+                                  }`}
+                                >
+                                  {themeItem.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Brief AI & Brand Info */}
                         <div className="space-y-3.5 bg-theme-bg border border-theme-border rounded-2xl p-4">
                           <h3 className="text-xs font-black text-theme-text flex items-center gap-1.5 uppercase tracking-wide">
@@ -8454,37 +8530,71 @@ function GenerateContent() {
                               </h4>
                               <p className="text-[9px] text-theme-text-sec mt-0.5">Tambah, hapus, atau atur urutan tampilan section</p>
                             </div>
-                            <select
-                              value=""
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  handleAddSection(e.target.value);
-                                }
-                              }}
-                              className="w-full sm:w-auto bg-theme-accent text-theme-accent-text text-xs font-bold px-3 py-2.5 rounded-xl cursor-pointer focus:outline-none shadow-sm text-center"
-                            >
-                              <option value="">+ Tambah Section Baru</option>
-                              <option value="header" disabled={v2Sections.some(s => s.type === 'header')}>Header / Menu Navigasi Top Bar {v2Sections.some(s => s.type === 'header') ? '✓ (Sudah Ada)' : ''}</option>
-                              <option value="hero" disabled={v2Sections.some(s => s.type === 'hero')}>Hero / Banner Utama {v2Sections.some(s => s.type === 'hero') ? '✓ (Sudah Ada)' : ''}</option>
-                              <option value="about" disabled={v2Sections.some(s => s.type === 'about')}>About / Tentang Kami {v2Sections.some(s => s.type === 'about') ? '✓ (Sudah Ada)' : ''}</option>
-                              <option value="social_proof" disabled={v2Sections.some(s => s.type === 'social_proof')}>Social Proof / Statistik {v2Sections.some(s => s.type === 'social_proof') ? '✓ (Sudah Ada)' : ''}</option>
-                              <option value="services" disabled={v2Sections.some(s => s.type === 'services')}>Services / Layanan {v2Sections.some(s => s.type === 'services') ? '✓ (Sudah Ada)' : ''}</option>
-                              <option value="pricing" disabled={v2Sections.some(s => s.type === 'pricing')}>Pricing / Paket Harga {v2Sections.some(s => s.type === 'pricing') ? '✓ (Sudah Ada)' : ''}</option>
-                              <option value="custom">✦ Custom / Feature Cards (Bebas Isi & Bisa Banyak)</option>
-                              <option value="faq" disabled={v2Sections.some(s => s.type === 'faq')}>FAQ / Pertanyaan Umum {v2Sections.some(s => s.type === 'faq') ? '✓ (Sudah Ada)' : ''}</option>
-                              <option value="contact" disabled={v2Sections.some(s => s.type === 'contact')}>Contact / WhatsApp CTA {v2Sections.some(s => s.type === 'contact') ? '✓ (Sudah Ada)' : ''}</option>
-                            </select>
+                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                              <button
+                                type="button"
+                                onClick={() => setIsV2VisualPickerOpen(true)}
+                                className="w-full sm:w-auto bg-theme-accent text-theme-accent-text text-xs font-bold px-3 py-2.5 rounded-xl cursor-pointer hover:bg-theme-accent/90 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                              >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>+ Katalog Visual Section</span>
+                              </button>
+                            </div>
                           </div>
 
-                          {v2Sections.map((section, idx) => (
-                            <div key={section.id} className="bg-theme-bg border border-theme-border rounded-2xl p-4 space-y-3">
+                          {v2Sections.length === 0 ? (
+                            <div className="text-center py-10 px-4 bg-theme-bg border border-dashed border-theme-border rounded-2xl space-y-3">
+                              <div className="w-12 h-12 rounded-2xl bg-theme-accent/10 text-theme-accent flex items-center justify-center mx-auto text-2xl font-bold">
+                                ✨
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-extrabold text-theme-text uppercase tracking-wide">
+                                  Belum Ada Section Terpasang
+                                </h4>
+                                <p className="text-[10px] text-theme-text-sec mt-1 max-w-xs mx-auto leading-relaxed">
+                                  Pilih Preset Starter Kit sesuai tujuan Anda atau tambahkan section satu per satu via Katalog Visual.
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setIsV2OnboardingOpen(true)}
+                                  className="px-3.5 py-2 text-xs font-extrabold bg-theme-accent text-theme-accent-text rounded-xl shadow-sm hover:bg-theme-accent/90 transition-all flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <span>✨ Pilih Preset Starter Kit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsV2VisualPickerOpen(true)}
+                                  className="px-3.5 py-2 text-xs font-extrabold bg-theme-surface border border-theme-border text-theme-text rounded-xl hover:bg-theme-bg transition-all flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <span>+ Katalog Visual Section</span>
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            v2Sections.map((section, idx) => (
+                              <div key={section.id} className="bg-theme-bg border border-theme-border rounded-2xl p-4 space-y-3">
+
                               <div className="flex justify-between items-center border-b border-theme-border/50 pb-2">
-                                <span className="text-xs font-bold text-theme-text uppercase tracking-wider flex items-center gap-1.5">
+                                <span
+                                  onClick={() => handleFocusSectionInPreview(section.id, section.type)}
+                                  className="text-xs font-bold text-theme-text uppercase tracking-wider flex items-center gap-1.5 cursor-pointer hover:text-theme-accent transition-colors"
+                                  title="Klik untuk fokus posisi section di Live Preview"
+                                >
                                   <span className="h-5 w-5 rounded-md bg-theme-accent/10 text-theme-accent flex items-center justify-center text-[10px]">
                                     {idx + 1}
                                   </span>
-                                  <span>{section.type} Section</span>
+                                  <span className="flex items-center gap-1.5 truncate max-w-[220px] sm:max-w-[320px]">
+                                    <span>{getSectionTypeIcon(section.type)}</span>
+                                    <span>{getSectionDisplayTitle(section)}</span>
+                                    <span className="text-[9px] font-semibold text-theme-text-sec bg-theme-surface px-1.5 py-0.5 rounded border border-theme-border/60 uppercase">
+                                      {section.type}
+                                    </span>
+                                  </span>
+                                  <span className="text-[8px] text-theme-text-muted font-normal hidden sm:inline">(Fokus Preview 👁️)</span>
                                 </span>
+
                                 <div className="flex items-center gap-1">
                                   <button
                                     type="button"
@@ -9452,7 +9562,8 @@ function GenerateContent() {
                                 </div>
                               )}
                             </div>
-                          ))}
+                          ))
+                        )}
                         </div>
                       </div>
                     )}
@@ -10507,6 +10618,76 @@ function GenerateContent() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* V2 Visual Catalog Section Picker Modal */}
+      <V2VisualSectionPickerModal
+
+        isOpen={isV2VisualPickerOpen}
+        onClose={() => setIsV2VisualPickerOpen(false)}
+        onSelectSection={handleAddSection}
+        existingSections={v2Sections}
+      />
+
+      {/* V2 Starter Kit Onboarding Preset Modal */}
+      {isV2OnboardingOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-theme-card border border-theme-border rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-theme-border flex justify-between items-center bg-theme-bg/60">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">✨</span>
+                <div>
+                  <h3 className="text-base font-extrabold text-theme-text">Pilih Preset Starter Kit V2</h3>
+                  <p className="text-xs text-theme-text-sec mt-0.5">Mulai dengan racikan susunan section terbukti paling efektif sesuai tujuan Anda</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsV2OnboardingOpen(false)}
+                className="p-2 text-theme-text-sec hover:text-theme-text hover:bg-theme-bg rounded-xl transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 max-h-[calc(90vh-120px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {V2_STARTER_PRESETS.map((preset) => (
+                  <div
+                    key={preset.id}
+                    onClick={() => handleSelectV2Preset(preset.id)}
+                    className="group p-5 bg-theme-bg hover:bg-theme-bg/90 border border-theme-border hover:border-theme-accent rounded-2xl cursor-pointer transition-all duration-200 hover:-translate-y-0.5 shadow-sm hover:shadow-lg hover:shadow-theme-accent/5 flex flex-col justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl">{preset.icon}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-theme-accent/10 text-theme-accent border border-theme-accent/20">
+                          {preset.badge}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-extrabold text-theme-text group-hover:text-theme-accent transition-colors">
+                        {preset.name}
+                      </h4>
+                      <p className="text-xs text-theme-text-sec leading-relaxed">
+                        {preset.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-theme-border/40 flex items-center justify-between">
+                      <span className="text-[10px] text-theme-text-muted font-bold">
+                        {preset.sections.length} Section Terpasang
+                      </span>
+                      <span className="text-xs font-extrabold text-theme-accent flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        <span>Gunakan Preset</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}

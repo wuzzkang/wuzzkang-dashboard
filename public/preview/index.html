@@ -282,7 +282,12 @@
                             };
 
                             const sectionHtml = module.render(section.content || {}, pageData, activeBrandConfig);
-                            appEl.insertAdjacentHTML('beforeend', sectionHtml);
+                            const secWrapper = document.createElement('div');
+                            secWrapper.id = section.id || `sec-${sectionType}`;
+                            secWrapper.setAttribute('data-section-id', section.id || '');
+                            secWrapper.setAttribute('data-section-type', sectionType);
+                            secWrapper.innerHTML = sectionHtml;
+                            appEl.appendChild(secWrapper);
                         }
                     } catch (err) {
                         if (renderGeneration === myGeneration) {
@@ -299,6 +304,22 @@
                             </div>
                         </div>
                     `;
+                }
+            } else if (event.data && event.data.type === 'SCROLL_TO_SECTION') {
+                const { sectionId, sectionType } = event.data;
+                let targetEl = null;
+                if (sectionId) {
+                    targetEl = document.getElementById(sectionId) || document.querySelector(`[data-section-id="${sectionId}"]`);
+                }
+                if (!targetEl && sectionType) {
+                    targetEl = document.getElementById(sectionType) || document.querySelector(`[data-section-type="${sectionType}"]`);
+                }
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetEl.classList.add('ring-4', 'ring-amber-400', 'transition-all', 'duration-300');
+                    setTimeout(() => {
+                        targetEl.classList.remove('ring-4', 'ring-amber-400', 'transition-all', 'duration-300');
+                    }, 1500);
                 }
             }
         });
