@@ -130,7 +130,10 @@ export default function ImagePickerField({
     if (!file || !onUpload) return;
     setIsUploading(true);
     try {
-      await onUpload(file, uploadType);
+      const uploadedUrl = await onUpload(file, uploadType);
+      if (uploadedUrl && onImageChange) {
+        onImageChange(uploadedUrl);
+      }
     } finally {
       setIsUploading(false);
     }

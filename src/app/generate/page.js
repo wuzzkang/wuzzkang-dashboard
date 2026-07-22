@@ -2472,6 +2472,14 @@ function GenerateContent() {
         const secId = target.replace('v2_sec_', '');
         handleUpdateSectionContent(secId, { logo_url: publicUrl, image_url: publicUrl, image_source: 'upload', logo_source: 'upload' });
       }
+      if (target && target.startsWith('v2_groom_')) {
+        const secId = target.replace('v2_groom_', '');
+        handleUpdateSectionContent(secId, { groom_photo: publicUrl, groom_image: publicUrl, groom_photo_source: 'upload' });
+      }
+      if (target && target.startsWith('v2_bride_')) {
+        const secId = target.replace('v2_bride_', '');
+        handleUpdateSectionContent(secId, { bride_photo: publicUrl, bride_image: publicUrl, bride_photo_source: 'upload' });
+      }
       if (isProduct) {
         const oldProductImageUrl = tokoProducts[productIndex]?.image_url;
         if (oldProductImageUrl) handleDeleteImage(oldProductImageUrl);
@@ -2481,6 +2489,7 @@ function GenerateContent() {
           return next;
         });
       }
+      return publicUrl;
     } catch (err) {
       console.error('[Dashboard] File upload error:', err);
       setError('Gagal mengunggah foto: ' + err.message);
