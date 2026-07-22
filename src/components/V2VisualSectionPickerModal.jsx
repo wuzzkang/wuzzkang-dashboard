@@ -61,6 +61,62 @@ const SECTION_CATALOG = [
     isSingleInstance: false
   },
   {
+    type: 'wedding_couple',
+    title: 'Wedding / Profil Mempelai',
+    icon: '💍',
+    badge: 'Pernikahan',
+    description: 'Kartu profil eksklusif untuk Mempelai Pria & Mempelai Wanita lengkap dengan foto, bio, nama orang tua, & Instagram.',
+    isSingleInstance: true
+  },
+  {
+    type: 'wedding_events',
+    title: 'Wedding / Rangkaian Acara',
+    icon: '📅',
+    badge: 'Pernikahan',
+    description: 'Jadwal waktu & tempat pelaksanaan Akad Nikah dan Resepsi Pernikahan lengkap dengan tombol petunjuk Google Maps.',
+    isSingleInstance: true
+  },
+  {
+    type: 'digital_gift',
+    title: 'Wedding / Amplop Digital & QRIS',
+    icon: '💳',
+    badge: 'Pernikahan',
+    description: 'Kartu tanda kasih cashless dengan tombol 1-Click Copy No. Rekening Bank, pratinjau gambar QRIS, dan konfirmasi WhatsApp RSVP.',
+    isSingleInstance: true
+  },
+  {
+    type: 'product_grid',
+    title: 'Store / Etalase Katalog Produk',
+    icon: '🛍️',
+    badge: 'Toko Online',
+    description: 'Grid etalase produk katalog dengan badge diskon, perbandingan harga promo vs asli, thumbnail foto, & tombol Checkout WA.',
+    isSingleInstance: true
+  },
+  {
+    type: 'store_guarantee',
+    title: 'Store / Jaminan & Garansi Toko',
+    icon: '🛡️',
+    badge: 'Toko Online',
+    description: 'Lencana kepercayaan pembeli seperti garansi 100% original, pengiriman cepat, ganti baru, & admin CS fast response.',
+    isSingleInstance: true
+  },
+  {
+    type: 'course_curriculum',
+    title: 'E-Course / Silabus & Kurikulum',
+    icon: '📚',
+    badge: 'Kelas Online',
+    description: 'Daftar modul materi pembelajaran terstruktur lengkap dengan checklist daftar materi, durasi video, & sumber daya.',
+    isSingleInstance: true
+  },
+  {
+    type: 'course_mentor',
+    title: 'E-Course / Profil Instruktur Mentor',
+    icon: '👨‍🏫',
+    badge: 'Kelas Online',
+    description: 'Kartu biografi instruktur utama lengkap dengan lencana statistik alumni, tahun pengalaman, & tautan LinkedIn/Portofolio.',
+    isSingleInstance: true
+  },
+  {
     type: 'faq',
     title: 'FAQ / Pertanyaan Umum',
     icon: '❓',

@@ -207,30 +207,31 @@ export const V2_STARTER_PRESETS = [
         }
       },
       {
-        id: 'sec-services-toko',
-        type: 'services',
-        variant: 'grid-navy',
+        id: 'sec-product-grid-toko',
+        type: 'product_grid',
+        variant: 'navy',
         content: {
-          title: 'Etalase Produk Unggulan',
-          items: [
-            { title: 'Produk Best Seller #1', desc: 'Produk terfavorit pelanggan dengan bahan kualitas tinggi & garansi puas.' },
-            { title: 'Produk New Arrival #2', desc: 'Koleksi edisi terbatas terbaru dengan diskon spesial minggu ini.' },
-            { title: 'Produk Paket Promo #3', desc: 'Paket bundling hemat dengan harga paling terjangkau.' }
+          title: 'Katalog Produk Pilihan Terbaik',
+          subtitle: 'Temukan koleksi produk berkualitas tinggi dengan pemesanan mudah secara langsung ke WhatsApp Admin.',
+          whatsapp: '6281234567890',
+          products: [
+            { name: 'Koleksi Best Seller #1', category: 'Best Seller', sale_price: 'Rp 149.000', original_price: 'Rp 299.000', badge: 'Diskon 50%', description: 'Produk unggulan favorit pelanggan dengan bahan kualitas tinggi & garansi puas.' },
+            { name: 'Koleksi New Arrival #2', category: 'New Arrival', sale_price: 'Rp 199.000', original_price: 'Rp 399.000', badge: 'Terlaris', description: 'Desain elegan dan eksklusif edisi terbatas minggu ini.' },
+            { name: 'Paket Bundling Hemat #3', category: 'Promo Paket', sale_price: 'Rp 279.000', original_price: 'Rp 599.000', badge: 'Hemat BANYAK', description: 'Paket kombinasi hemat isi 2 item serba praktis.' }
           ]
         }
       },
       {
-        id: 'sec-custom-toko',
-        type: 'custom',
-        variant: 'cards-navy',
+        id: 'sec-store-guarantee-toko',
+        type: 'store_guarantee',
+        variant: 'navy',
         content: {
-          badge_text: 'JAMINAN OLSHOP',
           title: 'Mengapa Belanja Di Toko Kami?',
-          subtitle: 'Kenyamanan dan kepuasan Anda adalah prioritas utama kami',
-          cards: [
-            { badge: '🚚', title: 'Pengiriman Cepat', description: 'Proses kirim amanah dan tepat waktu setiap hari.' },
-            { badge: '🛡️', title: 'Produk 100% Original', description: 'Jaminan kualitas barang asli tanpa cacat.' },
-            { badge: '💬', title: 'Admin Fast Response', description: 'Layanan customer service siap melayani order Anda.' }
+          features: [
+            { icon: '🚚', title: 'Pengiriman Cepat & Aman', desc: 'Proses kirim amanah dan tepat waktu ke seluruh Indonesia.' },
+            { icon: '🛡️', title: 'Produk 100% Original', desc: 'Jaminan kualitas barang asli tanpa cacat dan garansi ganti baru.' },
+            { icon: '💬', title: 'Admin Fast Response', desc: 'Layanan customer service ramah yang siap membantu order Anda.' },
+            { icon: '💳', title: 'Pembayaran Mudah', desc: 'Dukung transfer bank, e-wallet, hingga sistem COD di tempat.' }
           ]
         }
       },
@@ -278,54 +279,54 @@ export const V2_STARTER_PRESETS = [
         }
       },
       {
-        id: 'sec-about-wedding',
-        type: 'about',
-        variant: 'simple-navy',
+        id: 'sec-wedding-couple',
+        type: 'wedding_couple',
+        variant: 'navy',
         content: {
-          title: 'Mempelai Pria & Mempelai Wanita',
-          description: 'Romeo Adiputra (Putra Bpk. Ahmad & Ibu Siti) ❤️ Juliet Saraswati (Putri Bpk. Budi & Ibu Rini). Semoga Allah memberkahi pernikahan kami.'
+          bismillah_quote: 'Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan. Semoga Allah SWT memberkahi ikatan pernikahan kami.',
+          groom_name: 'Romeo Adiputra, S.T.',
+          groom_nickname: 'Romeo',
+          groom_parents: 'Putra Pertama dari Bpk. Ahmad & Ibu Siti',
+          groom_instagram: 'romeo_adiputra',
+          bride_name: 'Juliet Saraswati, S.Ked.',
+          bride_nickname: 'Juliet',
+          bride_parents: 'Putri Kedua dari Bpk. Budi & Ibu Rini',
+          bride_instagram: 'juliet_saraswati'
         }
       },
       {
-        id: 'sec-custom-events-wedding',
-        type: 'custom',
-        variant: 'cards-navy',
+        id: 'sec-wedding-events',
+        type: 'wedding_events',
+        variant: 'navy',
         content: {
-          badge_text: 'AGENDA ACARA',
           title: 'Rangkaian Acara Pernikahan',
           subtitle: 'Pelaksanaan Akad Nikah & Resepsi Pernikahan',
-          cards: [
-            { badge: '💍', title: 'Akad Nikah', description: 'Sabtu, 12 Desember 2026 | Pukul 08.00 WIB - Selesai. Gedung Pernikahan Indah.' },
-            { badge: '🎉', title: 'Resepsi Pernikahan', description: 'Sabtu, 12 Desember 2026 | Pukul 11.00 WIB - 15.00 WIB. Gedung Pernikahan Indah.' }
-          ]
+          akad_title: 'Akad Nikah',
+          akad_date: 'Sabtu, 12 Desember 2026',
+          akad_time: 'Pukul 08.00 WIB - Selesai',
+          akad_location: 'Gedung Pernikahan Indah',
+          akad_address: 'Jl. Merdeka No. 45, Bandung',
+          akad_maps_url: 'https://maps.google.com',
+          resepsi_title: 'Resepsi Pernikahan',
+          resepsi_date: 'Sabtu, 12 Desember 2026',
+          resepsi_time: 'Pukul 11.00 WIB - 15.00 WIB',
+          resepsi_location: 'Gedung Pernikahan Indah',
+          resepsi_address: 'Jl. Merdeka No. 45, Bandung',
+          resepsi_maps_url: 'https://maps.google.com'
         }
       },
       {
-        id: 'sec-custom-story-wedding',
-        type: 'custom',
-        variant: 'cards-navy',
+        id: 'sec-digital-gift',
+        type: 'digital_gift',
+        variant: 'navy',
         content: {
-          badge_text: 'LOVE STORY',
-          title: 'Kisah Kasih Mempelai',
-          subtitle: 'Linimasa perjalanan dari awal berteman hingga pelaminan',
-          cards: [
-            { badge: '2021', title: 'Awal Pertemuan', description: 'Pertama kali saling mengenal di kampus dan menemukan banyak kesamaan minat.' },
-            { badge: '2024', title: 'Pertunangan', description: 'Di hadapan keluarga besar, kami berkomitmen untuk melangkah ke pelaminan.' }
-          ]
-        }
-      },
-      {
-        id: 'sec-custom-gift-wedding',
-        type: 'custom',
-        variant: 'cards-navy',
-        content: {
-          badge_text: 'AMPLOP DIGITAL',
-          title: 'Tanda Kasih & Hadiah Digital',
-          subtitle: 'Bagi keluarga yang ingin memberikan tanda kasih secara cashless',
-          cards: [
-            { badge: '💳', title: 'Bank BCA', description: 'No. Rekening: 1234567890 a.n Romeo Adiputra' },
-            { badge: '📱', title: 'e-Wallet / QRIS', description: 'Scan QRIS atau transfer GoPay/OVO ke 081234567890' }
-          ]
+          title: 'Amplop Digital & Tanda Kasih',
+          subtitle: 'Doa restu Anda merupakan hadiah terindah bagi kami. Bagi keluarga yang ingin memberikan tanda kasih secara cashless:',
+          bank_accounts: [
+            { bank_name: 'Bank BCA', account_number: '1234567890', account_holder: 'Romeo Adiputra' },
+            { bank_name: 'Bank Mandiri', account_number: '0987654321', account_holder: 'Juliet Saraswati' }
+          ],
+          rsvp_whatsapp: '6281234567890'
         }
       },
       {
@@ -383,26 +384,28 @@ export const V2_STARTER_PRESETS = [
         }
       },
       {
-        id: 'sec-about-course',
-        type: 'about',
-        variant: 'simple-navy',
+        id: 'sec-course-mentor',
+        type: 'course_mentor',
+        variant: 'navy',
         content: {
-          title: 'Profil Mentor & Pengajar Kelas',
-          description: 'Dimentori langsung oleh praktisi yang telah berpengalaman lebih dari 7 tahun di bidang industri digital.'
+          name: 'Budi Pratama, S.Kom., M.T.',
+          role: 'Senior Digital Strategist & Lead Mentor',
+          bio: 'Berpengalaman lebih dari 8+ tahun memimpin proyek teknologi & strategi digital. Telah membimbing lebih dari 5.000+ peserta dari latar belakang pemula hingga mahir.',
+          experience_years: '8+ Tahun',
+          students_count: '5,000+ Alumni'
         }
       },
       {
-        id: 'sec-custom-modules-course',
-        type: 'custom',
-        variant: 'cards-navy',
+        id: 'sec-course-curriculum',
+        type: 'course_curriculum',
+        variant: 'navy',
         content: {
-          badge_text: 'SILABUS MODUL',
-          title: 'Kurikulum Pembelajaran Kelas',
-          subtitle: 'Materi terstruktur dari pemula hingga siap buka jasa sendiri',
-          cards: [
-            { badge: 'Modul 1', title: 'Fondasi Dasar & mindset Sukses', description: 'Memahami prinsip utama dan persiapan alat kerja gratis.' },
-            { badge: 'Modul 2', title: 'Taktik Praktek Studi Kasus Nyata', description: 'Langkah demi langkah mengeksekusi strategi yang sudah terbukti.' },
-            { badge: 'Modul 3', title: 'Monetisasi & Buka Penawaran', description: 'Cara mendapatkan klien pertama dan mematok harga tinggi.' }
+          title: 'Silabus & Kurikulum Belajar Lengkap',
+          subtitle: 'Daftar materi pembelajaran terstruktur yang dirancang khusus untuk menguasai skill hingga tuntas.',
+          modules: [
+            { module_number: 'Modul 1', title: 'Fondasi Dasar & Mindset Sukses', duration: '4 Video (45 Menit)', lessons: ['Pengenalan Konsep & Ekosistem Utama', 'Instalasi Tools & Setup Lingkungan Kerja', 'Struktur Dasar & Workflow Profesional', 'Studi Kasus Pertama'] },
+            { module_number: 'Modul 2', title: 'Penerapan Praktik & Strategi Lanjutan', duration: '6 Video (90 Menit)', lessons: ['Teknik Pembuatan Asset Kreatif', 'Optimasi Performa & Efisiensi', 'Integrasi Sistem & Otomatisasi', 'Troubleshooting & Solusi Masalah'] },
+            { module_number: 'Modul 3', title: 'Monetisasi & Peluncuran Proyek', duration: '5 Video (60 Menit)', lessons: ['Strategi Menentukan Pricing & Penawaran', 'Cara Publikasi & Monetisasi Hasil Karya', 'Checklist Peluncuran Proyek Mandiri', 'Studi Kasus Sukses Alumni'] }
           ]
         }
       },

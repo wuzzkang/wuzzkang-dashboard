@@ -9505,7 +9505,498 @@ function GenerateContent() {
                                  </div>
                                )}
 
-                              {section.type === 'contact' && (
+                              
+                               {section.type === 'wedding_couple' && (
+                                 <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Kutipan & Profil Mempelai</label>
+                                     {renderAIV2Button(section.id, 'wedding_couple')}
+                                   </div>
+                                   <div>
+                                     <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Kutipan Bismillah / Doa Restu</label>
+                                     <textarea
+                                       value={section.content.bismillah_quote || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { bismillah_quote: e.target.value })}
+                                       placeholder="Maha Suci Allah yang telah menciptakan..."
+                                       rows={2}
+                                       className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                     />
+                                   </div>
+
+                                   {/* Groom Inputs */}
+                                   <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+                                     <span className="text-[9px] font-extrabold text-orange-400 uppercase tracking-wider block">🤵 Mempelai Pria (Groom)</span>
+                                     <div className="grid grid-cols-2 gap-2">
+                                       <div>
+                                         <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Lengkap</label>
+                                         <input
+                                           type="text"
+                                           value={section.content.groom_name || ''}
+                                           onChange={(e) => handleUpdateSectionContent(section.id, { groom_name: e.target.value })}
+                                           placeholder="Romeo Adiputra, S.T."
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                       <div>
+                                         <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Panggilan</label>
+                                         <input
+                                           type="text"
+                                           value={section.content.groom_nickname || ''}
+                                           onChange={(e) => handleUpdateSectionContent(section.id, { groom_nickname: e.target.value })}
+                                           placeholder="Romeo"
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                     </div>
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Info Orang Tua</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.groom_parents || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { groom_parents: e.target.value })}
+                                         placeholder="Putra Pertama dari Bpk. Ahmad & Ibu Siti"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Username Instagram</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.groom_instagram || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { groom_instagram: e.target.value })}
+                                         placeholder="romeo_adiputra"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                   </div>
+
+                                   {/* Bride Inputs */}
+                                   <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+                                     <span className="text-[9px] font-extrabold text-orange-400 uppercase tracking-wider block">👰 Mempelai Wanita (Bride)</span>
+                                     <div className="grid grid-cols-2 gap-2">
+                                       <div>
+                                         <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Lengkap</label>
+                                         <input
+                                           type="text"
+                                           value={section.content.bride_name || ''}
+                                           onChange={(e) => handleUpdateSectionContent(section.id, { bride_name: e.target.value })}
+                                           placeholder="Juliet Saraswati, S.Ked."
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                       <div>
+                                         <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Panggilan</label>
+                                         <input
+                                           type="text"
+                                           value={section.content.bride_nickname || ''}
+                                           onChange={(e) => handleUpdateSectionContent(section.id, { bride_nickname: e.target.value })}
+                                           placeholder="Juliet"
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                     </div>
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Info Orang Tua</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.bride_parents || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { bride_parents: e.target.value })}
+                                         placeholder="Putri Kedua dari Bpk. Budi & Ibu Rini"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                     <div>
+                                       <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Username Instagram</label>
+                                       <input
+                                         type="text"
+                                         value={section.content.bride_instagram || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { bride_instagram: e.target.value })}
+                                         placeholder="juliet_saraswati"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                   </div>
+                                 </div>
+                               )}
+
+                               {section.type === 'wedding_events' && (
+                                 <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Jadwal Akad & Resepsi</label>
+                                     {renderAIV2Button(section.id, 'wedding_events')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Rangkaian Acara Pernikahan..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                   <input
+                                     type="text"
+                                     value={section.content.subtitle || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { subtitle: e.target.value })}
+                                     placeholder="Pelaksanaan Akad Nikah & Resepsi..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+
+                                   {/* Akad Nikah */}
+                                   <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+                                     <span className="text-[9px] font-extrabold text-orange-400 uppercase tracking-wider block">💍 Pelaksanaan Akad Nikah</span>
+                                     <div className="grid grid-cols-2 gap-2">
+                                       <input
+                                         type="text"
+                                         value={section.content.akad_date || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { akad_date: e.target.value })}
+                                         placeholder="Sabtu, 12 Des 2026"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                       <input
+                                         type="text"
+                                         value={section.content.akad_time || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { akad_time: e.target.value })}
+                                         placeholder="Pukul 08.00 WIB"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                     <input
+                                       type="text"
+                                       value={section.content.akad_location || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { akad_location: e.target.value })}
+                                       placeholder="Nama Tempat (e.g. Gedung Pernikahan Indah)..."
+                                       className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                     />
+                                     <input
+                                       type="text"
+                                       value={section.content.akad_address || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { akad_address: e.target.value })}
+                                       placeholder="Alamat Lengkap Gedung Akad..."
+                                       className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                     />
+                                     <input
+                                       type="text"
+                                       value={section.content.akad_maps_url || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { akad_maps_url: e.target.value })}
+                                       placeholder="Link Google Maps Akad URL..."
+                                       className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                     />
+                                   </div>
+
+                                   {/* Resepsi Pernikahan */}
+                                   <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+                                     <span className="text-[9px] font-extrabold text-orange-400 uppercase tracking-wider block">🎉 Pelaksanaan Resepsi Pernikahan</span>
+                                     <div className="grid grid-cols-2 gap-2">
+                                       <input
+                                         type="text"
+                                         value={section.content.resepsi_date || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { resepsi_date: e.target.value })}
+                                         placeholder="Sabtu, 12 Des 2026"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                       <input
+                                         type="text"
+                                         value={section.content.resepsi_time || ''}
+                                         onChange={(e) => handleUpdateSectionContent(section.id, { resepsi_time: e.target.value })}
+                                         placeholder="Pukul 11.00 - 15.00 WIB"
+                                         className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                       />
+                                     </div>
+                                     <input
+                                       type="text"
+                                       value={section.content.resepsi_location || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { resepsi_location: e.target.value })}
+                                       placeholder="Nama Tempat Resepsi..."
+                                       className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                     />
+                                     <input
+                                       type="text"
+                                       value={section.content.resepsi_address || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { resepsi_address: e.target.value })}
+                                       placeholder="Alamat Lengkap Resepsi..."
+                                       className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                     />
+                                     <input
+                                       type="text"
+                                       value={section.content.resepsi_maps_url || ''}
+                                       onChange={(e) => handleUpdateSectionContent(section.id, { resepsi_maps_url: e.target.value })}
+                                       placeholder="Link Google Maps Resepsi URL..."
+                                       className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                     />
+                                   </div>
+                                 </div>
+                               )}
+
+                               {section.type === 'digital_gift' && (
+                                 <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Amplop Digital & QRIS</label>
+                                     {renderAIV2Button(section.id, 'digital_gift')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Amplop Digital & Tanda Kasih..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                   <input
+                                     type="text"
+                                     value={section.content.rsvp_whatsapp || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { rsvp_whatsapp: e.target.value })}
+                                     placeholder="No. WhatsApp RSVP (e.g. 6281234567890)..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+
+                                   {/* Bank Accounts List */}
+                                   <div className="space-y-2 pt-2 border-t border-theme-border/60">
+                                     <div className="flex justify-between items-center">
+                                       <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider">Daftar Rekening Bank ({(section.content.bank_accounts || []).length})</label>
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           const currentList = [...(section.content.bank_accounts || [])];
+                                           currentList.push({ bank_name: 'Bank BCA', account_number: '', account_holder: '' });
+                                           handleUpdateSectionContent(section.id, { bank_accounts: currentList });
+                                         }}
+                                         className="text-[9px] font-bold text-theme-accent hover:underline flex items-center gap-1"
+                                       >
+                                         + Tambah Rekening
+                                       </button>
+                                     </div>
+
+                                     {(section.content.bank_accounts || []).map((acc, accIdx) => (
+                                       <div key={accIdx} className="p-2.5 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+                                         <div className="flex justify-between items-center">
+                                           <span className="text-[9px] font-bold text-theme-text-sec">Rekening #{accIdx + 1}</span>
+                                           <button
+                                             type="button"
+                                             onClick={() => {
+                                               const currentList = [...(section.content.bank_accounts || [])];
+                                               currentList.splice(accIdx, 1);
+                                               handleUpdateSectionContent(section.id, { bank_accounts: currentList });
+                                             }}
+                                             className="text-red-400 hover:text-red-300 text-xs font-bold px-1"
+                                           >
+                                             ✕
+                                           </button>
+                                         </div>
+                                         <div className="grid grid-cols-2 gap-2">
+                                           <input
+                                             type="text"
+                                             value={acc.bank_name || ''}
+                                             onChange={(e) => {
+                                               const currentList = [...(section.content.bank_accounts || [])];
+                                               currentList[accIdx] = { ...currentList[accIdx], bank_name: e.target.value };
+                                               handleUpdateSectionContent(section.id, { bank_accounts: currentList });
+                                             }}
+                                             placeholder="Bank BCA"
+                                             className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                           />
+                                           <input
+                                             type="text"
+                                             value={acc.account_number || ''}
+                                             onChange={(e) => {
+                                               const currentList = [...(section.content.bank_accounts || [])];
+                                               currentList[accIdx] = { ...currentList[accIdx], account_number: e.target.value };
+                                               handleUpdateSectionContent(section.id, { bank_accounts: currentList });
+                                             }}
+                                             placeholder="No. Rekening..."
+                                             className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                           />
+                                         </div>
+                                         <input
+                                           type="text"
+                                           value={acc.account_holder || ''}
+                                           onChange={(e) => {
+                                             const currentList = [...(section.content.bank_accounts || [])];
+                                             currentList[accIdx] = { ...currentList[accIdx], account_holder: e.target.value };
+                                             handleUpdateSectionContent(section.id, { bank_accounts: currentList });
+                                           }}
+                                           placeholder="Nama Pemilik Rekening..."
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                     ))}
+                                   </div>
+                                 </div>
+                               )}
+
+                               {section.type === 'product_grid' && (
+                                 <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Etalase Produk Toko Online</label>
+                                     {renderAIV2Button(section.id, 'product_grid')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Judul Katalog Produk..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                   <input
+                                     type="text"
+                                     value={section.content.whatsapp || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { whatsapp: e.target.value })}
+                                     placeholder="No. WhatsApp Order..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+
+                                   {/* Products Repeater */}
+                                   <div className="space-y-2 pt-2 border-t border-theme-border/60">
+                                     <div className="flex justify-between items-center">
+                                       <label className="block text-[9px] font-bold text-theme-accent uppercase tracking-wider">Daftar Produk Katalog ({(section.content.products || []).length})</label>
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           const currentList = [...(section.content.products || [])];
+                                           currentList.push({ name: '', category: 'Best Seller', sale_price: '', original_price: '', badge: '', description: '' });
+                                           handleUpdateSectionContent(section.id, { products: currentList });
+                                         }}
+                                         className="text-[9px] font-bold text-theme-accent hover:underline flex items-center gap-1"
+                                       >
+                                         + Tambah Produk
+                                       </button>
+                                     </div>
+
+                                     {(section.content.products || []).map((prod, pIdx) => (
+                                       <div key={pIdx} className="p-2.5 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+                                         <div className="flex justify-between items-center">
+                                           <span className="text-[9px] font-bold text-theme-text-sec">Produk #{pIdx + 1}</span>
+                                           <button
+                                             type="button"
+                                             onClick={() => {
+                                               const currentList = [...(section.content.products || [])];
+                                               currentList.splice(pIdx, 1);
+                                               handleUpdateSectionContent(section.id, { products: currentList });
+                                             }}
+                                             className="text-red-400 hover:text-red-300 text-xs font-bold px-1"
+                                           >
+                                             ✕
+                                           </button>
+                                         </div>
+                                         <input
+                                           type="text"
+                                           value={prod.name || ''}
+                                           onChange={(e) => {
+                                             const currentList = [...(section.content.products || [])];
+                                             currentList[pIdx] = { ...currentList[pIdx], name: e.target.value };
+                                             handleUpdateSectionContent(section.id, { products: currentList });
+                                           }}
+                                           placeholder="Nama Produk..."
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                         <div className="grid grid-cols-2 gap-2">
+                                           <input
+                                             type="text"
+                                             value={prod.sale_price || ''}
+                                             onChange={(e) => {
+                                               const currentList = [...(section.content.products || [])];
+                                               currentList[pIdx] = { ...currentList[pIdx], sale_price: e.target.value };
+                                               handleUpdateSectionContent(section.id, { products: currentList });
+                                             }}
+                                             placeholder="Harga Promo..."
+                                             className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                           />
+                                           <input
+                                             type="text"
+                                             value={prod.original_price || ''}
+                                             onChange={(e) => {
+                                               const currentList = [...(section.content.products || [])];
+                                               currentList[pIdx] = { ...currentList[pIdx], original_price: e.target.value };
+                                               handleUpdateSectionContent(section.id, { products: currentList });
+                                             }}
+                                             placeholder="Harga Coret..."
+                                             className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                           />
+                                         </div>
+                                         <textarea
+                                           value={prod.description || ''}
+                                           onChange={(e) => {
+                                             const currentList = [...(section.content.products || [])];
+                                             currentList[pIdx] = { ...currentList[pIdx], description: e.target.value };
+                                             handleUpdateSectionContent(section.id, { products: currentList });
+                                           }}
+                                           placeholder="Deskripsi singkat produk..."
+                                           rows={2}
+                                           className="block w-full px-2.5 py-1.5 bg-theme-surface border border-theme-border rounded-lg text-xs text-theme-text focus:outline-none"
+                                         />
+                                       </div>
+                                     ))}
+                                   </div>
+                                 </div>
+                               )}
+
+                               {section.type === 'store_guarantee' && (
+                                 <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Jaminan Belanja Toko</label>
+                                     {renderAIV2Button(section.id, 'store_guarantee')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Mengapa Belanja Di Toko Kami?..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                 </div>
+                               )}
+
+                               {section.type === 'course_curriculum' && (
+                                 <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Silabus & Modul Belajar</label>
+                                     {renderAIV2Button(section.id, 'course_curriculum')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.title || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { title: e.target.value })}
+                                     placeholder="Silabus & Kurikulum Belajar..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                 </div>
+                               )}
+
+                               {section.type === 'course_mentor' && (
+                                 <div className="space-y-3">
+                                   {renderSectionStylePicker(section)}
+                                   <div className="flex justify-between items-center">
+                                     <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Profil Instruktur / Mentor</label>
+                                     {renderAIV2Button(section.id, 'course_mentor')}
+                                   </div>
+                                   <input
+                                     type="text"
+                                     value={section.content.name || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { name: e.target.value })}
+                                     placeholder="Budi Pratama, S.Kom., M.T."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                   <input
+                                     type="text"
+                                     value={section.content.role || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { role: e.target.value })}
+                                     placeholder="Lead Mentor & Digital Strategist..."
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                   <textarea
+                                     value={section.content.bio || ''}
+                                     onChange={(e) => handleUpdateSectionContent(section.id, { bio: e.target.value })}
+                                     placeholder="Biografi singkat mentor..."
+                                     rows={3}
+                                     className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+                                   />
+                                 </div>
+                               )}
+
+                               {section.type === 'contact' && (
                                 <div className="space-y-2.5">
                                   {renderSectionStylePicker(section)}
                                   <div className="flex justify-between items-center">
