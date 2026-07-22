@@ -293,10 +293,12 @@ export const V2_STARTER_PRESETS = [
           groom_nickname: 'Romeo',
           groom_parents: 'Putra Pertama dari Bpk. Ahmad & Ibu Siti',
           groom_instagram: 'romeo_adiputra',
+          groom_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg',
           bride_name: 'Juliet Saraswati, S.Ked.',
           bride_nickname: 'Juliet',
           bride_parents: 'Putri Kedua dari Bpk. Budi & Ibu Rini',
-          bride_instagram: 'juliet_saraswati'
+          bride_instagram: 'juliet_saraswati',
+          bride_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg'
         }
       },
       {

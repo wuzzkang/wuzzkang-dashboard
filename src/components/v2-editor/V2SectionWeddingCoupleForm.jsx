@@ -1,11 +1,18 @@
 'use client';
 import React from 'react';
+import ImagePickerField from '@/components/ImagePickerField';
+
+const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg';
+const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
 
 export function V2SectionWeddingCoupleForm({
   section,
   handleUpdateSectionContent,
   renderSectionStylePicker,
-  renderAIV2Button
+  renderAIV2Button,
+  session,
+  handleDeleteImage,
+  handleUploadImage
 }) {
   return (
     <div className="space-y-3">
@@ -26,8 +33,33 @@ export function V2SectionWeddingCoupleForm({
       </div>
 
       {/* Groom Inputs */}
-      <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+      <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2.5">
         <span className="text-[9px] font-extrabold text-orange-400 uppercase tracking-wider block">🤵 Mempelai Pria (Groom)</span>
+        
+        {/* Groom Photo Upload */}
+        <div>
+          <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Foto Mempelai Pria</label>
+          <ImagePickerField
+            checkboxId={`v2_groom_photo_${section.id}`}
+            checkboxLabel="Gunakan Foto Kustom / Unsplash untuk Mempelai Pria"
+            unsplashQuery="groom,man,portrait"
+            imageUrl={section.content.groom_photo || section.content.groom_image || DEFAULT_GROOM_AVATAR}
+            onImageChange={(val) => {
+              if (!val && (section.content.groom_photo || section.content.groom_image)) {
+                handleDeleteImage && handleDeleteImage(section.content.groom_photo || section.content.groom_image);
+              }
+              handleUpdateSectionContent(section.id, { groom_photo: val || DEFAULT_GROOM_AVATAR, groom_image: val || DEFAULT_GROOM_AVATAR });
+            }}
+            apiToken={session?.access_token}
+            apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+            isEnabled={true}
+            source={section.content.groom_photo_source || 'upload'}
+            onSourceChange={(src) => handleUpdateSectionContent(section.id, { groom_photo_source: src })}
+            onUpload={(file) => handleUploadImage && handleUploadImage(file, `v2_groom_${section.id}`)}
+            uploadType={`v2_groom_${section.id}`}
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Lengkap</label>
@@ -73,8 +105,33 @@ export function V2SectionWeddingCoupleForm({
       </div>
 
       {/* Bride Inputs */}
-      <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2">
+      <div className="p-3 bg-theme-bg/60 border border-theme-border/70 rounded-xl space-y-2.5">
         <span className="text-[9px] font-extrabold text-orange-400 uppercase tracking-wider block">👰 Mempelai Wanita (Bride)</span>
+
+        {/* Bride Photo Upload */}
+        <div>
+          <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Foto Mempelai Wanita</label>
+          <ImagePickerField
+            checkboxId={`v2_bride_photo_${section.id}`}
+            checkboxLabel="Gunakan Foto Kustom / Unsplash untuk Mempelai Wanita"
+            unsplashQuery="bride,woman,portrait"
+            imageUrl={section.content.bride_photo || section.content.bride_image || DEFAULT_BRIDE_AVATAR}
+            onImageChange={(val) => {
+              if (!val && (section.content.bride_photo || section.content.bride_image)) {
+                handleDeleteImage && handleDeleteImage(section.content.bride_photo || section.content.bride_image);
+              }
+              handleUpdateSectionContent(section.id, { bride_photo: val || DEFAULT_BRIDE_AVATAR, bride_image: val || DEFAULT_BRIDE_AVATAR });
+            }}
+            apiToken={session?.access_token}
+            apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+            isEnabled={true}
+            source={section.content.bride_photo_source || 'upload'}
+            onSourceChange={(src) => handleUpdateSectionContent(section.id, { bride_photo_source: src })}
+            onUpload={(file) => handleUploadImage && handleUploadImage(file, `v2_bride_${section.id}`)}
+            uploadType={`v2_bride_${section.id}`}
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Lengkap</label>

@@ -1,7 +1,10 @@
 import { getSectionStyle } from '../../../utils/sectionStyle.js';
 
+const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg';
+const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
+
 /**
- * Modular Section: Wedding Couple (V2 Preview)
+ * Modular Section: Wedding Couple (V2)
  * Profile card for Groom & Bride
  */
 export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet', domain: 'siluet.web.id' }) {
@@ -11,25 +14,19 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const groomNickname = data.groom_nickname || 'Romeo';
     const groomParents = data.groom_parents || 'Putra Pertama dari Bpk. Ahmad & Ibu Siti';
     const groomIg = data.groom_instagram || '';
-    const groomPhoto = data.groom_photo || '';
+    const groomPhoto = data.groom_photo || data.groom_image || DEFAULT_GROOM_AVATAR;
 
     const brideName = data.bride_name || 'Juliet Saraswati, S.Ked.';
     const brideNickname = data.bride_nickname || 'Juliet';
     const brideParents = data.bride_parents || 'Putri Kedua dari Bpk. Budi & Ibu Rini';
     const brideIg = data.bride_instagram || '';
-    const bridePhoto = data.bride_photo || '';
+    const bridePhoto = data.bride_photo || data.bride_image || DEFAULT_BRIDE_AVATAR;
 
     const bgStyle = data.bg_style || 'navy';
     const bgShade = data.bg_shade || 'solid';
     const transition = data.transition || 'none';
 
     const { theme, sectionBgClass, patternHtml, dividerHtml } = getSectionStyle(bgStyle, bgShade, data.bg_brightness || 'default', transition);
-
-    const defaultAvatarSvg = (initials) => `
-        <div class="w-28 h-28 md:w-36 md:h-36 rounded-full bg-theme-accent/10 border-2 border-orange-500/40 flex items-center justify-center text-2xl md:text-3xl font-extrabold text-orange-400 shadow-xl mx-auto">
-            ${initials}
-        </div>
-    `;
 
     return `
         <section id="wedding_couple" class="py-20 md:py-28 px-6 ${sectionBgClass} relative overflow-hidden">
@@ -49,9 +46,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
                     <!-- Groom Profile -->
                     <div class="${theme.cardBg} border rounded-3xl p-8 text-center flex flex-col items-center shadow-xl transition-all hover:-translate-y-1">
                         <div class="mb-6">
-                            ${groomPhoto ? `
-                                <img src="${groomPhoto}" alt="${groomName}" class="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover border-4 border-orange-500/40 shadow-xl mx-auto" />
-                            ` : defaultAvatarSvg(groomNickname.charAt(0) || 'R')}
+                            <img src="${groomPhoto}" alt="${groomName}" class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-orange-500/40 shadow-xl mx-auto ring-4 ring-orange-500/10" />
                         </div>
                         <h3 class="text-xl md:text-2xl font-extrabold ${theme.cardTitle} mb-1 tracking-tight">${groomName}</h3>
                         <span class="text-xs font-bold text-orange-400 uppercase tracking-wider mb-3">Mempelai Pria (${groomNickname})</span>
@@ -66,9 +61,7 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
                     <!-- Bride Profile -->
                     <div class="${theme.cardBg} border rounded-3xl p-8 text-center flex flex-col items-center shadow-xl transition-all hover:-translate-y-1">
                         <div class="mb-6">
-                            ${bridePhoto ? `
-                                <img src="${bridePhoto}" alt="${brideName}" class="w-28 h-28 md:w-36 md:h-36 rounded-full object-cover border-4 border-orange-500/40 shadow-xl mx-auto" />
-                            ` : defaultAvatarSvg(brideNickname.charAt(0) || 'J')}
+                            <img src="${bridePhoto}" alt="${brideName}" class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-orange-500/40 shadow-xl mx-auto ring-4 ring-orange-500/10" />
                         </div>
                         <h3 class="text-xl md:text-2xl font-extrabold ${theme.cardTitle} mb-1 tracking-tight">${brideName}</h3>
                         <span class="text-xs font-bold text-orange-400 uppercase tracking-wider mb-3">Mempelai Wanita (${brideNickname})</span>
