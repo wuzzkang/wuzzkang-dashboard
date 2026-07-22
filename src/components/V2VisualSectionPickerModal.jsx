@@ -69,6 +69,14 @@ const SECTION_CATALOG = [
     isSingleInstance: true
   },
   {
+    type: 'wedding_countdown',
+    title: 'Wedding / Live Countdown Timer',
+    icon: '⏳',
+    badge: 'Pernikahan',
+    description: 'Penghitung mundur waktu nyata (Hari, Jam, Menit, Detik) menuju hari-H Akad Nikah & Resepsi Pernikahan.',
+    isSingleInstance: true
+  },
+  {
     type: 'wedding_events',
     title: 'Wedding / Rangkaian Acara',
     icon: '📅',
@@ -77,11 +85,35 @@ const SECTION_CATALOG = [
     isSingleInstance: true
   },
   {
+    type: 'wedding_story',
+    title: 'Wedding / Love Story Timeline',
+    icon: '💕',
+    badge: 'Pernikahan',
+    description: 'Linimasa perjalanan kisah cinta pasangan (Pertama Bertemu, Momen Lamaran, Menuju Pernikahan).',
+    isSingleInstance: true
+  },
+  {
+    type: 'wedding_gallery',
+    title: 'Wedding / Galeri Foto Prewedding',
+    icon: '📸',
+    badge: 'Pernikahan',
+    description: 'Grid album galeri foto kenangan momen bahagia mempelai.',
+    isSingleInstance: true
+  },
+  {
     type: 'digital_gift',
     title: 'Wedding / Amplop Digital & QRIS',
     icon: '💳',
     badge: 'Pernikahan',
     description: 'Kartu tanda kasih cashless dengan tombol 1-Click Copy No. Rekening Bank, pratinjau gambar QRIS, dan konfirmasi WhatsApp RSVP.',
+    isSingleInstance: true
+  },
+  {
+    type: 'wedding_wishes',
+    title: 'Wedding / Buku Tamu & Ucapan Doa',
+    icon: '💌',
+    badge: 'Pernikahan',
+    description: 'Form interaktif ucapan doa restu dan konfirmasi kehadiran tamu lengkap dengan feed ucapan.',
     isSingleInstance: true
   },
   {

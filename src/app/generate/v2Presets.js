@@ -295,6 +295,16 @@ export const V2_STARTER_PRESETS = [
         }
       },
       {
+        id: 'sec-wedding-countdown',
+        type: 'wedding_countdown',
+        variant: 'navy',
+        content: {
+          title: 'Menuju Hari Bahagia',
+          subtitle: 'Hitung mundur momen istimewa pernikahan kami',
+          target_date: '2026-12-12T08:00:00'
+        }
+      },
+      {
         id: 'sec-wedding-events',
         type: 'wedding_events',
         variant: 'navy',
@@ -316,6 +326,35 @@ export const V2_STARTER_PRESETS = [
         }
       },
       {
+        id: 'sec-wedding-story',
+        type: 'wedding_story',
+        variant: 'navy',
+        content: {
+          title: 'Kisah Kasih Kami',
+          subtitle: 'Perjalanan cinta kami dari pertama bertemu hingga ikatan suci pernikahan',
+          stories: [
+            { date: 'Tahun 2021', title: 'Awal Pertemuan Pertama', desc: 'Kami pertama kali bertemu dalam suatu acara kampus dan berlanjut menjalin persahabatan hangat.' },
+            { date: 'Tahun 2024', title: 'Momen Lamaran Kebahagiaan', desc: 'Dengan restu kedua orang tua, kami mengikat janji suci lamaran untuk melangkah ke jenjang yang lebih serius.' },
+            { date: 'Tahun 2026', title: 'Menuju Hari Pernikahan', desc: 'Insya Allah kami akan mengikat janji suci pernikahan dan mengarungi bahtera rumah tangga yang sakinah.' }
+          ]
+        }
+      },
+      {
+        id: 'sec-wedding-gallery',
+        type: 'wedding_gallery',
+        variant: 'navy',
+        content: {
+          title: 'Galeri Album Prewedding',
+          subtitle: 'Momen kebersamaan dan kenangan indah mempelai',
+          images: [
+            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80'
+          ]
+        }
+      },
+      {
         id: 'sec-digital-gift',
         type: 'digital_gift',
         variant: 'navy',
@@ -327,6 +366,20 @@ export const V2_STARTER_PRESETS = [
             { bank_name: 'Bank Mandiri', account_number: '0987654321', account_holder: 'Juliet Saraswati' }
           ],
           rsvp_whatsapp: '6281234567890'
+        }
+      },
+      {
+        id: 'sec-wedding-wishes',
+        type: 'wedding_wishes',
+        variant: 'navy',
+        content: {
+          title: 'Buku Tamu & Doa Restu',
+          subtitle: 'Kirimkan pesan doa restu dan konfirmasi kehadiran Anda untuk mempelai',
+          wishes: [
+            { name: 'Ahmad & Keluarga', status: 'Hadir', message: 'Selamat atas pernikahan Romeo & Juliet. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah!' },
+            { name: 'Siti Rahma', status: 'Hadir', message: 'Happy wedding Romeo & Juliet! Selamat menempuh hidup baru dan bahagia selalu!' },
+            { name: 'Budi Santoso', status: 'Ragu', message: 'Barakallahu lakum! Semoga acaranya berjalan lancar dan penuh keberkahan.' }
+          ]
         }
       },
       {

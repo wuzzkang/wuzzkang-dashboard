@@ -1,4 +1,4 @@
-'use me';
+'use client';
 import React from 'react';
 
 export function V2SectionWeddingCoupleForm({

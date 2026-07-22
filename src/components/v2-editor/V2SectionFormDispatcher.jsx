@@ -5,6 +5,12 @@ import { V2SectionWeddingEventsForm } from './V2SectionWeddingEventsForm';
 import { V2SectionDigitalGiftForm } from './V2SectionDigitalGiftForm';
 import { V2SectionProductGridForm } from './V2SectionProductGridForm';
 import {
+  V2SectionWeddingCountdownForm,
+  V2SectionWeddingStoryForm,
+  V2SectionWeddingGalleryForm,
+  V2SectionWeddingWishesForm
+} from './V2SectionWeddingForms';
+import {
   V2SectionHeaderForm,
   V2SectionHeroForm,
   V2SectionAboutForm,
@@ -120,6 +126,16 @@ export default function V2SectionFormDispatcher({
         />
       );
 
+    case 'wedding_countdown':
+      return (
+        <V2SectionWeddingCountdownForm
+          section={section}
+          handleUpdateSectionContent={handleUpdateSectionContent}
+          renderSectionStylePicker={renderSectionStylePicker}
+          renderAIV2Button={renderAIV2Button}
+        />
+      );
+
     case 'wedding_events':
       return (
         <V2SectionWeddingEventsForm
@@ -130,9 +146,39 @@ export default function V2SectionFormDispatcher({
         />
       );
 
+    case 'wedding_story':
+      return (
+        <V2SectionWeddingStoryForm
+          section={section}
+          handleUpdateSectionContent={handleUpdateSectionContent}
+          renderSectionStylePicker={renderSectionStylePicker}
+          renderAIV2Button={renderAIV2Button}
+        />
+      );
+
+    case 'wedding_gallery':
+      return (
+        <V2SectionWeddingGalleryForm
+          section={section}
+          handleUpdateSectionContent={handleUpdateSectionContent}
+          renderSectionStylePicker={renderSectionStylePicker}
+          renderAIV2Button={renderAIV2Button}
+        />
+      );
+
     case 'digital_gift':
       return (
         <V2SectionDigitalGiftForm
+          section={section}
+          handleUpdateSectionContent={handleUpdateSectionContent}
+          renderSectionStylePicker={renderSectionStylePicker}
+          renderAIV2Button={renderAIV2Button}
+        />
+      );
+
+    case 'wedding_wishes':
+      return (
+        <V2SectionWeddingWishesForm
           section={section}
           handleUpdateSectionContent={handleUpdateSectionContent}
           renderSectionStylePicker={renderSectionStylePicker}

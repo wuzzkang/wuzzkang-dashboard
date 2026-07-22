@@ -518,13 +518,24 @@ function GenerateContent() {
       case 'pricing': return '🏷️';
       case 'faq': return '❓';
       case 'contact': return '💬';
+      case 'wedding_couple': return '💍';
+      case 'wedding_countdown': return '⏳';
+      case 'wedding_events': return '📅';
+      case 'wedding_story': return '💕';
+      case 'wedding_gallery': return '📸';
+      case 'digital_gift': return '💳';
+      case 'wedding_wishes': return '💌';
+      case 'product_grid': return '🛍️';
+      case 'store_guarantee': return '🛡️';
+      case 'course_curriculum': return '📚';
+      case 'course_mentor': return '🎓';
       case 'custom': return '✦';
       default: return '🧩';
     }
   };
 
   const getSectionDisplayTitle = (section) => {
-    const rawTitle = section.content?.title || section.content?.headline || section.content?.badge_text || section.content?.brand_name || '';
+    const rawTitle = section.content?.title || section.content?.headline || section.content?.badge_text || section.content?.brand_name || section.content?.groom_name || '';
     if (rawTitle) {
       return rawTitle.length > 30 ? `${rawTitle.substring(0, 30)}...` : rawTitle;
     }
@@ -536,6 +547,17 @@ function GenerateContent() {
       case 'services': return 'Services / Layanan Grid';
       case 'pricing': return 'Pricing / Paket Harga';
       case 'faq': return 'FAQ / Pertanyaan Umum';
+      case 'wedding_couple': return 'Profil Mempelai Pria & Wanita';
+      case 'wedding_countdown': return 'Live Countdown Timer';
+      case 'wedding_events': return 'Jadwal Akad & Resepsi';
+      case 'wedding_story': return 'Love Story Timeline';
+      case 'wedding_gallery': return 'Galeri Album Prewedding';
+      case 'digital_gift': return 'Amplop Digital & QRIS';
+      case 'wedding_wishes': return 'Buku Tamu & Ucapan Doa';
+      case 'product_grid': return 'Etalase Katalog Produk';
+      case 'store_guarantee': return 'Jaminan Belanja Toko';
+      case 'course_curriculum': return 'Silabus & Modul Belajar';
+      case 'course_mentor': return 'Profil Instruktur Mentor';
       case 'contact': return 'Contact / WhatsApp CTA';
       case 'custom': return 'Custom / Feature Cards';
       default: return `${section.type.toUpperCase()} Section`;
