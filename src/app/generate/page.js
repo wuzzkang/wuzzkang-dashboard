@@ -4828,7 +4828,7 @@ function GenerateContent() {
       <Sidebar />
 
       {/* Main Content Area - Full Screen Responsive Desktop 12-Col / Mobile Stacked */}
-      <main className="flex-grow p-3 md:p-6 flex flex-col min-h-screen pt-20 lg:pt-24 pb-28 md:pb-12 w-full max-w-full mx-auto bg-theme-surface border-x border-theme-border relative transition-theme">
+      <main className="flex-grow p-3 md:p-6 flex flex-col min-h-screen pt-20 lg:pt-24 pb-48 md:pb-12 w-full max-w-full mx-auto bg-theme-surface border-x border-theme-border relative transition-theme">
         {/* Title */}
         <div className="mb-6 flex-shrink-0">
           <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>AI Siap Kerja Untukmu</h1>
@@ -8398,7 +8398,7 @@ function GenerateContent() {
 
                         {/* Section List Manager */}
                         <div className="space-y-3">
-                          <div className="flex justify-between items-center bg-theme-bg/60 p-3 rounded-2xl border border-theme-border">
+                          <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 justify-between items-start sm:items-center bg-theme-bg/60 p-3 rounded-2xl border border-theme-border">
                             <div>
                               <h4 className="text-xs font-bold text-theme-text uppercase tracking-wider">
                                 Kelola Section ({v2Sections.length})
@@ -8412,7 +8412,7 @@ function GenerateContent() {
                                   handleAddSection(e.target.value);
                                 }
                               }}
-                              className="bg-theme-accent text-theme-accent-text text-xs font-bold px-3 py-2 rounded-xl cursor-pointer focus:outline-none shadow-sm"
+                              className="w-full sm:w-auto bg-theme-accent text-theme-accent-text text-xs font-bold px-3 py-2.5 rounded-xl cursor-pointer focus:outline-none shadow-sm text-center"
                             >
                               <option value="">+ Tambah Section Baru</option>
                               <option value="header" disabled={v2Sections.some(s => s.type === 'header')}>Header / Menu Navigasi Top Bar {v2Sections.some(s => s.type === 'header') ? '✓ (Sudah Ada)' : ''}</option>
