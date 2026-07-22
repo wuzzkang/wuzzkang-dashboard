@@ -518,6 +518,7 @@ function GenerateContent() {
       case 'pricing': return '🏷️';
       case 'faq': return '❓';
       case 'contact': return '💬';
+      case 'wedding_hero': return '🌸';
       case 'wedding_couple': return '💍';
       case 'wedding_countdown': return '⏳';
       case 'wedding_events': return '📅';
@@ -547,6 +548,7 @@ function GenerateContent() {
       case 'services': return 'Services / Layanan Grid';
       case 'pricing': return 'Pricing / Paket Harga';
       case 'faq': return 'FAQ / Pertanyaan Umum';
+      case 'wedding_hero': return 'Cover Depan Undangan Pernikahan';
       case 'wedding_couple': return 'Profil Mempelai Pria & Wanita';
       case 'wedding_countdown': return 'Live Countdown Timer';
       case 'wedding_events': return 'Jadwal Akad & Resepsi';

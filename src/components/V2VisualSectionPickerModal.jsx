@@ -61,6 +61,14 @@ const SECTION_CATALOG = [
     isSingleInstance: false
   },
   {
+    type: 'wedding_hero',
+    title: 'Wedding / Cover Depan & Header',
+    icon: '🌸',
+    badge: 'Pernikahan',
+    description: 'Cover utama undangan pernikahan romantis dengan nama pengantin cursive, kaligrafi Walimatul Ursy, dan tombol Buka Undangan.',
+    isSingleInstance: true
+  },
+  {
     type: 'wedding_couple',
     title: 'Wedding / Profil Mempelai',
     icon: '💍',

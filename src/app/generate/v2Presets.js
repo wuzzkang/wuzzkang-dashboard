@@ -270,12 +270,17 @@ export const V2_STARTER_PRESETS = [
     sections: [
       {
         id: 'sec-hero-wedding',
-        type: 'hero',
-        variant: 'split-navy',
+        type: 'wedding_hero',
+        variant: 'navy',
         content: {
-          headline: 'Undangan Pernikahan Romeo & Juliet',
-          subheadline: 'Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di momen bahagia kami.',
-          cta_text: 'Buka Undangan'
+          groom_nickname: 'Romeo',
+          bride_nickname: 'Juliet',
+          headline: 'Romeo & Juliet',
+          subheadline: 'Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di momen bahagia pernikahan kami.',
+          recipient_name: 'Bapak/Ibu/Saudara/i',
+          cta_text: '💌 BUKA UNDANGAN',
+          cta_url: '#wedding_couple',
+          image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80'
         }
       },
       {

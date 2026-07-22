@@ -5,6 +5,7 @@ import { V2SectionWeddingEventsForm } from './V2SectionWeddingEventsForm';
 import { V2SectionDigitalGiftForm } from './V2SectionDigitalGiftForm';
 import { V2SectionProductGridForm } from './V2SectionProductGridForm';
 import {
+  V2SectionWeddingHeroForm,
   V2SectionWeddingCountdownForm,
   V2SectionWeddingStoryForm,
   V2SectionWeddingGalleryForm,
@@ -109,6 +110,16 @@ export default function V2SectionFormDispatcher({
     case 'faq':
       return (
         <V2SectionFaqForm
+          section={section}
+          handleUpdateSectionContent={handleUpdateSectionContent}
+          renderSectionStylePicker={renderSectionStylePicker}
+          renderAIV2Button={renderAIV2Button}
+        />
+      );
+
+    case 'wedding_hero':
+      return (
+        <V2SectionWeddingHeroForm
           section={section}
           handleUpdateSectionContent={handleUpdateSectionContent}
           renderSectionStylePicker={renderSectionStylePicker}

@@ -1,5 +1,86 @@
 import React from 'react';
 
+export function V2SectionWeddingHeroForm({
+  section,
+  handleUpdateSectionContent,
+  renderSectionStylePicker,
+  renderAIV2Button
+}) {
+  return (
+    <div className="space-y-3">
+      {renderSectionStylePicker(section)}
+      <div className="flex justify-between items-center">
+        <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Hero / Cover Depan Undangan Pernikahan</label>
+        {renderAIV2Button(section.id, 'wedding_hero')}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Panggilan Pria</label>
+          <input
+            type="text"
+            value={section.content.groom_nickname || ''}
+            onChange={(e) => handleUpdateSectionContent(section.id, { groom_nickname: e.target.value })}
+            placeholder="Romeo"
+            className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Panggilan Wanita</label>
+          <input
+            type="text"
+            value={section.content.bride_nickname || ''}
+            onChange={(e) => handleUpdateSectionContent(section.id, { bride_nickname: e.target.value })}
+            placeholder="Juliet"
+            className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Judul Cursive Pasangan (Headline)</label>
+        <input
+          type="text"
+          value={section.content.headline || ''}
+          onChange={(e) => handleUpdateSectionContent(section.id, { headline: e.target.value })}
+          placeholder="Romeo & Juliet"
+          className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none font-bold"
+        />
+      </div>
+      <div>
+        <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Pesan Pembuka (Subheadline)</label>
+        <textarea
+          rows={2}
+          value={section.content.subheadline || ''}
+          onChange={(e) => handleUpdateSectionContent(section.id, { subheadline: e.target.value })}
+          placeholder="Tanpa mengurangi rasa hormat, kami mengundang..."
+          className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Teks Tombol Buka Undangan</label>
+          <input
+            type="text"
+            value={section.content.cta_text || ''}
+            onChange={(e) => handleUpdateSectionContent(section.id, { cta_text: e.target.value })}
+            placeholder="💌 BUKA UNDANGAN"
+            className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Label Tamu Default</label>
+          <input
+            type="text"
+            value={section.content.recipient_name || ''}
+            onChange={(e) => handleUpdateSectionContent(section.id, { recipient_name: e.target.value })}
+            placeholder="Bapak/Ibu/Saudara/i"
+            className="block w-full px-3 py-2 bg-theme-surface border border-theme-border rounded-xl text-xs text-theme-text focus:outline-none"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function V2SectionWeddingCountdownForm({
   section,
   handleUpdateSectionContent,
