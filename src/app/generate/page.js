@@ -3419,85 +3419,134 @@ function GenerateContent() {
   };
 
   const renderSectionStylePicker = (section) => {
+    const currentStyle = section.content.bg_style || 'navy';
+    const currentShade = section.content.bg_shade || 'solid';
+    const currentBrightness = section.content.bg_brightness || 'default';
+
+    const palettes = [
+      { key: 'navy', label: 'Midnight Slate', previewGradient: 'from-slate-950 via-slate-900 to-slate-950', dotColor: '#0f172a', border: 'border-slate-800' },
+      { key: 'obsidian', label: 'Obsidian Black', previewGradient: 'from-black via-zinc-950 to-black', dotColor: '#000000', border: 'border-zinc-800' },
+      { key: 'indigo', label: 'Deep Indigo', previewGradient: 'from-indigo-950 via-indigo-900 to-slate-950', dotColor: '#1e1b4b', border: 'border-indigo-900' },
+      { key: 'emerald', label: 'Deep Emerald', previewGradient: 'from-emerald-950 via-emerald-900 to-slate-950', dotColor: '#064e3b', border: 'border-emerald-900' }
+    ];
+
+    const shades = [
+      { key: 'solid', label: 'Pekat Solid', icon: '⬛' },
+      { key: 'soft', label: 'Surface Soft', icon: '🌗' },
+      { key: 'gradient', label: 'Degradasi', icon: '🌌' },
+      { key: 'pattern', label: 'Grid Texture', icon: '🏁' }
+    ];
+
+    const brightnesses = [
+      { key: 'default', label: 'Bawaan Tema', icon: '⚙️' },
+      { key: 'light', label: 'Terang (Putih)', icon: '☀️' },
+      { key: 'dark', label: 'Gelap (Hitam)', icon: '🌙' }
+    ];
+
+    const selectedPaletteLabel = palettes.find(p => p.key === currentStyle)?.label || 'Midnight Slate';
+    const selectedShadeLabel = shades.find(s => s.key === currentShade)?.label || 'Pekat Solid';
+
     return (
-      <div className="p-2.5 bg-theme-surface/40 border border-theme-border/50 rounded-xl space-y-2 mb-3">
-        <div className="space-y-1">
-          <label className="block text-[8px] font-bold text-theme-text-sec uppercase tracking-wider">
-            🎨 Tema Warna Background Section:
+      <div className="p-3.5 bg-theme-surface/60 backdrop-blur-md border border-theme-border/80 rounded-2xl space-y-3.5 mb-4 shadow-sm">
+        {/* Header Badge & Live Indicator */}
+        <div className="flex items-center justify-between pb-2 border-b border-theme-border/50">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-theme-accent bg-theme-accent/10 px-2 py-0.5 rounded-md border border-theme-accent/20">
+              🎨 Style Picker
+            </span>
+          </div>
+          <span className="text-[9px] font-semibold text-theme-text-muted truncate max-w-[170px]">
+            {selectedPaletteLabel} • {selectedShadeLabel}
+          </span>
+        </div>
+
+        {/* 1. Tema Warna Background Section (Visual Color Swatch Cards) */}
+        <div className="space-y-1.5">
+          <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">
+            Tema Warna Background:
           </label>
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              { key: 'navy', label: '🌙 Midnight Slate', bg: 'bg-slate-950 text-white border-slate-700' },
-              { key: 'obsidian', label: '⬛ Obsidian Black', bg: 'bg-black text-white border-zinc-800' },
-              { key: 'indigo', label: '🌌 Deep Indigo', bg: 'bg-indigo-950 text-white border-indigo-800' },
-              { key: 'emerald', label: '🌲 Deep Emerald', bg: 'bg-emerald-950 text-white border-emerald-800' }
-            ].map((palette) => {
-              const isSelected = (section.content.bg_style || 'navy') === palette.key;
+          <div className="grid grid-cols-2 gap-1.5">
+            {palettes.map((palette) => {
+              const isSelected = currentStyle === palette.key;
               return (
                 <button
                   key={palette.key}
                   type="button"
                   onClick={() => handleUpdateSectionContent(section.id, { bg_style: palette.key })}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer flex items-center gap-1 ${palette.bg} ${
-                    isSelected ? 'ring-2 ring-theme-accent scale-105 shadow-md' : 'opacity-70 hover:opacity-100'
+                  className={`p-2 rounded-xl text-[10px] font-bold transition-all cursor-pointer flex items-center gap-2 border text-left ${
+                    isSelected
+                      ? 'bg-theme-bg border-theme-accent ring-2 ring-theme-accent/50 shadow-sm scale-[1.02]'
+                      : 'bg-theme-surface/70 border-theme-border/70 hover:border-theme-accent/40 text-theme-text-sec hover:text-theme-text'
                   }`}
                 >
-                  {isSelected ? '✓ ' : ''}{palette.label}
+                  {/* Swatch Circle Preview */}
+                  <span
+                    className={`h-4 w-4 rounded-full flex-shrink-0 bg-gradient-to-br ${palette.previewGradient} border ${palette.border} shadow-inner relative flex items-center justify-center`}
+                  >
+                    {isSelected && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-theme-accent animate-pulse" />
+                    )}
+                  </span>
+                  <span className="truncate flex-1">{palette.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-theme-border/40">
-          <span className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Variasi Shading:</span>
-          {[
-            { key: 'solid', label: '⬛ Pekat Solid' },
-            { key: 'soft', label: '🌗 Surface Soft' },
-            { key: 'gradient', label: '🌌 Degradasi' },
-            { key: 'pattern', label: '🏁 Grid Texture' }
-          ].map((shade) => {
-            const isSelected = (section.content.bg_shade || 'solid') === shade.key;
-            return (
-              <button
-                key={shade.key}
-                type="button"
-                onClick={() => handleUpdateSectionContent(section.id, { bg_shade: shade.key })}
-                className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-xs'
-                    : 'bg-theme-surface/60 text-theme-text-sec border-theme-border/60 hover:text-theme-text'
-                }`}
-              >
-                {isSelected ? '✓ ' : ''}{shade.label}
-              </button>
-            );
-          })}
+        {/* 2. Variasi Shading (Segmented Control Bar) */}
+        <div className="space-y-1.5 pt-2 border-t border-theme-border/40">
+          <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">
+            Variasi Shading:
+          </label>
+          <div className="flex bg-theme-bg/80 p-1 rounded-xl border border-theme-border/60 gap-1">
+            {shades.map((shade) => {
+              const isSelected = currentShade === shade.key;
+              return (
+                <button
+                  key={shade.key}
+                  type="button"
+                  onClick={() => handleUpdateSectionContent(section.id, { bg_shade: shade.key })}
+                  className={`flex-1 py-1 px-1 rounded-lg text-[9px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    isSelected
+                      ? 'bg-theme-accent text-theme-accent-text shadow-xs'
+                      : 'text-theme-text-muted hover:text-theme-text'
+                  }`}
+                >
+                  <span className="text-[10px] leading-none">{shade.icon}</span>
+                  <span className="hidden sm:inline text-[8px] truncate">{shade.label}</span>
+                  <span className="inline sm:hidden text-[8px] truncate">{shade.label.split(' ')[0]}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-theme-border/40">
-          <span className="text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">Varian Background:</span>
-          {[
-            { key: 'default', label: '⚙️ Bawaan Tema' },
-            { key: 'light', label: '☀️ Terang (Putih)' },
-            { key: 'dark', label: '🌙 Gelap (Hitam)' }
-          ].map((brightness) => {
-            const isSelected = (section.content.bg_brightness || 'default') === brightness.key;
-            return (
-              <button
-                key={brightness.key}
-                type="button"
-                onClick={() => handleUpdateSectionContent(section.id, { bg_brightness: brightness.key })}
-                className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-theme-accent text-theme-accent-text border-theme-accent shadow-xs'
-                    : 'bg-theme-surface/60 text-theme-text-sec border-theme-border/60 hover:text-theme-text'
-                }`}
-              >
-                {isSelected ? '✓ ' : ''}{brightness.label}
-              </button>
-            );
-          })}
+        {/* 3. Varian Background Brightness (Segmented Control Bar) */}
+        <div className="space-y-1.5 pt-2 border-t border-theme-border/40">
+          <label className="block text-[8px] font-bold text-theme-text-muted uppercase tracking-wider">
+            Varian Background:
+          </label>
+          <div className="flex bg-theme-bg/80 p-1 rounded-xl border border-theme-border/60 gap-1">
+            {brightnesses.map((brightness) => {
+              const isSelected = currentBrightness === brightness.key;
+              return (
+                <button
+                  key={brightness.key}
+                  type="button"
+                  onClick={() => handleUpdateSectionContent(section.id, { bg_brightness: brightness.key })}
+                  className={`flex-1 py-1 px-1 rounded-lg text-[9px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                    isSelected
+                      ? 'bg-theme-accent text-theme-accent-text shadow-xs'
+                      : 'text-theme-text-muted hover:text-theme-text'
+                  }`}
+                >
+                  <span className="text-[10px] leading-none">{brightness.icon}</span>
+                  <span className="text-[8px] truncate">{brightness.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
