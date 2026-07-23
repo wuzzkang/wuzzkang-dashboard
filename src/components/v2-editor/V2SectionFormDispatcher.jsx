@@ -124,6 +124,9 @@ export default function V2SectionFormDispatcher({
           handleUpdateSectionContent={handleUpdateSectionContent}
           renderSectionStylePicker={renderSectionStylePicker}
           renderAIV2Button={renderAIV2Button}
+          session={session}
+          handleDeleteImage={handleDeleteImage}
+          handleUploadImage={handleUploadImage}
         />
       );
 

@@ -1,10 +1,14 @@
 import React from 'react';
+import ImagePickerField from '@/components/ImagePickerField';
 
 export function V2SectionWeddingHeroForm({
   section,
   handleUpdateSectionContent,
   renderSectionStylePicker,
-  renderAIV2Button
+  renderAIV2Button,
+  session,
+  handleDeleteImage,
+  handleUploadImage
 }) {
   return (
     <div className="space-y-3">
@@ -13,6 +17,31 @@ export function V2SectionWeddingHeroForm({
         <label className="block text-[9px] font-bold text-theme-text-sec uppercase tracking-wider">Hero / Cover Depan Undangan Pernikahan</label>
         {renderAIV2Button(section.id, 'wedding_hero')}
       </div>
+
+      {/* Foto Cover Background Hero Upload */}
+      <div>
+        <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Foto Cover Background Hero</label>
+        <ImagePickerField
+          checkboxId={`v2_hero_image_${section.id}`}
+          checkboxLabel="Gunakan Foto Cover Kustom / Unsplash untuk Hero"
+          unsplashQuery="wedding,couple,romantic"
+          imageUrl={section.content.image_url || ''}
+          onImageChange={(val) => {
+            if (!val && section.content.image_url) {
+              handleDeleteImage && handleDeleteImage(section.content.image_url);
+            }
+            handleUpdateSectionContent(section.id, { image_url: val || '' });
+          }}
+          apiToken={session?.access_token}
+          apiBaseUrl={process.env.NEXT_PUBLIC_API_URL}
+          isEnabled={true}
+          source={section.content.image_source || 'upload'}
+          onSourceChange={(src) => handleUpdateSectionContent(section.id, { image_source: src })}
+          onUpload={(file) => handleUploadImage && handleUploadImage(file, `v2_sec_${section.id}`)}
+          uploadType={`v2_sec_${section.id}`}
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="block text-[8px] font-bold text-theme-text-muted mb-1">Nama Panggilan Pria</label>
