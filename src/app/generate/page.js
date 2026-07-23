@@ -12,7 +12,7 @@ const DEFAULT_GROOM_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v
 const DEFAULT_BRIDE_AVATAR = 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg';
 const DEFAULT_CAMPAIGN_HERO_IMAGE = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80';
 import { supabase } from '@/lib/supabase';
-import { V2_STARTER_PRESETS } from './v2Presets';
+import { V2_STARTER_PRESETS, V2_STARTER_CATEGORIES } from './v2Presets';
 import V2VisualSectionPickerModal from '@/components/V2VisualSectionPickerModal';
 import V2SectionFormDispatcher from '@/components/v2-editor/V2SectionFormDispatcher';
 
@@ -507,6 +507,7 @@ function GenerateContent() {
   const [isV2OnboardingOpen, setIsV2OnboardingOpen] = useState(false);
   const [isV2VisualPickerOpen, setIsV2VisualPickerOpen] = useState(false);
   const [v2GlobalTheme, setV2GlobalTheme] = useState('navy');
+  const [v2PresetCategory, setV2PresetCategory] = useState('all');
 
   const getSectionTypeIcon = (type) => {
     switch (type) {
@@ -576,6 +577,8 @@ function GenerateContent() {
       setV2BrandName(found.defaultBrandName || '');
       setV2BrandBrief(found.defaultBrief || '');
       setV2Sections(clonedSections);
+      const initialTheme = clonedSections[0]?.bg_style || clonedSections[0]?.content?.bg_style || 'navy';
+      setV2GlobalTheme(initialTheme);
       setIsV2OnboardingOpen(false);
     }
   };
@@ -9743,7 +9746,7 @@ function GenerateContent() {
       {/* V2 Starter Kit Onboarding Preset Modal */}
       {isV2OnboardingOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-theme-card border border-theme-border rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="bg-theme-card border border-theme-border rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="p-5 border-b border-theme-border flex justify-between items-center bg-theme-bg/60">
               <div className="flex items-center gap-2.5">
                 <span className="text-xl">✨</span>
@@ -9761,9 +9764,33 @@ function GenerateContent() {
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 max-h-[calc(90vh-120px)]">
+            {/* Filter Tab Kategori */}
+            <div className="px-5 py-3 border-b border-theme-border bg-theme-bg/30 flex items-center gap-2 overflow-x-auto no-scrollbar">
+              {V2_STARTER_CATEGORIES.map((cat) => {
+                const isActive = v2PresetCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setV2PresetCategory(cat.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-theme-accent text-white shadow-md shadow-theme-accent/20'
+                        : 'bg-theme-card hover:bg-theme-surface text-theme-text-sec hover:text-theme-text border border-theme-border'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span>{cat.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 max-h-[calc(90vh-170px)]">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {V2_STARTER_PRESETS.map((preset) => (
+                {V2_STARTER_PRESETS
+                  .filter((preset) => v2PresetCategory === 'all' || preset.category === v2PresetCategory)
+                  .map((preset) => (
                   <div
                     key={preset.id}
                     onClick={() => handleSelectV2Preset(preset.id)}

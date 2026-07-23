@@ -5,9 +5,666 @@
  * Pure JavaScript - 0% LLM token consumption.
  */
 
+export const V2_STARTER_CATEGORIES = [
+  { id: 'all', name: 'Semua Preset', icon: '✨' },
+  { id: 'wedding', name: 'Undangan Pernikahan', icon: '🌸' },
+  { id: 'toko-online', name: 'Toko Online', icon: '🛍️' },
+  { id: 'campaign', name: 'Campaign Sales', icon: '⚡' },
+  { id: 'e-course', name: 'E-Course & Kelas', icon: '🎓' },
+  { id: 'birthday', name: 'Undangan Ulang Tahun', icon: '🎂' },
+  { id: 'cv', name: 'Web CV & Portofolio', icon: '📄' },
+  { id: 'jasa', name: 'Jasa & Layanan', icon: '🛠️' },
+  { id: 'custom', name: 'Custom Setup', icon: '🎨' },
+];
+
 export const V2_STARTER_PRESETS = [
+  // 🌸 DOMAIN UNDANGAN PERNIKAHAN (WEDDING MULTI-PRESETS WITH UNIQUE DESIGNS)
+  {
+    id: 'wedding-classic-navy',
+    category: 'wedding',
+    name: 'Classic Midnight Gold',
+    icon: '✨',
+    badge: 'Elegan & Mewah',
+    description: 'Desain midnight navy & gold mewah untuk pesta ballroom hotel & resepsi malam.',
+    defaultBrandName: 'Romeo & Juliet Wedding',
+    defaultBrief: 'Undangan pernikahan digital indah dengan rincian acara dan konfirmasi tamu.',
+    sections: [
+      {
+        id: 'sec-hero-wedding',
+        type: 'wedding_hero',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          groom_nickname: 'Romeo',
+          bride_nickname: 'Juliet',
+          headline: 'Romeo & Juliet',
+          subheadline: 'Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di momen bahagia pernikahan kami.',
+          recipient_name: 'Bapak/Ibu/Saudara/i',
+          cta_text: '💌 BUKA UNDANGAN',
+          cta_url: '#wedding_couple',
+          image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-wedding-couple',
+        type: 'wedding_couple',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          bismillah_quote: 'Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan. Semoga Allah SWT memberkahi ikatan pernikahan kami.',
+          groom_name: 'Romeo Adiputra, S.T.',
+          groom_nickname: 'Romeo',
+          groom_parents: 'Putra Pertama dari Bpk. Ahmad & Ibu Siti',
+          groom_instagram: 'romeo_adiputra',
+          groom_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg',
+          bride_name: 'Juliet Saraswati, S.Ked.',
+          bride_nickname: 'Juliet',
+          bride_parents: 'Putri Kedua dari Bpk. Budi & Ibu Rini',
+          bride_instagram: 'juliet_saraswati',
+          bride_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg',
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-wedding-countdown',
+        type: 'wedding_countdown',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          title: 'Menuju Hari Bahagia',
+          subtitle: 'Hitung mundur momen istimewa pernikahan kami',
+          target_date: '2026-12-12T08:00:00',
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-wedding-events',
+        type: 'wedding_events',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          title: 'Rangkaian Acara Pernikahan',
+          subtitle: 'Pelaksanaan Akad Nikah & Resepsi Pernikahan',
+          akad_title: 'Akad Nikah',
+          akad_date: 'Sabtu, 12 Desember 2026',
+          akad_time: 'Pukul 08.00 WIB - Selesai',
+          akad_location: 'Gedung Pernikahan Indah',
+          akad_address: 'Jl. Merdeka No. 45, Bandung',
+          akad_maps_url: 'https://maps.google.com',
+          resepsi_title: 'Resepsi Pernikahan',
+          resepsi_date: 'Sabtu, 12 Desember 2026',
+          resepsi_time: 'Pukul 11.00 WIB - 15.00 WIB',
+          resepsi_location: 'Gedung Pernikahan Indah',
+          resepsi_address: 'Jl. Merdeka No. 45, Bandung',
+          resepsi_maps_url: 'https://maps.google.com',
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-wedding-story',
+        type: 'wedding_story',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          title: 'Kisah Kasih Kami',
+          subtitle: 'Perjalanan cinta kami dari pertama bertemu hingga ikatan suci pernikahan',
+          stories: [
+            { date: 'Tahun 2021', title: 'Awal Pertemuan Pertama', desc: 'Kami pertama kali bertemu dalam suatu acara kampus dan berlanjut menjalin persahabatan hangat.' },
+            { date: 'Tahun 2024', title: 'Momen Lamaran Kebahagiaan', desc: 'Dengan restu kedua orang tua, kami mengikat janji suci lamaran untuk melangkah ke jenjang yang lebih serius.' },
+            { date: 'Tahun 2026', title: 'Menuju Hari Pernikahan', desc: 'Insya Allah kami akan mengikat janji suci pernikahan dan mengarungi bahtera rumah tangga yang sakinah.' }
+          ],
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-wedding-gallery',
+        type: 'wedding_gallery',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          title: 'Galeri Album Prewedding',
+          subtitle: 'Momen kebersamaan dan kenangan indah mempelai',
+          images: [
+            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80'
+          ],
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-digital-gift',
+        type: 'digital_gift',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          title: 'Amplop Digital & Tanda Kasih',
+          subtitle: 'Doa restu Anda merupakan hadiah terindah bagi kami. Bagi keluarga yang ingin memberikan tanda kasih secara cashless:',
+          bank_accounts: [
+            { bank_name: 'Bank BCA', account_number: '1234567890', account_holder: 'Romeo Adiputra' },
+            { bank_name: 'Bank Mandiri', account_number: '0987654321', account_holder: 'Juliet Saraswati' }
+          ],
+          rsvp_whatsapp: '6281234567890',
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-wedding-wishes',
+        type: 'wedding_wishes',
+        variant: 'navy',
+        bg_style: 'navy',
+        content: {
+          title: 'Buku Tamu & Doa Restu',
+          subtitle: 'Kirimkan pesan doa restu dan konfirmasi kehadiran Anda untuk mempelai',
+          wishes: [
+            { name: 'Ahmad & Keluarga', status: 'Hadir', message: 'Selamat atas pernikahan Romeo & Juliet. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah!' },
+            { name: 'Siti Rahma', status: 'Hadir', message: 'Happy wedding Romeo & Juliet! Selamat menempuh hidup baru dan bahagia selalu!' },
+            { name: 'Budi Santoso', status: 'Ragu', message: 'Barakallahu lakum! Semoga acaranya berjalan lancar dan penuh keberkahan.' }
+          ],
+          bg_style: 'navy'
+        }
+      },
+      {
+        id: 'sec-contact-wedding',
+        type: 'contact',
+        variant: 'footer-navy',
+        bg_style: 'navy',
+        content: {
+          title: 'Konfirmasi Kehadiran (RSVP) & Doa Restu',
+          subheadline: 'Kirimkan pesan ucapan doa & konfirmasi kehadiran Anda melalui WhatsApp Mempelai.',
+          whatsapp: '6281234567890',
+          bg_style: 'navy'
+        }
+      }
+    ]
+  },
+  {
+    id: 'wedding-sage-green',
+    category: 'wedding',
+    name: 'Botanical Sage Green',
+    icon: '🍃',
+    badge: 'Natural & Soft',
+    description: 'Desain sage green natural & cream floral untuk pesta garden party, outdoor, & rustic.',
+    defaultBrandName: 'Adrian & Clarissa Wedding',
+    defaultBrief: 'Undangan pernikahan outdoor nuansa botanical sage green.',
+    sections: [
+      {
+        id: 'sec-hero-wedding',
+        type: 'wedding_hero',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          groom_nickname: 'Adrian',
+          bride_nickname: 'Clarissa',
+          headline: 'Adrian & Clarissa',
+          subheadline: 'Dengan mengucap syukur kepada Tuhan YME, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari bahagia pernikahan outdoor kami.',
+          recipient_name: 'Bapak/Ibu/Saudara/i',
+          cta_text: '🌿 BUKA UNDANGAN',
+          cta_url: '#wedding_couple',
+          image_url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-wedding-couple',
+        type: 'wedding_couple',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          bismillah_quote: 'Cinta tidak pernah memandang perbedaan. Bersama dalam kasih yang suci, kami melangkah menuju lembaran baru kebahagiaan.',
+          groom_name: 'Adrian Pratama, S.T.',
+          groom_nickname: 'Adrian',
+          groom_parents: 'Putra Pertama dari Bpk. Hendra & Ibu Liliana',
+          groom_instagram: 'adrian_pratama',
+          groom_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg',
+          bride_name: 'Clarissa Maharani, S.Ds.',
+          bride_nickname: 'Clarissa',
+          bride_parents: 'Putri Kedua dari Bpk. Supriyadi & Ibu Maya',
+          bride_instagram: 'clarissa_maharani',
+          bride_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg',
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-wedding-countdown',
+        type: 'wedding_countdown',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          title: 'Menuju Momen Pesta Garden',
+          subtitle: 'Hitung mundur perayaan pernikahan outdoor kami di tengah suasana asri',
+          target_date: '2026-11-20T10:00:00',
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-wedding-events',
+        type: 'wedding_events',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          title: 'Jadwal Acara Garden Party',
+          subtitle: 'Pelaksanaan Pemberkatan & Resepsi Outdoor',
+          akad_title: 'Pemberkatan Nikah',
+          akad_date: 'Minggu, 20 November 2026',
+          akad_time: 'Pukul 09.00 WIB - Selesai',
+          akad_location: 'Pine Forest Garden Hall',
+          akad_address: 'Jl. Dago Giri No. 88, Bandung',
+          akad_maps_url: 'https://maps.google.com',
+          resepsi_title: 'Garden Party Reception',
+          resepsi_date: 'Minggu, 20 November 2026',
+          resepsi_time: 'Pukul 11.30 WIB - 16.00 WIB',
+          resepsi_location: 'Pine Forest Garden Hall',
+          resepsi_address: 'Jl. Dago Giri No. 88, Bandung',
+          resepsi_maps_url: 'https://maps.google.com',
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-wedding-story',
+        type: 'wedding_story',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          title: 'Perjalanan Cerita Kasih',
+          subtitle: 'Manisnya momen perkenalan hingga sepakat mengikat ikatan suci',
+          stories: [
+            { date: 'Tahun 2022', title: 'Perkenalan Di Komunitas Botanical', desc: 'Kesamaan hobi membawa kami pada obrolan hangat yang tak terlupakan.' },
+            { date: 'Tahun 2025', title: 'Lamaran Romantis Outdoor', desc: 'Di bawah pepohonan pinus rindang, janji komitmen suci diucapkan.' },
+            { date: 'Tahun 2026', title: 'Pesta Pernikahan Botanical', desc: 'Merayakan hari bahagia bersama keluarga dan sahabat terdekat.' }
+          ],
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-wedding-gallery',
+        type: 'wedding_gallery',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          title: 'Galeri Foto Warm & Rustic',
+          subtitle: 'Album foto prewedding bertema alam dan kehangatan senja',
+          images: [
+            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80'
+          ],
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-digital-gift',
+        type: 'digital_gift',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          title: 'Amplop Digital Cashless',
+          subtitle: 'Bagi keluarga dan sahabat yang ingin memberikan tanda kasih secara digital:',
+          bank_accounts: [
+            { bank_name: 'Bank BCA', account_number: '8830192841', account_holder: 'Adrian Pratama' },
+            { bank_name: 'Bank Mandiri', account_number: '1310009812', account_holder: 'Clarissa Maharani' }
+          ],
+          rsvp_whatsapp: '6281234567890',
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-wedding-wishes',
+        type: 'wedding_wishes',
+        variant: 'sage',
+        bg_style: 'emerald',
+        content: {
+          title: 'Ucapan Doa & Buku Tamu',
+          subtitle: 'Tuliskan ucapan selamat dan kesan pesan untuk kedua mempelai',
+          wishes: [
+            { name: 'Keluarga Besar Pratama', status: 'Hadir', message: 'Selamat untuk Adrian & Clarissa! Acara outdoornya pasti hangat dan luar biasa.' },
+            { name: 'Dian & Teman Komunitas', status: 'Hadir', message: 'Happy wedding guys! Bahagia selamanya dan cepat dapat momongan!' }
+          ],
+          bg_style: 'emerald'
+        }
+      },
+      {
+        id: 'sec-contact-wedding',
+        type: 'contact',
+        variant: 'footer-navy',
+        bg_style: 'emerald',
+        content: {
+          title: 'Konfirmasi Kehadiran RSVP',
+          subheadline: 'Silakan konfirmasi kehadiran Anda untuk membantu penyesuaian tempat & katering outdoor.',
+          whatsapp: '6281234567890',
+          bg_style: 'emerald'
+        }
+      }
+    ]
+  },
+  {
+    id: 'wedding-javanese',
+    category: 'wedding',
+    name: 'Adat Jawa Tradisional',
+    icon: '🏮',
+    badge: 'Budaya & Adat',
+    description: 'Nuansa maroon & gold khas ukiran batik Jawa dengan kutipan doa adat & ucapan selamat.',
+    defaultBrandName: 'Raden & Dewi Wedding',
+    defaultBrief: 'Undangan pernikahan adat Jawa tradisional dengan nuansa maroon & emas.',
+    sections: [
+      {
+        id: 'sec-hero-wedding',
+        type: 'wedding_hero',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          groom_nickname: 'Raden',
+          bride_nickname: 'Dewi',
+          headline: 'Raden & Dewi',
+          subheadline: 'Nyuwun doa pangestu Bpk/Ibu/Saudara/i ing Pahargyan Ageng Pernikahan Adat Jawa kawula.',
+          recipient_name: 'Bapak/Ibu/Saudara/i',
+          cta_text: '🪷 BUKA UNDANGAN ADAT',
+          cta_url: '#wedding_couple',
+          image_url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-wedding-couple',
+        type: 'wedding_couple',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          bismillah_quote: 'Maha Suci Allah SWT ingkang sampun nyiptakaken makhluk-Nya kanthi berpasang-pasangan. Semoga Allah memberkahi ikatan suci pernikahan kawula.',
+          groom_name: 'Raden Mas Haryo, S.T.',
+          groom_nickname: 'Raden',
+          groom_parents: 'Putra Kapisan saking Bpk. KRT Sosrodiningrat & Ibu Raden Ajeng Wulandari',
+          groom_instagram: 'raden_haryo',
+          groom_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg',
+          bride_name: 'Dewi Sekartaji, S.E.',
+          bride_nickname: 'Dewi',
+          bride_parents: 'Putri Kapindho saking Bpk. Dr. Sutrisno & Ibu Endang Rahayu',
+          bride_instagram: 'dewi_sekartaji',
+          bride_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg',
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-wedding-countdown',
+        type: 'wedding_countdown',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          title: 'Ngenteni Dina Pawiwahan',
+          subtitle: 'Hitung mundur pelaksanaan Upacara Panggih & Resepsi Adat Jawa',
+          target_date: '2026-10-18T08:00:00',
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-wedding-events',
+        type: 'wedding_events',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          title: 'Rantaman Acara Pawiwahan',
+          subtitle: 'Pelaksanaan Ijab Kabul & Resepsi Pahargyan Ageng',
+          akad_title: 'Upacara Ijab Kabul',
+          akad_date: 'Minggu Kliwon, 18 Oktober 2026',
+          akad_time: 'Tabuh 08.00 WIB - Selesai',
+          akad_location: 'Pendopo Sasana Krido',
+          akad_address: 'Jl. Royal Jogja No. 12, Yogyakarta',
+          akad_maps_url: 'https://maps.google.com',
+          resepsi_title: 'Resepsi Pahargyan Ageng',
+          resepsi_date: 'Minggu Kliwon, 18 Oktober 2026',
+          resepsi_time: 'Tabuh 11.00 WIB - 14.00 WIB',
+          resepsi_location: 'Pendopo Sasana Krido',
+          resepsi_address: 'Jl. Royal Jogja No. 12, Yogyakarta',
+          resepsi_maps_url: 'https://maps.google.com',
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-wedding-story',
+        type: 'wedding_story',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          title: 'Linimasa Katresnan',
+          subtitle: 'Lelampahan katresnan kawula saking awal tepangan nganti dadi garwa',
+          stories: [
+            { date: 'Tahun 2020', title: 'Tepangan Kapisan', desc: 'Kawula kapisan tepangan ing pentas seni budaya Keraton Yogyakarta.' },
+            { date: 'Tahun 2024', title: 'Lamaran Adat Jawa', desc: 'Kanthi pangestu tiyang sepuh, kawula ngaturaken niyat suci lamaran.' },
+            { date: 'Tahun 2026', title: 'Pawiwahan Ageng', desc: 'Dina bahagia ngikat janji suci minangka pasangan ingkang sakinah.' }
+          ],
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-wedding-gallery',
+        type: 'wedding_gallery',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          title: 'Album Prewedding Busana Adat',
+          subtitle: 'Foto kenangan indah nggunakake busana ageng & kebayakan adat Jawa',
+          images: [
+            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80'
+          ],
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-digital-gift',
+        type: 'digital_gift',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          title: 'Tanda Kasih & Amplop Digital',
+          subtitle: 'Matur nuwun donga pangestu Bpk/Ibu/Saudara/i. Kangge kersa paring tanda kasih cashless:',
+          bank_accounts: [
+            { bank_name: 'Bank BCA', account_number: '7129081234', account_holder: 'Raden Mas Haryo' },
+            { bank_name: 'Bank BNI', account_number: '0412891238', account_holder: 'Dewi Sekartaji' }
+          ],
+          rsvp_whatsapp: '6281234567890',
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-wedding-wishes',
+        type: 'wedding_wishes',
+        variant: 'javanese',
+        bg_style: 'amber',
+        content: {
+          title: 'Buku Tamu & Donga Pangestu',
+          subtitle: 'Kirimaken donga pangestu wilujeng kangge kapindho mempelai',
+          wishes: [
+            { name: 'Bpk. KRT Sumodiningrat', status: 'Hadir', message: 'Nderek bingah atas pawiwahan Raden & Dewi. Mugi dados keluarga ingkang sakinah lan langgeng.' },
+            { name: 'Keluarga Bpk. Haryono', status: 'Hadir', message: 'Matur nuwun serat ulemipun. Mugi acara lumampah kanthi lancar tanpa alangan.' }
+          ],
+          bg_style: 'amber'
+        }
+      },
+      {
+        id: 'sec-contact-wedding',
+        type: 'contact',
+        variant: 'footer-navy',
+        bg_style: 'amber',
+        content: {
+          title: 'Konfirmasi Kehadiran Pawiwahan',
+          subheadline: 'Kirimaken pesen ucapan donga & konfirmasi rawuh lumantar WhatsApp Mempelai.',
+          whatsapp: '6281234567890',
+          bg_style: 'amber'
+        }
+      }
+    ]
+  },
+  {
+    id: 'wedding-pink-rose',
+    category: 'wedding',
+    name: 'Romantic Floral Pink',
+    icon: '🌸',
+    badge: 'Romantis & Floral',
+    description: 'Desain soft pink & rose floral romantis yang manis untuk momen kebahagiaan mempelai.',
+    defaultBrandName: 'Fajar & Nadia Wedding',
+    defaultBrief: 'Undangan pernikahan romantis nuansa soft pink dan floral.',
+    sections: [
+      {
+        id: 'sec-hero-wedding',
+        type: 'wedding_hero',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          groom_nickname: 'Fajar',
+          bride_nickname: 'Nadia',
+          headline: 'Fajar & Nadia',
+          subheadline: 'Dengan penuh rasa syukur dan kebahagiaan, kami mengundang Bapak/Ibu/Saudara/i untuk merayakan hari pernikahan kami.',
+          recipient_name: 'Bapak/Ibu/Saudara/i',
+          cta_text: '💖 BUKA UNDANGAN ROMANTIS',
+          cta_url: '#wedding_couple',
+          image_url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-wedding-couple',
+        type: 'wedding_couple',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          bismillah_quote: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari meksudmu sendiri, supaya kamu merasa tenteram kepadanya.',
+          groom_name: 'Fajar Pratama, S.Kom.',
+          groom_nickname: 'Fajar',
+          groom_parents: 'Putra Kedua dari Bpk. Irwan & Ibu Ratna',
+          groom_instagram: 'fajar_pratama',
+          groom_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg',
+          bride_name: 'Nadia Anindya, M.Psi.',
+          bride_nickname: 'Nadia',
+          bride_parents: 'Putri Pertama dari Bpk. Wahyu & Ibu Anita',
+          bride_instagram: 'nadia_anindya',
+          bride_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg',
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-wedding-countdown',
+        type: 'wedding_countdown',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          title: 'Menuju Momen Indah Pernikahan',
+          subtitle: 'Hitung mundur hari kebahagiaan cinta kami',
+          target_date: '2026-12-25T08:00:00',
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-wedding-events',
+        type: 'wedding_events',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          title: 'Rangkaian Hari Pernikahan',
+          subtitle: 'Pelaksanaan Akad Nikah & Resepsi Pernikahan',
+          akad_title: 'Akad Nikah Suci',
+          akad_date: 'Jumat, 25 Desember 2026',
+          akad_time: 'Pukul 08.00 WIB - Selesai',
+          akad_location: 'Masjid Agung Trans Studio',
+          akad_address: 'Jl. Gatot Subroto No. 289, Bandung',
+          akad_maps_url: 'https://maps.google.com',
+          resepsi_title: 'Resepsi Pernikahan Romantis',
+          resepsi_date: 'Jumat, 25 Desember 2026',
+          resepsi_time: 'Pukul 11.00 WIB - 15.00 WIB',
+          resepsi_location: 'Grand Rose Ballroom',
+          resepsi_address: 'Jl. Gatot Subroto No. 289, Bandung',
+          resepsi_maps_url: 'https://maps.google.com',
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-wedding-story',
+        type: 'wedding_story',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          title: 'Kisah Percintaan Kami',
+          subtitle: 'Momen-momen indah yang membentuk perjalanan takdir cinta kami',
+          stories: [
+            { date: 'Tahun 2022', title: 'Awal Manis Perkenalan', desc: 'Berawal dari pertemuan rekan kerja di suatu proyek kreatif.' },
+            { date: 'Tahun 2025', title: 'Kejutan Kejadian Lamaran', desc: 'Momen manis lamaran di pantai berpasir putih saat sunset.' },
+            { date: 'Tahun 2026', title: 'Ikatan Suci Pernikahan', desc: 'Memulai petualangan masa depan bersama dalam mahligai rumah tangga.' }
+          ],
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-wedding-gallery',
+        type: 'wedding_gallery',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          title: 'Galeri Moments of Love',
+          subtitle: 'Abadikan keceriaan dan canda tawa kami bersama',
+          images: [
+            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80'
+          ],
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-digital-gift',
+        type: 'digital_gift',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          title: 'Amplop Digital & Kado Kasih',
+          subtitle: 'Kehadiran dan doa restu Anda adalah karunia terbesar bagi kami. Untuk tanda kasih cashless:',
+          bank_accounts: [
+            { bank_name: 'Bank BCA', account_number: '5220918231', account_holder: 'Fajar Pratama' },
+            { bank_name: 'Bank Mandiri', account_number: '1370008123', account_holder: 'Nadia Anindya' }
+          ],
+          rsvp_whatsapp: '6281234567890',
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-wedding-wishes',
+        type: 'wedding_wishes',
+        variant: 'rose',
+        bg_style: 'rose',
+        content: {
+          title: 'Doa Restu & Harapan Sahabat',
+          subtitle: 'Ungkapkan pesan hangat dan doa restu untuk Fajar & Nadia',
+          wishes: [
+            { name: 'Rina & Maya', status: 'Hadir', message: 'Happy wedding Nadia & Fajar! Semoga cinta kalian selalu mekar seperti bunga manis ini!' },
+            { name: 'Keluarga Bpk. Irwan', status: 'Hadir', message: 'Selamat menempuh hidup baru anakku. Semoga selalu sakinah mawaddah warahmah.' }
+          ],
+          bg_style: 'rose'
+        }
+      },
+      {
+        id: 'sec-contact-wedding',
+        type: 'contact',
+        variant: 'footer-navy',
+        bg_style: 'rose',
+        content: {
+          title: 'Konfirmasi Kehadiran RSVP',
+          subheadline: 'Kirimkan pesan ucapan doa & konfirmasi kehadiran Anda melalui WhatsApp Mempelai.',
+          whatsapp: '6281234567890',
+          bg_style: 'rose'
+        }
+      }
+    ]
+  },
+
+  // 🛠️ DOMAIN JASA & LAYANAN
   {
     id: 'jasa',
+    category: 'jasa',
     name: 'Jasa & Layanan Profesional',
     icon: '🛠️',
     badge: 'Populer',
@@ -107,8 +764,11 @@ export const V2_STARTER_PRESETS = [
       }
     ]
   },
+
+  // ⚡ DOMAIN CAMPAIGN SALES
   {
     id: 'campaign',
+    category: 'campaign',
     name: 'Campaign / Landing Page Sales',
     icon: '⚡',
     badge: 'Konversi Tinggi',
@@ -176,8 +836,11 @@ export const V2_STARTER_PRESETS = [
       }
     ]
   },
+
+  // 🛍️ DOMAIN TOKO ONLINE
   {
     id: 'toko-online',
+    category: 'toko-online',
     name: 'Toko Online & Etalase Produk',
     icon: '🛍️',
     badge: 'E-Commerce',
@@ -259,162 +922,11 @@ export const V2_STARTER_PRESETS = [
       }
     ]
   },
-  {
-    id: 'wedding',
-    name: 'Undangan Pernikahan (Wedding)',
-    icon: '🌸',
-    badge: 'Undangan',
-    description: 'Format anggun untuk momen pernikahan lengkap dengan profil pengantin, jadwal acara, & amplop digital.',
-    defaultBrandName: 'Romeo & Juliet Wedding',
-    defaultBrief: 'Undangan pernikahan digital indah dengan rincian acara dan konfirmasi tamu.',
-    sections: [
-      {
-        id: 'sec-hero-wedding',
-        type: 'wedding_hero',
-        variant: 'navy',
-        content: {
-          groom_nickname: 'Romeo',
-          bride_nickname: 'Juliet',
-          headline: 'Romeo & Juliet',
-          subheadline: 'Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di momen bahagia pernikahan kami.',
-          recipient_name: 'Bapak/Ibu/Saudara/i',
-          cta_text: '💌 BUKA UNDANGAN',
-          cta_url: '#wedding_couple',
-          image_url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80'
-        }
-      },
-      {
-        id: 'sec-wedding-couple',
-        type: 'wedding_couple',
-        variant: 'navy',
-        content: {
-          bismillah_quote: 'Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan. Semoga Allah SWT memberkahi ikatan pernikahan kami.',
-          groom_name: 'Romeo Adiputra, S.T.',
-          groom_nickname: 'Romeo',
-          groom_parents: 'Putra Pertama dari Bpk. Ahmad & Ibu Siti',
-          groom_instagram: 'romeo_adiputra',
-          groom_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/groom-avatar.jpg',
-          bride_name: 'Juliet Saraswati, S.Ked.',
-          bride_nickname: 'Juliet',
-          bride_parents: 'Putri Kedua dari Bpk. Budi & Ibu Rini',
-          bride_instagram: 'juliet_saraswati',
-          bride_photo: 'https://pggaknycbpjvsmmofnln.supabase.co/storage/v1/object/public/wuzzkang-bucket/defaults/bride-avatar.jpg'
-        }
-      },
-      {
-        id: 'sec-wedding-countdown',
-        type: 'wedding_countdown',
-        variant: 'navy',
-        content: {
-          title: 'Menuju Hari Bahagia',
-          subtitle: 'Hitung mundur momen istimewa pernikahan kami',
-          target_date: '2026-12-12T08:00:00'
-        }
-      },
-      {
-        id: 'sec-wedding-events',
-        type: 'wedding_events',
-        variant: 'navy',
-        content: {
-          title: 'Rangkaian Acara Pernikahan',
-          subtitle: 'Pelaksanaan Akad Nikah & Resepsi Pernikahan',
-          akad_title: 'Akad Nikah',
-          akad_date: 'Sabtu, 12 Desember 2026',
-          akad_time: 'Pukul 08.00 WIB - Selesai',
-          akad_location: 'Gedung Pernikahan Indah',
-          akad_address: 'Jl. Merdeka No. 45, Bandung',
-          akad_maps_url: 'https://maps.google.com',
-          resepsi_title: 'Resepsi Pernikahan',
-          resepsi_date: 'Sabtu, 12 Desember 2026',
-          resepsi_time: 'Pukul 11.00 WIB - 15.00 WIB',
-          resepsi_location: 'Gedung Pernikahan Indah',
-          resepsi_address: 'Jl. Merdeka No. 45, Bandung',
-          resepsi_maps_url: 'https://maps.google.com'
-        }
-      },
-      {
-        id: 'sec-wedding-story',
-        type: 'wedding_story',
-        variant: 'navy',
-        content: {
-          title: 'Kisah Kasih Kami',
-          subtitle: 'Perjalanan cinta kami dari pertama bertemu hingga ikatan suci pernikahan',
-          stories: [
-            { date: 'Tahun 2021', title: 'Awal Pertemuan Pertama', desc: 'Kami pertama kali bertemu dalam suatu acara kampus dan berlanjut menjalin persahabatan hangat.' },
-            { date: 'Tahun 2024', title: 'Momen Lamaran Kebahagiaan', desc: 'Dengan restu kedua orang tua, kami mengikat janji suci lamaran untuk melangkah ke jenjang yang lebih serius.' },
-            { date: 'Tahun 2026', title: 'Menuju Hari Pernikahan', desc: 'Insya Allah kami akan mengikat janji suci pernikahan dan mengarungi bahtera rumah tangga yang sakinah.' }
-          ]
-        }
-      },
-      {
-        id: 'sec-wedding-gallery',
-        type: 'wedding_gallery',
-        variant: 'navy',
-        content: {
-          title: 'Galeri Album Prewedding',
-          subtitle: 'Momen kebersamaan dan kenangan indah mempelai',
-          images: [
-            'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
-            'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80'
-          ]
-        }
-      },
-      {
-        id: 'sec-digital-gift',
-        type: 'digital_gift',
-        variant: 'navy',
-        content: {
-          title: 'Amplop Digital & Tanda Kasih',
-          subtitle: 'Doa restu Anda merupakan hadiah terindah bagi kami. Bagi keluarga yang ingin memberikan tanda kasih secara cashless:',
-          bank_accounts: [
-            { bank_name: 'Bank BCA', account_number: '1234567890', account_holder: 'Romeo Adiputra' },
-            { bank_name: 'Bank Mandiri', account_number: '0987654321', account_holder: 'Juliet Saraswati' }
-          ],
-          rsvp_whatsapp: '6281234567890'
-        }
-      },
-      {
-        id: 'sec-wedding-wishes',
-        type: 'wedding_wishes',
-        variant: 'navy',
-        content: {
-          title: 'Buku Tamu & Doa Restu',
-          subtitle: 'Kirimkan pesan doa restu dan konfirmasi kehadiran Anda untuk mempelai',
-          wishes: [
-            { name: 'Ahmad & Keluarga', status: 'Hadir', message: 'Selamat atas pernikahan Romeo & Juliet. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah!' },
-            { name: 'Siti Rahma', status: 'Hadir', message: 'Happy wedding Romeo & Juliet! Selamat menempuh hidup baru dan bahagia selalu!' },
-            { name: 'Budi Santoso', status: 'Ragu', message: 'Barakallahu lakum! Semoga acaranya berjalan lancar dan penuh keberkahan.' }
-          ]
-        }
-      },
-      {
-        id: 'sec-faq-wedding',
-        type: 'faq',
-        variant: 'accordion-navy',
-        content: {
-          title: 'Protokol & Informasi Lokasi Acara',
-          faqs: [
-            { question: 'Dimana lokasi pasti gedung acara?', answer: 'Alamat lengkap dan petunjuk Google Maps dapat diakses melalui link lokasi di atas.' },
-            { question: 'Apakah tersedia area parkir luas?', answer: 'Ya, tempat acara menyediakan fasilitas parkir kendaraan yang aman dan luas.' }
-          ]
-        }
-      },
-      {
-        id: 'sec-contact-wedding',
-        type: 'contact',
-        variant: 'footer-navy',
-        content: {
-          title: 'Konfirmasi Kehadiran (RSVP) & Doa Restu',
-          subheadline: 'Kirimkan pesan ucapan doa & konfirmasi kehadiran Anda melalui WhatsApp Mempelai.',
-          whatsapp: '6281234567890'
-        }
-      }
-    ]
-  },
+
+  // 🎓 DOMAIN E-COURSE
   {
     id: 'e-course',
+    category: 'e-course',
     name: 'E-Course & Kelas Online',
     icon: '🎓',
     badge: 'Edukasi',
@@ -504,8 +1016,11 @@ export const V2_STARTER_PRESETS = [
       }
     ]
   },
+
+  // 🎂 DOMAIN BIRTHDAY
   {
     id: 'birthday',
+    category: 'birthday',
     name: 'Undangan Ulang Tahun (Birthday)',
     icon: '🎂',
     badge: 'Acara Pesta',
@@ -558,8 +1073,11 @@ export const V2_STARTER_PRESETS = [
       }
     ]
   },
+
+  // 📄 DOMAIN CV
   {
     id: 'cv',
+    category: 'cv',
     name: 'Web CV & Portofolio Profesional',
     icon: '📄',
     badge: 'Karir / Portfolio',
@@ -610,8 +1128,11 @@ export const V2_STARTER_PRESETS = [
       }
     ]
   },
+
+  // 🎨 DOMAIN CUSTOM
   {
     id: 'custom',
+    category: 'custom',
     name: 'Kanvas Kosong (Custom Setup)',
     icon: '🎨',
     badge: 'Bebas',
