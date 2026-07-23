@@ -396,17 +396,34 @@ export default function DashboardPage() {
   };
 
   const isWeddingProject = (project) => {
-    const type = getProjectTemplateType(project);
-    if (type === 'wedding' || type === 'birthday' || type === 'undangan') return true;
+    if (!project) return false;
+    
+    const type = (project.template_type || '').toLowerCase();
+    const category = (project.category || '').toLowerCase();
+    if (type === 'wedding' || type === 'birthday' || type === 'undangan' || category === 'wedding' || category === 'undangan') {
+      return true;
+    }
+
     if (project.page_data) {
       let config = project.page_data;
       if (typeof config === 'string') {
         try { config = JSON.parse(config); } catch (e) {}
       }
-      if (config?.meta?.category === 'wedding' || config?.meta?.category === 'undangan') return true;
+      const metaType = (config?.meta?.template_type || '').toLowerCase();
+      const metaCat = (config?.meta?.category || '').toLowerCase();
+      if (metaType === 'wedding' || metaType === 'birthday' || metaType === 'undangan' || metaCat === 'wedding' || metaCat === 'undangan') {
+        return true;
+      }
       if (Array.isArray(config?.sections) && config.sections.some(s => s.type?.startsWith('wedding_'))) return true;
       if (Array.isArray(config?.v2_sections) && config.v2_sections.some(s => s.type?.startsWith('wedding_'))) return true;
     }
+
+    const name = (project.name || '').toLowerCase();
+    const weddingKeywords = ['nikah', 'wedding', 'undangan', 'mempelai', 'pasangan', 'pawiwahan', 'ulem', 'resepsi', 'akad'];
+    if (weddingKeywords.some(kw => name.includes(kw))) {
+      return true;
+    }
+
     return false;
   };
 

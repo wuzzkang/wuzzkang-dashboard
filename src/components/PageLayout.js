@@ -14,7 +14,7 @@ export default function PageLayout({ children, mainClassName = '', wrapperClassN
     <div className={`min-h-screen bg-theme-bg flex flex-col transition-theme ${wrapperClassName}`}>
       <Sidebar />
       <main
-        className={`flex-grow p-3 md:p-5 flex flex-col min-h-screen pt-20 pb-28 md:pb-8 mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme ${mainClassName ? mainClassName : 'max-w-md md:max-w-6xl lg:max-w-7xl'}`}
+        className={`flex-grow p-3 md:p-5 flex flex-col min-h-screen pt-24 md:pt-28 pb-28 md:pb-8 mx-auto w-full bg-theme-surface border-x border-theme-border relative transition-theme ${mainClassName ? mainClassName : 'max-w-md md:max-w-6xl lg:max-w-7xl'}`}
       >
         {children}
       </main>
