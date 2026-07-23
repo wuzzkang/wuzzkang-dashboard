@@ -267,8 +267,8 @@ export default function DashboardPage() {
   };
 
   const handleReleaseSubdomain = async (projectParam = null) => {
-    const targetProject = projectParam || domainProject;
-    if (!targetProject) return;
+    const targetProject = (projectParam && projectParam.id) ? projectParam : domainProject;
+    if (!targetProject || !targetProject.id) return;
     setSubdomainReleasing(true);
     setDomainError('');
     setDomainSuccess('');
@@ -282,7 +282,7 @@ export default function DashboardPage() {
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        if (projectParam) {
+        if (projectParam && projectParam.id) {
           alert(result.error || 'Gagal menghapus subdomain.');
         } else {
           setDomainError(result.error || 'Gagal menghapus subdomain.');
@@ -301,7 +301,10 @@ export default function DashboardPage() {
         setDomainProject((prev) => ({ ...prev, custom_domain: null, domain_type: 'none' }));
       }
       
-      if (projectParam) {
+      setIsDeleteSubdomainOpen(false);
+      setSubdomainToDelete(null);
+
+      if (projectParam && projectParam.id) {
         alert('Subdomain berhasil dihapus. Credit tidak dikembalikan.');
       } else {
         setDomainSuccess('Subdomain berhasil dihapus. Credit tidak dikembalikan.');
@@ -309,7 +312,7 @@ export default function DashboardPage() {
         setSubdomainAvailable(null);
       }
     } catch (e) {
-      if (projectParam) {
+      if (projectParam && projectParam.id) {
         alert('Terjadi kesalahan jaringan.');
       } else {
         setDomainError('Terjadi kesalahan jaringan.');
@@ -320,8 +323,8 @@ export default function DashboardPage() {
   };
 
   const handleDeleteProject = async (projectParam = null) => {
-    const targetProject = projectParam || projectToDelete;
-    if (!targetProject) return;
+    const targetProject = (projectParam && projectParam.id) ? projectParam : projectToDelete;
+    if (!targetProject || !targetProject.id) return;
     setProjectDeleting(true);
 
     try {
@@ -338,7 +341,7 @@ export default function DashboardPage() {
       }
 
       setProjects((prev) => prev.filter((p) => p.id !== targetProject.id));
-      alert('Project beserta seluruh asetnya berhasil dihapus.');
+      alert('Project beserta seluruh asetnya (gambar & subdomain) berhasil dihapus.');
       setIsDeleteProjectOpen(false);
       setProjectToDelete(null);
     } catch (e) {
@@ -1090,25 +1093,31 @@ export default function DashboardPage() {
       {/* Delete Project Confirm Dialog */}
       <ConfirmDialog
         isOpen={isDeleteProjectOpen}
-        onClose={() => setIsDeleteProjectOpen(false)}
-        onConfirm={handleDeleteProject}
+        onCancel={() => {
+          setIsDeleteProjectOpen(false);
+          setProjectToDelete(null);
+        }}
+        onConfirm={() => handleDeleteProject(projectToDelete)}
         title="Hapus Landing Page?"
-        message={`Apakah Anda yakin ingin menghapus "${projectToDelete?.name || 'Project'}"? Seluruh data halaman dan file media yang diunggah akan dihapus secara permanen.`}
-        confirmText="Hapus Permanen"
-        confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
-        loading={projectDeleting}
+        message={`Apakah Anda yakin ingin menghapus "${projectToDelete?.name || 'Project'}"? Seluruh data halaman, subdomain, dan file media yang diunggah akan dihapus secara permanen.`}
+        confirmLabel="Hapus Permanen"
+        cancelLabel="Batal"
+        variant="danger"
       />
 
       {/* Delete Subdomain Confirm Dialog */}
       <ConfirmDialog
         isOpen={isDeleteSubdomainOpen}
-        onClose={() => setIsDeleteSubdomainOpen(false)}
+        onCancel={() => {
+          setIsDeleteSubdomainOpen(false);
+          setSubdomainToDelete(null);
+        }}
         onConfirm={() => handleReleaseSubdomain(subdomainToDelete)}
         title="Hapus Subdomain?"
         message={`Apakah Anda yakin ingin melepas subdomain "${subdomainToDelete?.custom_domain}"? Subdomain akan dapat diklaim oleh pengguna lain.`}
-        confirmText="Hapus Subdomain"
-        confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
-        loading={subdomainReleasing}
+        confirmLabel="Hapus Subdomain"
+        cancelLabel="Batal"
+        variant="warning"
       />
     </PageLayout>
   );
