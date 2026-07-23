@@ -918,6 +918,175 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Subdomain Management Modal */}
+      {domainModalOpen && domainProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
+          <div className="bg-theme-card border border-theme-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative text-theme-text animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={closeDomainModal}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-theme-border/50 text-theme-text-muted hover:text-theme-text transition-colors cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-2xl bg-theme-accent/15 border border-theme-accent/30 text-theme-accent flex items-center justify-center font-bold">
+                <Globe className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black tracking-tight text-theme-text" style={{ fontFamily: "'Sora', sans-serif" }}>
+                  {domainProject.custom_domain ? 'Kelola Subdomain' : 'Klaim Subdomain Kustom'}
+                </h3>
+                <p className="text-xs text-theme-text-sec truncate max-w-[240px]">
+                  {domainProject.name}
+                </p>
+              </div>
+            </div>
+
+            {domainError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                <span>{domainError}</span>
+              </div>
+            )}
+
+            {domainSuccess && (
+              <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{domainSuccess}</span>
+              </div>
+            )}
+
+            {!subdomainActive && (
+              <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs leading-relaxed">
+                ⚠️ Fitur subdomain kustom saat ini sedang ditangguhkan sementara oleh administrator.
+              </div>
+            )}
+
+            {domainProject.custom_domain ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-theme-surface border border-theme-border space-y-2">
+                  <span className="text-[10px] uppercase font-extrabold text-theme-text-muted tracking-wider block">
+                    Subdomain Aktif Saat Ini
+                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <a
+                      href={`https://${domainProject.custom_domain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-black text-theme-accent hover:underline truncate"
+                    >
+                      https://{domainProject.custom_domain}
+                    </a>
+                    <ExternalLink className="h-4 w-4 text-theme-accent flex-shrink-0" />
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-theme-border flex gap-3">
+                  <button
+                    onClick={closeDomainModal}
+                    className="flex-1 bg-theme-surface hover:bg-theme-bg border border-theme-border text-theme-text font-bold text-xs py-3 px-4 rounded-xl transition-all cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                  <button
+                    onClick={() => handleReleaseSubdomain()}
+                    disabled={subdomainReleasing}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {subdomainReleasing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Melepas...</span>
+                      </>
+                    ) : (
+                      <span>Hapus Subdomain</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider font-extrabold text-theme-text-muted mb-1.5">
+                    Nama Subdomain Yang Diinginkan
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="misal: nikahanku"
+                      value={subdomainInput}
+                      onChange={(e) => setSubdomainInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      disabled={!subdomainActive || subdomainClaiming}
+                      className="w-full bg-theme-surface border border-theme-border rounded-xl pl-3.5 pr-28 py-2.5 text-xs text-theme-text placeholder-theme-text-muted focus:border-theme-accent focus:outline-none font-mono"
+                    />
+                    <span className="absolute right-3 top-2.5 text-xs font-bold text-theme-text-muted">
+                      .siluet.web.id
+                    </span>
+                  </div>
+
+                  <div className="mt-2 min-h-[20px]">
+                    {subdomainChecking && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] text-theme-text-muted">
+                        <Loader2 className="h-3 w-3 animate-spin text-theme-accent" />
+                        <span>Mengecek ketersediaan...</span>
+                      </span>
+                    )}
+                    {!subdomainChecking && subdomainAvailable === true && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-400 font-extrabold">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span>Subdomain tersedia!</span>
+                      </span>
+                    )}
+                    {!subdomainChecking && subdomainAvailable === false && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] text-red-400 font-extrabold">
+                        <X className="h-3.5 w-3.5" />
+                        <span>Subdomain sudah digunakan orang lain.</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-theme-surface border border-theme-border text-xs text-theme-text-sec space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span>Biaya Klaim Subdomain:</span>
+                    <span className="font-mono font-black text-theme-text">
+                      {domainClaimCost !== null ? `${domainClaimCost} Credit` : 'Gratis / Standard'}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-theme-text-muted pt-1">
+                    Subdomain kustom memungkinkan landing page Anda diakses langsung via link profesional pilihan Anda.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-theme-border flex gap-3">
+                  <button
+                    onClick={closeDomainModal}
+                    className="flex-1 bg-theme-surface hover:bg-theme-bg border border-theme-border text-theme-text font-bold text-xs py-3 px-4 rounded-xl transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleClaimSubdomain}
+                    disabled={!subdomainActive || !subdomainInput || !subdomainAvailable || subdomainClaiming}
+                    className="flex-1 bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-black text-xs py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                  >
+                    {subdomainClaiming ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Mengklaim...</span>
+                      </>
+                    ) : (
+                      <span>Klaim Subdomain</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Delete Project Confirm Dialog */}
       <ConfirmDialog
         isOpen={isDeleteProjectOpen}
