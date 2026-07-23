@@ -382,6 +382,7 @@ export default function DashboardPage() {
   };
 
   const getProjectTemplateType = (project) => {
+    if (project.template_type) return project.template_type;
     if (!project.page_data) return 'store';
     let config = project.page_data;
     if (typeof config === 'string') {
@@ -391,7 +392,22 @@ export default function DashboardPage() {
         return 'store';
       }
     }
-    return config?.meta?.template_type || 'store';
+    return config?.meta?.template_type || config?.meta?.category || project.category || 'store';
+  };
+
+  const isWeddingProject = (project) => {
+    const type = getProjectTemplateType(project);
+    if (type === 'wedding' || type === 'birthday' || type === 'undangan') return true;
+    if (project.page_data) {
+      let config = project.page_data;
+      if (typeof config === 'string') {
+        try { config = JSON.parse(config); } catch (e) {}
+      }
+      if (config?.meta?.category === 'wedding' || config?.meta?.category === 'undangan') return true;
+      if (Array.isArray(config?.sections) && config.sections.some(s => s.type?.startsWith('wedding_'))) return true;
+      if (Array.isArray(config?.v2_sections) && config.v2_sections.some(s => s.type?.startsWith('wedding_'))) return true;
+    }
+    return false;
   };
 
   const filteredProjects = projects;
@@ -430,7 +446,7 @@ export default function DashboardPage() {
   return (
     <PageLayout>
         {/* Header */}
-        <div className="flex flex-col gap-4 mb-4">
+        <div className="flex flex-col gap-4 mb-4 pt-2 md:pt-4">
           <div>
             <h1 className="text-2xl font-black text-theme-text tracking-tight" style={{ fontFamily: "'Sora', sans-serif" }}>Landing Pages</h1>
             <p className="text-theme-text-sec text-xs mt-1">Daftar semua landing page Anda yang telah digenerate</p>
@@ -439,7 +455,7 @@ export default function DashboardPage() {
 
         {/* Sticky Search and Filter Controls */}
         <div
-          className="sticky top-14 z-20 pb-3 pt-2 -mx-4 px-4 border-b transition-theme backdrop-blur-md"
+          className="sticky top-16 z-20 pb-3 pt-2 -mx-4 px-4 border-b transition-theme backdrop-blur-md"
           style={{
             backgroundColor: 'var(--theme-surface)',
             borderColor: 'var(--theme-border)'
@@ -644,7 +660,7 @@ export default function DashboardPage() {
                             )}
                           </div>
 
-                          {(templateType === 'wedding' || templateType === 'birthday') && (
+                          {isWeddingProject(project) && (
                             <button
                               onClick={() => {
                                 setShareProject(project);
@@ -652,7 +668,7 @@ export default function DashboardPage() {
                                 setGuestName('');
                                 setCopied(false);
                               }}
-                              className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5"
+                              className="w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                             >
                               <Share2 className="h-3.5 w-3.5" />
                               <span>Bagikan Undangan</span>
