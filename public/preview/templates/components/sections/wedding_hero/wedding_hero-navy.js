@@ -47,8 +47,8 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
             ${patternHtml}
             ${dividerHtml || ''}
 
-            <!-- Background Overlay with prewedding photo -->
-            <div class="absolute inset-0 z-0 bg-cover bg-center opacity-25" style="background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.95)), url('${bgImage}');"></div>
+            <!-- Background Overlay with prewedding photo - Enhanced Opacity & Soft Gradient -->
+            <div class="absolute inset-0 z-0 bg-cover bg-center opacity-65" style="background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.75)), url('${bgImage}');"></div>
 
             <!-- Leaf Corner Ornaments -->
             <div class="absolute top-2 left-2 w-28 h-28 pointer-events-none z-10 opacity-70">${filigreeTL}</div>
@@ -56,30 +56,30 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
 
             <div class="max-w-3xl mx-auto relative z-20 flex flex-col items-center">
                 <!-- Sub-badge -->
-                <span class="wedding-font-serif uppercase tracking-[0.3em] text-xs font-bold text-amber-400 mb-3 block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 backdrop-blur-md">
+                <span class="wedding-font-serif uppercase tracking-[0.3em] text-xs font-bold text-amber-300 mb-3 block px-4 py-1.5 rounded-full bg-slate-950/70 border border-amber-400/30 backdrop-blur-md shadow-lg">
                     ✨ Classic Gold • Undangan Pernikahan
                 </span>
 
                 <!-- Cursive Bride & Groom Name -->
-                <h1 class="wedding-font-cursive text-6xl md:text-8xl text-white my-3 drop-shadow-lg tracking-wide">
+                <h1 class="wedding-font-cursive text-6xl md:text-8xl text-white my-3 tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)]">
                     ${headline}
                 </h1>
 
-                <div class="w-16 h-0.5 bg-amber-400/60 my-6"></div>
+                <div class="w-16 h-0.5 bg-amber-400/80 my-6 shadow-sm"></div>
 
                 <!-- Subheadline -->
-                <p class="${theme.subtitle} text-xs md:text-sm max-w-lg leading-relaxed mb-8">
+                <p class="${theme.subtitle} text-xs md:text-sm max-w-lg leading-relaxed mb-8 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-medium">
                     ${subheadline}
                 </p>
 
                 <!-- Recipient Guest Card -->
-                <div class="bg-slate-900/60 backdrop-blur-md border border-amber-500/30 rounded-3xl p-5 md:p-6 mb-8 max-w-sm w-full shadow-2xl">
+                <div class="bg-slate-950/70 backdrop-blur-md border border-amber-400/40 rounded-3xl p-5 md:p-6 mb-8 max-w-sm w-full shadow-2xl">
                     <span class="text-[10px] font-bold text-amber-300 uppercase tracking-widest block mb-1">Kepada Yth. Bapak/Ibu/Saudara/i:</span>
                     <h3 class="wedding-font-serif text-xl md:text-2xl font-bold text-white tracking-wide">${recipientName}</h3>
                 </div>
 
                 <!-- Open Invitation Button -->
-                <a href="${ctaUrl}" class="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-extrabold text-xs shadow-xl shadow-amber-500/20 hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer">
+                <a href="${ctaUrl}" class="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-extrabold text-xs shadow-xl shadow-amber-950/50 hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer">
                     <span>${ctaText}</span>
                 </a>
             </div>

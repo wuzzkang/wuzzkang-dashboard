@@ -41,43 +41,43 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
             ${patternHtml}
             ${dividerHtml || ''}
 
-            <!-- Background Overlay with prewedding photo -->
-            <div class="absolute inset-0 z-0 bg-cover bg-center opacity-35" style="background-image: linear-gradient(rgba(69, 26, 3, 0.85), rgba(30, 10, 2, 0.95)), url('${bgImage}');"></div>
+            <!-- Background Overlay with prewedding photo - Enhanced Opacity & Soft Gradient -->
+            <div class="absolute inset-0 z-0 bg-cover bg-center opacity-65" style="background-image: linear-gradient(to bottom, rgba(69, 26, 3, 0.45), rgba(30, 10, 2, 0.75)), url('${bgImage}');"></div>
 
             <!-- Gunungan Wayang Ornaments -->
             <div class="absolute -top-6 left-1/2 -translate-x-1/2 w-40 h-48 pointer-events-none z-10 opacity-70">${gununganSvg}</div>
 
             <div class="max-w-3xl mx-auto relative z-20 flex flex-col items-center mt-12">
                 <!-- Sub-badge Jawa -->
-                <span class="wedding-font-serif uppercase tracking-[0.35em] text-xs font-bold text-amber-300 mb-3 block px-5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 backdrop-blur-md">
+                <span class="wedding-font-serif uppercase tracking-[0.35em] text-xs font-bold text-amber-200 mb-3 block px-5 py-1.5 rounded-full bg-amber-950/70 border border-amber-400/30 backdrop-blur-md shadow-lg">
                     🪷 Pawiwahan Adat Jawa • Ulem Pernikahan
                 </span>
 
                 <!-- Cursive Bride & Groom Name -->
-                <h1 class="wedding-font-cursive text-7xl md:text-9xl text-amber-200 my-2 drop-shadow-2xl tracking-wide">
+                <h1 class="wedding-font-cursive text-7xl md:text-9xl text-amber-100 my-2 tracking-wide drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)]">
                     ${headline}
                 </h1>
 
                 <div class="flex items-center gap-3 my-4">
-                    <div class="w-12 h-0.5 bg-amber-400/50"></div>
+                    <div class="w-12 h-0.5 bg-amber-400/70"></div>
                     <span class="text-amber-400 text-sm">✦</span>
-                    <div class="w-12 h-0.5 bg-amber-400/50"></div>
+                    <div class="w-12 h-0.5 bg-amber-400/70"></div>
                 </div>
 
                 <!-- Subheadline -->
-                <p class="${theme.subtitle} text-xs md:text-sm max-w-lg leading-relaxed mb-8">
+                <p class="${theme.subtitle} text-xs md:text-sm max-w-lg leading-relaxed mb-8 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-medium">
                     ${subheadline}
                 </p>
 
                 <!-- Recipient Guest Card with Double Line Gapura Border -->
-                <div class="bg-amber-950/60 backdrop-blur-md border-2 border-amber-500/40 rounded-3xl p-5 md:p-6 mb-8 max-w-sm w-full shadow-2xl relative">
+                <div class="bg-amber-950/70 backdrop-blur-md border-2 border-amber-500/40 rounded-3xl p-5 md:p-6 mb-8 max-w-sm w-full shadow-2xl relative">
                     <div class="absolute inset-1 border border-amber-500/20 rounded-2xl pointer-events-none"></div>
                     <span class="text-[10px] font-bold text-amber-300 uppercase tracking-widest block mb-1">Serat Ulem Katur Bpk/Ibu/Saudara/i:</span>
                     <h3 class="wedding-font-serif text-2xl font-bold text-amber-100 tracking-wide">${recipientName}</h3>
                 </div>
 
                 <!-- Open Invitation Button -->
-                <a href="${ctaUrl}" class="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-extrabold text-xs shadow-xl shadow-amber-900/50 hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer">
+                <a href="${ctaUrl}" class="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-extrabold text-xs shadow-xl shadow-amber-950/50 hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer">
                     <span>${ctaText}</span>
                 </a>
             </div>
