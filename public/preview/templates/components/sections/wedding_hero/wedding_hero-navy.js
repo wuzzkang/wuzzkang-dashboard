@@ -11,7 +11,16 @@ export function render(data = {}, pageConfig = {}, brandConfig = { name: 'Siluet
     const ctaText = data.cta_text || '💌 BUKA UNDANGAN';
     const ctaUrl = data.cta_url || '#wedding_couple';
     const bgImage = data.image_url || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80';
-    const recipientName = data.recipient_name || 'Tamu Undangan';
+    let recipientName = data.recipient_name || 'Bapak/Ibu/Saudara/i';
+    if (typeof window !== 'undefined' && window.location) {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const guestFromUrl = urlParams.get('to') || urlParams.get('recipient');
+            if (guestFromUrl && guestFromUrl.trim()) {
+                recipientName = guestFromUrl.trim();
+            }
+        } catch (e) {}
+    }
 
     const bgStyle = data.bg_style || 'navy';
     const bgShade = data.bg_shade || 'solid';
